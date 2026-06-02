@@ -1,0 +1,22 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: kuizard-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: kuizard
+      POSTGRES_PASSWORD: kuizard_dev_pwd
+      POSTGRES_DB: kuizard_dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - kuizard_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kuizard -d kuizard_dev"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  kuizard_pg_data:
+    name: kuizard_pg_data

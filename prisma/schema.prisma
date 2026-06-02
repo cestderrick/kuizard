@@ -1,0 +1,194 @@
+// ====================================================
+// KUIZARD — Schéma Prisma initial
+// ====================================================
+// Documentation : https://pris.ly/d/prisma-schema
+// Pour appliquer une modif après édition :
+//   npx prisma migrate dev --name <nom_de_la_migration>
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ====================================================
+// AUTH.JS — Modèles requis par @auth/prisma-adapter
+// ====================================================
+
+model User {
+  id               String      @id @default(cuid())
+  name             String?
+  email            String      @unique
+  emailVerified    DateTime?
+  image            String?
+  accountType      AccountType @default(INDIVIDUAL)
+  stripeCustomerId String?     @unique
+
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  accounts         Account[]
+  sessions         Session[]
+  quizzes          Quiz[]
+}
+
+enum AccountType {
+  INDIVIDUAL
+  BUSINESS
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ====================================================
+// KUIZARD — Modèles métier
+// ====================================================
+
+model Quiz {
+  id                String     @id @default(cuid())
+  userId            String
+
+  code              String     @unique
+  title             String
+  description       String?    @db.Text
+  coverImageUrl     String?
+
+  // Thème visuel (couleurs, police, fond) par-dessus le thème Kuizard
+  theme             Json       @default("{}")
+  // Paramètres divers (timer par question, mélange, score visible, show_leaderboard_publicly…)
+  settings          Json       @default("{}")
+
+  // Mode de pilotage : créneau horaire ou pilotage manuel par l'admin
+  mode              QuizMode   @default(LIVE_MANUAL)
+  scheduledOpenAt   DateTime?
+  scheduledCloseAt  DateTime?
+
+  // État temps réel du quizz (question active, pause, etc.)
+  liveState         Json       @default("{}")
+
+  // Plan utilisé pour ce quizz, détermine les limites
+  plan              Plan       @default(FREE)
+  isPaid            Boolean    @default(false)
+
+  // Lots associés au classement (array de {rank, label, description, image_url})
+  prizes            Json?
+  // Mot de fin personnalisé (plan Magique)
+  finalMessage      String?    @db.Text
+
+  status            QuizStatus @default(DRAFT)
+  expiresAt         DateTime?
+
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+
+  user              User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  questions         Question[]
+  participations    Participation[]
+
+  @@index([userId])
+  @@index([code])
+  @@index([status])
+}
+
+enum QuizMode {
+  SCHEDULED
+  LIVE_MANUAL
+}
+
+enum QuizStatus {
+  DRAFT
+  PUBLISHED
+  RUNNING
+  FINISHED
+  ARCHIVED
+}
+
+enum Plan {
+  FREE
+  ESSENTIEL
+  FESTIF
+  MAGIQUE
+  BAR_ESSENTIEL
+  BAR_PRO
+}
+
+model Question {
+  id           String       @id @default(cuid())
+  quizId       String
+  order        Int
+  type         QuestionType
+  text         String       @db.Text
+  imageUrl     String?
+  // Options (choix) : array de {label, isCorrect} pour QCM, vide pour TEXT
+  options      Json         @default("[]")
+  points       Int          @default(1)
+  timerSeconds Int?
+
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  quiz         Quiz         @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  @@index([quizId])
+  @@index([quizId, order])
+}
+
+enum QuestionType {
+  SINGLE_CHOICE
+  MULTIPLE_CHOICE
+  TRUE_FALSE
+  TEXT
+}
+
+model Participation {
+  id          String    @id @default(cuid())
+  quizId      String
+  nickname    String
+  email       String?
+  // Réponses par question : { [questionId]: { selectedOptionIds: [], textAnswer: "..." } }
+  answers     Json      @default("{}")
+  score       Int       @default(0)
+
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+
+  quiz        Quiz      @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  @@index([quizId])
+  @@index([quizId, score(sort: Desc)])
+}
