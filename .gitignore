@@ -40,6 +40,10 @@ yarn-error.log*
 *.dump
 /backups/
 
+# EXCEPTION : Prisma migrations DOIVENT être versionnées
+!prisma/migrations/**/*.sql
+!prisma/migrations/**/migration.sql
+
 # vercel
 .vercel
 
