@@ -1,4 +1,12 @@
-export default function Home() {
+import Link from "next/link";
+
+import { auth } from "@/auth";
+import { Button } from "@/components/ui/button";
+
+export default async function Home() {
+  const session = await auth();
+  const isLoggedIn = !!session?.user;
+
   return (
     <main className="flex-1 flex flex-col items-center justify-center px-6 py-16 text-center">
       <div className="max-w-2xl">
@@ -19,6 +27,45 @@ export default function Home() {
           Partagez en un QR code, pilotez en direct, et offrez à vos invités
           un moment inoubliable.
         </p>
+
+        <div className="flex flex-col sm:flex-row gap-3 justify-center mb-8">
+          {isLoggedIn ? (
+            <Button
+              asChild
+              size="lg"
+              style={{
+                backgroundColor: "var(--color-violet-primary)",
+                color: "white",
+              }}
+            >
+              <Link href="/dashboard">Aller à mon tableau de bord ✨</Link>
+            </Button>
+          ) : (
+            <>
+              <Button
+                asChild
+                size="lg"
+                style={{
+                  backgroundColor: "var(--color-violet-primary)",
+                  color: "white",
+                }}
+              >
+                <Link href="/signup">Créer un compte ✨</Link>
+              </Button>
+              <Button
+                asChild
+                size="lg"
+                variant="outline"
+                style={{
+                  borderColor: "var(--color-violet-primary)",
+                  color: "var(--color-violet-primary)",
+                }}
+              >
+                <Link href="/login">Se connecter</Link>
+              </Button>
+            </>
+          )}
+        </div>
 
         <div className="inline-block rounded-xl border-2 border-dashed border-[var(--color-violet-light)] px-6 py-4 text-sm text-[var(--color-violet-primary)]">
           🚧 Projet en cours de développement — version{" "}
