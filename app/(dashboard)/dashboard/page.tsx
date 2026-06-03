@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { auth } from "@/auth";
+import { listMyQuizzes } from "@/lib/actions/quiz";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -19,6 +20,8 @@ export const metadata: Metadata = {
 export default async function DashboardPage() {
   const session = await auth();
   const userName = session?.user?.name ?? "magicien(ne)";
+  const quizzes = await listMyQuizzes();
+  const recent = quizzes.slice(0, 3);
 
   return (
     <div className="flex flex-col gap-8">
@@ -38,50 +41,97 @@ export default async function DashboardPage() {
         </p>
       </section>
 
-      {/* Mes quizz — état vide pour l'instant */}
+      {/* Mes quizz (récents) */}
       <Card>
-        <CardHeader>
-          <CardTitle className="font-display tracking-wide">Mes quizz</CardTitle>
-          <CardDescription>
-            Tu n'as pas encore créé de quizz. Lance-toi !
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col items-center gap-4 py-10">
-          <div className="text-6xl" aria-hidden>
-            🎩
+        <CardHeader className="flex flex-row items-start justify-between gap-3">
+          <div>
+            <CardTitle className="font-display tracking-wide">
+              Mes quizz récents
+            </CardTitle>
+            <CardDescription>
+              {quizzes.length === 0
+                ? "Tu n'as pas encore créé de quizz. Lance-toi !"
+                : `${quizzes.length} quizz au total — derniers en haut.`}
+            </CardDescription>
           </div>
-          <p className="text-center text-muted-foreground max-w-sm">
-            Crée ton premier quizz en quelques minutes. Choisis les questions,
-            les images, le thème, et partage-le avec un QR code.
-          </p>
-          <Button
-            asChild
-            style={{
-              backgroundColor: "var(--color-violet-primary)",
-              color: "white",
-            }}
-          >
-            <Link href="/dashboard/quizzes/new">Créer mon premier quizz ✨</Link>
-          </Button>
-          <p className="text-xs text-muted-foreground italic">
-            (la création arrivera au Sprint 2 — pour l'instant le bouton ne mène
-            nulle part)
-          </p>
+          {quizzes.length > 0 && (
+            <Button asChild variant="outline" size="sm">
+              <Link href="/dashboard/quizzes">Voir tous mes quizz</Link>
+            </Button>
+          )}
+        </CardHeader>
+        <CardContent>
+          {quizzes.length === 0 ? (
+            <div className="flex flex-col items-center gap-4 py-10">
+              <div className="text-6xl" aria-hidden>
+                🎩
+              </div>
+              <p className="text-center text-muted-foreground max-w-sm">
+                Crée ton premier quizz en quelques minutes. Choisis les questions,
+                les images, le thème, et partage-le avec un QR code.
+              </p>
+              <Button
+                asChild
+                style={{
+                  backgroundColor: "var(--color-violet-primary)",
+                  color: "white",
+                }}
+              >
+                <Link href="/dashboard/quizzes/new">
+                  Créer mon premier quizz ✨
+                </Link>
+              </Button>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {recent.map((quiz) => (
+                <div
+                  key={quiz.id}
+                  className="flex items-center justify-between gap-3 rounded-lg border bg-white px-4 py-3 hover:shadow-md transition-shadow"
+                >
+                  <div className="min-w-0">
+                    <p className="font-medium truncate">{quiz.title}</p>
+                    <p className="text-xs text-muted-foreground">
+                      <span className="font-mono">{quiz.code}</span> ·{" "}
+                      {quiz._count.questions} questions ·{" "}
+                      {quiz._count.participations} joueurs
+                    </p>
+                  </div>
+                  <Button asChild variant="ghost" size="sm">
+                    <Link href={`/dashboard/quizzes/${quiz.id}/edit`}>
+                      Éditer
+                    </Link>
+                  </Button>
+                </div>
+              ))}
+              <Button
+                asChild
+                variant="outline"
+                style={{
+                  borderColor: "var(--color-violet-primary)",
+                  color: "var(--color-violet-primary)",
+                }}
+                className="mt-2"
+              >
+                <Link href="/dashboard/quizzes/new">+ Créer un nouveau quizz</Link>
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
 
-      {/* Placeholders Sprint 2/3 */}
+      {/* Placeholders Sprint 3/4 */}
       <div className="grid gap-4 md:grid-cols-2">
         <Card className="opacity-60">
           <CardHeader>
             <CardTitle className="text-base">Mes paiements</CardTitle>
-            <CardDescription>Bientôt</CardDescription>
+            <CardDescription>Bientôt (Sprint 4)</CardDescription>
           </CardHeader>
         </Card>
         <Card className="opacity-60">
           <CardHeader>
             <CardTitle className="text-base">Statistiques</CardTitle>
-            <CardDescription>Bientôt</CardDescription>
+            <CardDescription>Bientôt (V1.2)</CardDescription>
           </CardHeader>
         </Card>
       </div>

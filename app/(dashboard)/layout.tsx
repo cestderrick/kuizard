@@ -21,13 +21,29 @@ export default async function DashboardLayout({
     <div className="min-h-screen flex flex-col bg-[var(--color-lavender)]">
       <header className="border-b border-violet-100 bg-white">
         <div className="mx-auto max-w-6xl flex items-center justify-between px-4 py-3">
-          <Link
-            href="/dashboard"
-            className="font-display text-xl font-bold tracking-[2px]"
-            style={{ color: "var(--color-violet-deep)" }}
-          >
-            Kuizard
-          </Link>
+          <div className="flex items-center gap-6">
+            <Link
+              href="/dashboard"
+              className="font-display text-xl font-bold tracking-[2px]"
+              style={{ color: "var(--color-violet-deep)" }}
+            >
+              Kuizard
+            </Link>
+            <nav className="hidden sm:flex items-center gap-4 text-sm">
+              <Link
+                href="/dashboard"
+                className="text-muted-foreground hover:text-[var(--color-violet-primary)]"
+              >
+                Accueil
+              </Link>
+              <Link
+                href="/dashboard/quizzes"
+                className="text-muted-foreground hover:text-[var(--color-violet-primary)]"
+              >
+                Mes quizz
+              </Link>
+            </nav>
+          </div>
 
           <div className="flex items-center gap-3">
             <span className="text-sm text-muted-foreground hidden sm:block">
