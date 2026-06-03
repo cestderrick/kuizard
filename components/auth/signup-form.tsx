@@ -52,7 +52,7 @@ export function SignupForm() {
               type="text"
               autoComplete="name"
               required
-              placeholder="Marie Dupont"
+              placeholder="Célia Magieduquiz"
             />
             {state.errors?.name && (
               <p className="text-sm text-destructive">
@@ -69,7 +69,7 @@ export function SignupForm() {
               type="email"
               autoComplete="email"
               required
-              placeholder="marie@exemple.fr"
+              placeholder="tonmailbg@exemple.fr"
             />
             {state.errors?.email && (
               <p className="text-sm text-destructive">
