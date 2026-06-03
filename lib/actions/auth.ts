@@ -36,7 +36,7 @@ export async function signupAction(
   _prevState: SignupState,
   formData: FormData
 ): Promise<SignupState> {
-  // 1. Parser les données du formulaire
+  // 1. Validation des inputs
   const parsed = signupSchema.safeParse({
     name: formData.get("name"),
     email: formData.get("email"),
@@ -55,14 +55,19 @@ export async function signupAction(
   const { name, email, password, accountType } = parsed.data;
   const emailLower = email.toLowerCase();
 
-  // 2. Vérifier qu'aucun user n'existe déjà avec cet email
+  // 2. Vérifier que l'email n'est pas déjà utilisé
   const existing = await prisma.user.findUnique({
     where: { email: emailLower },
+    select: { id: true },
   });
   if (existing) {
     return {
       ok: false,
-      message: "Un compte existe déjà avec cet email. Essaie de te connecter.",
+      errors: {
+        email: [
+          "Un compte existe déjà avec cet email. Tu peux te connecter à la place.",
+        ],
+      },
     };
   }
 
@@ -77,24 +82,15 @@ export async function signupAction(
     },
   });
 
-  // 4. Auto-login après la création
-  try {
-    await signIn("credentials", {
-      email: emailLower,
-      password,
-      redirectTo: "/dashboard",
-    });
-  } catch (error) {
-    // signIn redirige côté serveur, ce qui lève une exception NEXT_REDIRECT
-    // qu'il faut relancer pour que Next la gère.
-    if (error instanceof Error && error.message.includes("NEXT_REDIRECT")) {
-      throw error;
-    }
-    return {
-      ok: false,
-      message: "Compte créé, mais la connexion automatique a échoué. Essaie de te connecter manuellement.",
-    };
-  }
+  // 4. Auto-login après création.
+  // ⚠️ signIn() avec redirectTo va LANCER une exception NEXT_REDIRECT,
+  // que Next.js intercepte naturellement pour effectuer le redirect.
+  // On ne met PAS de try/catch ici → laisser propager.
+  await signIn("credentials", {
+    email: emailLower,
+    password,
+    redirectTo: "/dashboard",
+  });
 
   return { ok: true };
 }
@@ -140,15 +136,17 @@ export async function signinAction(
       redirectTo: "/dashboard",
     });
   } catch (error) {
+    // Seul AuthError est intercepté ici (credentials invalides).
+    // Les exceptions NEXT_REDIRECT doivent propager pour que Next gère le redirect.
     if (error instanceof AuthError) {
-      switch (error.type) {
-        case "CredentialsSignin":
-          return { ok: false, message: "Email ou mot de passe incorrect." };
-        default:
-          return { ok: false, message: "Une erreur est survenue. Réessaie." };
+      if (error.type === "CredentialsSignin") {
+        return { ok: false, message: "Email ou mot de passe incorrect." };
       }
+      return {
+        ok: false,
+        message: "Une erreur d'authentification est survenue.",
+      };
     }
-    // Re-throw les redirections Next pour qu'elles soient gérées
     throw error;
   }
 
