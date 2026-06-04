@@ -179,6 +179,7 @@ export function QuizPlayer({ code, title, description, questions }: Props) {
 
         {phase === "result" && score !== null && total !== null && (
           <ResultCard
+            code={code}
             title={title}
             nickname={nickname}
             score={score}
