@@ -102,6 +102,11 @@ export default async function EditQuestionPage({
         <CardContent className="flex flex-wrap gap-2">
           <form action={createQuestionAction}>
             <input type="hidden" name="quizId" value={quizId} />
+            <Button asChild variant="outline">
+              <Link href={`/dashboard/quizzes/${quizId}/edit`}>
+              ← Voir toutes les questions
+              </Link>
+            </Button>
             <Button
               type="submit"
               style={{
@@ -112,11 +117,7 @@ export default async function EditQuestionPage({
               + Nouvelle question
             </Button>
           </form>
-          <Button asChild variant="outline">
-            <Link href={`/dashboard/quizzes/${quizId}/edit`}>
-              ← Voir toutes les questions
-            </Link>
-          </Button>
+
         </CardContent>
       </Card>
     </div>

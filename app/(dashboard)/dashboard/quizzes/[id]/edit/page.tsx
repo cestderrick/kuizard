@@ -165,7 +165,7 @@ export default async function EditQuizPage({
       <Card className="border-destructive/30">
         <CardHeader>
           <CardTitle className="text-base text-destructive">
-            Zone de danger
+            Supprimer le quizz
           </CardTitle>
           <CardDescription>
             La suppression d'un quizz est définitive.
