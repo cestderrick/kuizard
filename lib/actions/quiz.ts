@@ -109,6 +109,84 @@ export async function listMyQuizzes() {
 }
 
 // -----------------------------------------------------
+// GET MY QUIZ (avec questions)
+// -----------------------------------------------------
+
+export async function getMyQuiz(quizId: string) {
+  const session = await auth();
+  if (!session?.user?.id) return null;
+
+  return prisma.quiz.findFirst({
+    where: { id: quizId, userId: session.user.id },
+    include: {
+      questions: { orderBy: { order: "asc" } },
+    },
+  });
+}
+
+// -----------------------------------------------------
+// UPDATE QUIZ META (titre, description, mode)
+// -----------------------------------------------------
+
+const updateQuizMetaSchema = z.object({
+  quizId: z.string().min(1),
+  title: z
+    .string()
+    .min(3, "Le titre doit faire au moins 3 caractères.")
+    .max(80),
+  description: z.string().max(500).optional().or(z.literal("")),
+  mode: z.enum(["LIVE_MANUAL", "SCHEDULED"]),
+});
+
+export type UpdateQuizMetaState = {
+  ok: boolean;
+  message?: string;
+  errors?: Record<string, string[]>;
+};
+
+export async function updateQuizMetaAction(
+  _prevState: UpdateQuizMetaState,
+  formData: FormData
+): Promise<UpdateQuizMetaState> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { ok: false, message: "Non authentifié." };
+  }
+
+  const parsed = updateQuizMetaSchema.safeParse({
+    quizId: formData.get("quizId"),
+    title: formData.get("title"),
+    description: formData.get("description") ?? "",
+    mode: formData.get("mode") ?? "LIVE_MANUAL",
+  });
+
+  if (!parsed.success) {
+    return {
+      ok: false,
+      errors: z.flattenError(parsed.error).fieldErrors,
+      message: "Vérifie les champs en erreur.",
+    };
+  }
+
+  const { quizId, title, description, mode } = parsed.data;
+
+  // updateMany pour garantir qu'on touche uniquement nos quizz
+  const result = await prisma.quiz.updateMany({
+    where: { id: quizId, userId: session.user.id },
+    data: { title, description: description || null, mode },
+  });
+
+  if (result.count === 0) {
+    return { ok: false, message: "Quizz introuvable ou non autorisé." };
+  }
+
+  revalidatePath(`/dashboard/quizzes/${quizId}/edit`);
+  revalidatePath(`/dashboard/quizzes`);
+
+  return { ok: true, message: "Modifications enregistrées." };
+}
+
+// -----------------------------------------------------
 // DELETE QUIZ
 // -----------------------------------------------------
 
