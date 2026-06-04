@@ -51,23 +51,24 @@ export function DeleteQuestionButton({
             &nbsp;»
             <br />
             <br />
-            Cette action est <strong>irréversible</strong>. La question et
-            d'éventuelles réponses associées seront perdues.
+            Cette action est <strong>irréversible</strong>.
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Annuler</AlertDialogCancel>
-          <form action={deleteQuestionAction}>
-            <input type="hidden" name="quizId" value={quizId} />
-            <input type="hidden" name="questionId" value={questionId} />
-            <AlertDialogAction
-              type="submit"
-              className="bg-destructive text-white hover:bg-destructive/90"
-            >
-              Supprimer définitivement
+        <form action={deleteQuestionAction}>
+          <input type="hidden" name="quizId" value={quizId} />
+          <input type="hidden" name="questionId" value={questionId} />
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction asChild>
+              <Button
+                type="submit"
+                className="bg-destructive text-white hover:bg-destructive/90"
+              >
+                Supprimer
+              </Button>
             </AlertDialogAction>
-          </form>
-        </AlertDialogFooter>
+          </AlertDialogFooter>
+        </form>
       </AlertDialogContent>
     </AlertDialog>
   );

@@ -15,6 +15,7 @@ import {
 import { QuizMetaForm } from "@/components/quiz/quiz-meta-form";
 import { DeleteQuestionButton } from "@/components/quiz/delete-question-button";
 import { DeleteQuizButton } from "@/components/quiz/delete-quiz-button";
+import { ShareSection } from "@/components/quiz/share-section";
 
 export const metadata: Metadata = {
   title: "Éditer un quizz",
@@ -66,6 +67,15 @@ export default async function EditQuizPage({
           </p>
         </div>
       </div>
+
+      {/* Partage et publication */}
+      <ShareSection
+        quizId={quiz.id}
+        code={quiz.code}
+        status={quiz.status}
+        hasQuestions={quiz.questions.length > 0}
+        expiresAt={quiz.expiresAt}
+      />
 
       {/* Metadata du quizz */}
       <Card>

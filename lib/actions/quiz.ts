@@ -187,6 +187,95 @@ export async function updateQuizMetaAction(
 }
 
 // -----------------------------------------------------
+// PUBLISH / UNPUBLISH QUIZ
+// -----------------------------------------------------
+
+const publishSchema = z.object({
+  quizId: z.string().min(1),
+});
+
+export type PublishQuizState = {
+  ok: boolean;
+  message?: string;
+};
+
+/**
+ * Publie un quizz : passe DRAFT → PUBLISHED, calcule expiresAt selon le plan.
+ * Au MVP tous les quizz sont en FREE → conservation 1 mois.
+ */
+export async function publishQuizAction(
+  _prevState: PublishQuizState,
+  formData: FormData
+): Promise<PublishQuizState> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { ok: false, message: "Non authentifié." };
+  }
+
+  const parsed = publishSchema.safeParse({ quizId: formData.get("quizId") });
+  if (!parsed.success) return { ok: false, message: "Données invalides." };
+
+  const { quizId } = parsed.data;
+
+  // Récupérer le quizz pour vérifier qu'il appartient au user et qu'il a au
+  // moins 1 question
+  const quiz = await prisma.quiz.findFirst({
+    where: { id: quizId, userId: session.user.id },
+    select: { id: true, plan: true, status: true, _count: { select: { questions: true } } },
+  });
+  if (!quiz) return { ok: false, message: "Quizz introuvable." };
+
+  if (quiz._count.questions === 0) {
+    return {
+      ok: false,
+      message: "Ajoute au moins 1 question avant de publier.",
+    };
+  }
+
+  // Durée de conservation selon le plan (1 mois FREE, 2 mois Essentiel/Festif/Magique, 6 mois Bar)
+  const RETENTION_DAYS_BY_PLAN: Record<string, number> = {
+    FREE: 30,
+    ESSENTIEL: 60,
+    FESTIF: 60,
+    MAGIQUE: 60,
+    BAR_ESSENTIEL: 180,
+    BAR_PRO: 180,
+  };
+  const retentionDays = RETENTION_DAYS_BY_PLAN[quiz.plan] ?? 30;
+  const expiresAt = new Date(Date.now() + retentionDays * 86400 * 1000);
+
+  await prisma.quiz.update({
+    where: { id: quizId },
+    data: { status: "PUBLISHED", expiresAt },
+  });
+
+  revalidatePath(`/dashboard/quizzes/${quizId}/edit`);
+  revalidatePath(`/dashboard/quizzes`);
+  revalidatePath(`/q/${quizId}`);
+
+  return { ok: true, message: "Quizz publié ! Le lien est maintenant actif." };
+}
+
+export async function unpublishQuizAction(
+  _prevState: PublishQuizState,
+  formData: FormData
+): Promise<PublishQuizState> {
+  const session = await auth();
+  if (!session?.user?.id) return { ok: false, message: "Non authentifié." };
+
+  const parsed = publishSchema.safeParse({ quizId: formData.get("quizId") });
+  if (!parsed.success) return { ok: false, message: "Données invalides." };
+
+  await prisma.quiz.updateMany({
+    where: { id: parsed.data.quizId, userId: session.user.id },
+    data: { status: "DRAFT" },
+  });
+
+  revalidatePath(`/dashboard/quizzes/${parsed.data.quizId}/edit`);
+  return { ok: true, message: "Quizz remis en brouillon. Le lien n'est plus actif." };
+}
+
+// -----------------------------------------------------
 // DELETE QUIZ
 // -----------------------------------------------------
 
@@ -207,4 +296,7 @@ export async function deleteQuizAction(formData: FormData) {
   });
 
   revalidatePath("/dashboard/quizzes");
+  // Redirige toujours vers la liste — utile si l'utilisateur supprimait depuis
+  // la page d'édition (sinon il atterrirait sur un 404 fantôme).
+  redirect("/dashboard/quizzes");
 }

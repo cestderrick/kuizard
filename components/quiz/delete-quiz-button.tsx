@@ -26,11 +26,6 @@ type Props = {
   triggerClassName?: string;
 };
 
-/**
- * Pour éviter la suppression accidentelle d'un quizz potentiellement long à
- * recréer, on demande à l'utilisateur de retaper le titre du quizz avant
- * d'activer le bouton "Supprimer".
- */
 export function DeleteQuizButton({
   quizId,
   quizTitle,
@@ -101,19 +96,24 @@ export function DeleteQuizButton({
           )}
         </div>
 
-        <AlertDialogFooter>
-          <AlertDialogCancel>Annuler</AlertDialogCancel>
-          <form action={deleteQuizAction}>
-            <input type="hidden" name="quizId" value={quizId} />
-            <AlertDialogAction
-              type="submit"
-              disabled={!canDelete}
-              className="bg-destructive text-white hover:bg-destructive/90 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Supprimer définitivement
+        {/* IMPORTANT : le bouton de soumission DOIT être enfant d'un form
+            ET utiliser asChild pour que la fermeture du dialog ne supprime
+            pas le bouton avant la fin de la submission server action. */}
+        <form action={deleteQuizAction}>
+          <input type="hidden" name="quizId" value={quizId} />
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction asChild>
+              <Button
+                type="submit"
+                disabled={!canDelete}
+                className="bg-destructive text-white hover:bg-destructive/90 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Supprimer définitivement
+              </Button>
             </AlertDialogAction>
-          </form>
-        </AlertDialogFooter>
+          </AlertDialogFooter>
+        </form>
       </AlertDialogContent>
     </AlertDialog>
   );
