@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { listMyQuizzes, deleteQuizAction } from "@/lib/actions/quiz";
+import { listMyQuizzes } from "@/lib/actions/quiz";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -10,6 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { DeleteQuizButton } from "@/components/quiz/delete-quiz-button";
 
 export const metadata: Metadata = {
   title: "Mes quizz",
@@ -136,17 +137,10 @@ export default async function QuizzesPage() {
                       Éditer
                     </Link>
                   </Button>
-                  <form action={deleteQuizAction}>
-                    <input type="hidden" name="quizId" value={quiz.id} />
-                    <Button
-                      type="submit"
-                      variant="ghost"
-                      size="sm"
-                      className="text-destructive hover:text-destructive"
-                    >
-                      Supprimer
-                    </Button>
-                  </form>
+                  <DeleteQuizButton
+                    quizId={quiz.id}
+                    quizTitle={quiz.title}
+                  />
                 </div>
               </CardContent>
             </Card>

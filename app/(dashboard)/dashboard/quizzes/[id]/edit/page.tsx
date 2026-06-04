@@ -3,10 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { getMyQuiz } from "@/lib/actions/quiz";
-import {
-  createQuestionAction,
-  deleteQuestionAction,
-} from "@/lib/actions/question";
+import { createQuestionAction } from "@/lib/actions/question";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -16,6 +13,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { QuizMetaForm } from "@/components/quiz/quiz-meta-form";
+import { DeleteQuestionButton } from "@/components/quiz/delete-question-button";
+import { DeleteQuizButton } from "@/components/quiz/delete-quiz-button";
 
 export const metadata: Metadata = {
   title: "Éditer un quizz",
@@ -150,22 +149,35 @@ export default async function EditQuizPage({
                       Éditer
                     </Link>
                   </Button>
-                  <form action={deleteQuestionAction}>
-                    <input type="hidden" name="quizId" value={quiz.id} />
-                    <input type="hidden" name="questionId" value={q.id} />
-                    <Button
-                      type="submit"
-                      variant="ghost"
-                      size="sm"
-                      className="text-destructive hover:text-destructive"
-                    >
-                      ✕
-                    </Button>
-                  </form>
+                  <DeleteQuestionButton
+                    quizId={quiz.id}
+                    questionId={q.id}
+                    questionPreview={q.text}
+                  />
                 </li>
               ))}
             </ol>
           )}
+        </CardContent>
+      </Card>
+
+      {/* Zone danger */}
+      <Card className="border-destructive/30">
+        <CardHeader>
+          <CardTitle className="text-base text-destructive">
+            Zone de danger
+          </CardTitle>
+          <CardDescription>
+            La suppression d'un quizz est définitive.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <DeleteQuizButton
+            quizId={quiz.id}
+            quizTitle={quiz.title}
+            triggerLabel="Supprimer ce quizz"
+            triggerClassName="text-destructive border border-destructive/40 hover:bg-destructive hover:text-white"
+          />
         </CardContent>
       </Card>
 

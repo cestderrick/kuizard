@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
+import { createQuestionAction } from "@/lib/actions/question";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -28,12 +29,13 @@ export default async function EditQuestionPage({
   const session = await auth();
   if (!session?.user?.id) notFound();
 
-  // Récupérer le quizz + sa question, en vérifiant que tout appartient à l'utilisateur
+  // Récupérer le quizz + la question courante + total questions
   const quiz = await prisma.quiz.findFirst({
     where: { id: quizId, userId: session.user.id },
     select: {
       id: true,
       title: true,
+      _count: { select: { questions: true } },
       questions: {
         where: { id: questionId },
         select: {
@@ -70,7 +72,9 @@ export default async function EditQuestionPage({
           {quiz.title}
         </Link>
         <span>›</span>
-        <span>Question {question.order}</span>
+        <span>
+          Question {question.order} / {quiz._count.questions}
+        </span>
       </div>
 
       <Card>
@@ -87,13 +91,34 @@ export default async function EditQuestionPage({
         </CardContent>
       </Card>
 
-      <div className="flex justify-start">
-        <Button asChild variant="ghost">
-          <Link href={`/dashboard/quizzes/${quizId}/edit`}>
-            ← Retour à l'éditeur de quizz
-          </Link>
-        </Button>
-      </div>
+      {/* Actions de continuité */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Continuer ?</CardTitle>
+          <CardDescription>
+            Crée une nouvelle question ou reviens à la liste.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-wrap gap-2">
+          <form action={createQuestionAction}>
+            <input type="hidden" name="quizId" value={quizId} />
+            <Button
+              type="submit"
+              style={{
+                backgroundColor: "var(--color-violet-primary)",
+                color: "white",
+              }}
+            >
+              + Nouvelle question
+            </Button>
+          </form>
+          <Button asChild variant="outline">
+            <Link href={`/dashboard/quizzes/${quizId}/edit`}>
+              ← Voir toutes les questions
+            </Link>
+          </Button>
+        </CardContent>
+      </Card>
     </div>
   );
 }
