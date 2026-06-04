@@ -3,7 +3,9 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 
+import { prisma } from "@/lib/db";
 import { getQuizLeaderboard } from "@/lib/quiz/leaderboard";
+import { parsePrizes, prizesByRank, type Prize } from "@/lib/quiz/prizes";
 
 export async function generateMetadata({
   params,
@@ -31,6 +33,14 @@ export default async function ClassementPage({
   // Récupérer la participation courante via le cookie pour la mettre en surbrillance
   const cookieStore = await cookies();
   const myParticipationId = cookieStore.get(`kz_play_${data.quizId}`)?.value;
+
+  // Lots configurés par le créateur (jsonb sur Quiz)
+  const quizPrizesRow = await prisma.quiz.findUnique({
+    where: { id: data.quizId },
+    select: { prizes: true },
+  });
+  const prizes = parsePrizes(quizPrizesRow?.prizes);
+  const prizeMap = prizesByRank(prizes);
 
   const podium = data.entries.slice(0, 3);
   const rest = data.entries.slice(3);
@@ -105,6 +115,7 @@ export default async function ClassementPage({
                 key={entry.participationId}
                 entry={entry}
                 isMe={entry.participationId === myParticipationId}
+                prize={prizeMap.get(entry.rank) ?? null}
               />
             ))}
           </section>
@@ -121,6 +132,7 @@ export default async function ClassementPage({
             <ol className="divide-y divide-[rgba(167,139,250,0.1)]">
               {rest.map((entry) => {
                 const isMe = entry.participationId === myParticipationId;
+                const prize = prizeMap.get(entry.rank);
                 return (
                   <li
                     key={entry.participationId}
@@ -140,14 +152,26 @@ export default async function ClassementPage({
                     >
                       {entry.rank}
                     </span>
-                    <span className="font-medium truncate">
-                      {entry.nickname}
-                      {isMe && (
-                        <span className="ml-2 text-xs italic text-[var(--color-gold-light)]">
-                          (toi)
+                    <div className="flex flex-col min-w-0">
+                      <span className="font-medium truncate">
+                        {entry.nickname}
+                        {isMe && (
+                          <span className="ml-2 text-xs italic text-[var(--color-gold-light)]">
+                            (toi)
+                          </span>
+                        )}
+                      </span>
+                      {prize && (
+                        <span className="text-xs text-[var(--color-gold-light)] flex items-center gap-1">
+                          🎁 {prize.label}
+                          {prize.description && (
+                            <span className="opacity-70">
+                              — {prize.description}
+                            </span>
+                          )}
                         </span>
                       )}
-                    </span>
+                    </div>
                     <span
                       className="font-display font-bold text-base"
                       style={{ color: "var(--color-gold-light)" }}
@@ -192,9 +216,11 @@ export default async function ClassementPage({
 function PodiumStep({
   entry,
   isMe,
+  prize,
 }: {
   entry: { rank: number; nickname: string; score: number };
   isMe: boolean;
+  prize: Prize | null;
 }) {
   const isFirst = entry.rank === 1;
   const isSecond = entry.rank === 2;
@@ -263,6 +289,26 @@ function PodiumStep({
       >
         {entry.score} pt{entry.score > 1 ? "s" : ""}
       </div>
+      {prize && (
+        <div
+          className="mt-1 px-2 py-1 rounded-md text-xs font-semibold leading-tight max-w-full"
+          style={{
+            backgroundColor: "rgba(245,158,11,0.15)",
+            border: "1px solid rgba(245,158,11,0.4)",
+            color: "var(--color-gold-light)",
+          }}
+        >
+          <div className="flex items-center justify-center gap-1">
+            <span aria-hidden>🎁</span>
+            <span className="truncate">{prize.label}</span>
+          </div>
+          {prize.description && (
+            <div className="text-[10px] opacity-80 truncate">
+              {prize.description}
+            </div>
+          )}
+        </div>
+      )}
       {isMe && (
         <div
           className="absolute -top-2 px-2 py-0.5 text-[10px] font-bold tracking-wider rounded"

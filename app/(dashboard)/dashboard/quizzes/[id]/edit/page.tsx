@@ -16,6 +16,9 @@ import { QuizMetaForm } from "@/components/quiz/quiz-meta-form";
 import { DeleteQuestionButton } from "@/components/quiz/delete-question-button";
 import { DeleteQuizButton } from "@/components/quiz/delete-quiz-button";
 import { ShareSection } from "@/components/quiz/share-section";
+import { AdminLeaderboard } from "@/components/quiz/admin-leaderboard";
+import { PrizesEditor } from "@/components/quiz/prizes-editor";
+import { parsePrizes } from "@/lib/quiz/prizes";
 
 export const metadata: Metadata = {
   title: "Éditer un quizz",
@@ -168,6 +171,42 @@ export default async function EditQuizPage({
               ))}
             </ol>
           )}
+        </CardContent>
+      </Card>
+
+      {/* Lots / récompenses */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="font-display tracking-wide">
+            🎁 Lots et récompenses
+          </CardTitle>
+          <CardDescription>
+            Associe un lot à un rang du classement. Visible sur la page de
+            classement publique. Tu peux les modifier à tout moment, même après
+            la fin du quizz.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <PrizesEditor
+            quizId={quiz.id}
+            defaultPrizes={parsePrizes(quiz.prizes)}
+          />
+        </CardContent>
+      </Card>
+
+      {/* Classement (mini, côté admin) */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="font-display tracking-wide">
+            🏆 Classement
+          </CardTitle>
+          <CardDescription>
+            Aperçu du top 3 des participants. Lien vers la page publique en
+            dessous.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <AdminLeaderboard code={quiz.code} />
         </CardContent>
       </Card>
 

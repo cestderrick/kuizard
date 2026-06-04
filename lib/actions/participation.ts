@@ -125,10 +125,43 @@ export async function startParticipationAction(
     return { ok: false, message: "Ce quizz n'est pas actif." };
   }
 
+  const trimmedNickname = nickname.trim();
+  const cookieStorePre = await cookies();
+  const existingCookieParticipationId = cookieStorePre.get(
+    COOKIE_PREFIX + quiz.id
+  )?.value;
+
+  // Vérifier l'unicité du pseudo (insensitive à la casse).
+  // Si une participation existe avec ce pseudo MAIS qu'elle correspond au
+  // cookie de cette session, on autorise (cas typique : l'utilisateur revient
+  // sur le lien dans le même navigateur).
+  const existingWithSameNickname = await prisma.participation.findFirst({
+    where: {
+      quizId: quiz.id,
+      nickname: { equals: trimmedNickname, mode: "insensitive" },
+    },
+    select: { id: true, completedAt: true },
+  });
+
+  if (existingWithSameNickname) {
+    if (existingWithSameNickname.id === existingCookieParticipationId) {
+      // C'est lui/elle qui revient sur le même navigateur — on réutilise sa
+      // participation existante au lieu d'en recréer une.
+      return { ok: true, participationId: existingWithSameNickname.id };
+    }
+    return {
+      ok: false,
+      message:
+        existingWithSameNickname.completedAt
+          ? `Ce pseudo est déjà pris par quelqu'un qui a terminé le quizz. Choisis-en un autre.`
+          : `Ce pseudo est en cours d'utilisation. Choisis-en un autre.`,
+    };
+  }
+
   const participation = await prisma.participation.create({
     data: {
       quizId: quiz.id,
-      nickname: nickname.trim(),
+      nickname: trimmedNickname,
       score: 0,
       answers: {},
     },

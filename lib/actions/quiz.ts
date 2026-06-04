@@ -7,6 +7,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import type { Prisma } from "@prisma/client";
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
@@ -184,6 +185,88 @@ export async function updateQuizMetaAction(
   revalidatePath(`/dashboard/quizzes`);
 
   return { ok: true, message: "Modifications enregistrées." };
+}
+
+// -----------------------------------------------------
+// PRIZES (lots associés aux rangs du classement)
+// -----------------------------------------------------
+
+const prizeSchema = z.object({
+  rank: z.coerce.number().int().min(1).max(20),
+  label: z.string().min(1, "Le lot doit avoir un nom.").max(120),
+  description: z.string().max(300).optional().or(z.literal("")),
+});
+
+const updatePrizesSchema = z.object({
+  quizId: z.string().min(1),
+  prizesJson: z.string(),
+});
+
+export type UpdatePrizesState = {
+  ok: boolean;
+  message?: string;
+};
+
+export async function updatePrizesAction(
+  _prev: UpdatePrizesState,
+  formData: FormData
+): Promise<UpdatePrizesState> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { ok: false, message: "Non authentifié." };
+  }
+
+  const parsed = updatePrizesSchema.safeParse({
+    quizId: formData.get("quizId"),
+    prizesJson: formData.get("prizesJson") ?? "[]",
+  });
+  if (!parsed.success) return { ok: false, message: "Données invalides." };
+
+  let prizes: unknown;
+  try {
+    prizes = JSON.parse(parsed.data.prizesJson);
+  } catch {
+    return { ok: false, message: "Format des lots invalide." };
+  }
+
+  const validated = z.array(prizeSchema).safeParse(prizes);
+  if (!validated.success) {
+    return {
+      ok: false,
+      message: "Un lot a un rang ou un libellé invalide.",
+    };
+  }
+
+  // Dédoublonner par rang : si plusieurs lots ciblent le même rang, on garde
+  // uniquement le dernier (le plus à droite dans la liste de l'éditeur).
+  const byRank = new Map<number, (typeof validated.data)[number]>();
+  for (const p of validated.data) {
+    byRank.set(p.rank, p);
+  }
+  const cleaned = Array.from(byRank.values())
+    .map((p) => ({
+      rank: p.rank,
+      label: p.label.trim(),
+      description: p.description?.trim() || undefined,
+    }))
+    .sort((a, b) => a.rank - b.rank);
+
+  const result = await prisma.quiz.updateMany({
+    where: { id: parsed.data.quizId, userId: session.user.id },
+    data: {
+      // Cast vers le type Prisma JSON
+      prizes: cleaned as unknown as Prisma.InputJsonValue,
+    },
+  });
+
+  if (result.count === 0) {
+    return { ok: false, message: "Quizz introuvable ou non autorisé." };
+  }
+
+  revalidatePath(`/dashboard/quizzes/${parsed.data.quizId}/edit`);
+  revalidatePath(`/q/${parsed.data.quizId}/classement`);
+
+  return { ok: true, message: "Lots enregistrés." };
 }
 
 // -----------------------------------------------------
