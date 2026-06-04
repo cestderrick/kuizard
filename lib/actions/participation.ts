@@ -8,6 +8,7 @@
 // lien plus tard.
 
 import { cookies } from "next/headers";
+import type { Prisma } from "@prisma/client";
 
 import { prisma } from "@/lib/db";
 
@@ -215,7 +216,9 @@ export async function submitAnswersAction(
   await prisma.participation.updateMany({
     where: { id: participationId, quizId: quiz.id },
     data: {
-      answers: answers as Record<string, unknown>, // JSONB
+      // Cast vers le type Prisma JSON.
+      // Nos Answers sont JSON-serializables par construction (number, string, array).
+      answers: answers as unknown as Prisma.InputJsonValue,
       score,
       completedAt: new Date(),
     },
