@@ -360,11 +360,13 @@ function QuestionBlock({
 }
 
 function ResultCard({
+  code,
   title,
   nickname,
   score,
   total,
 }: {
+  code: string;
   title: string;
   nickname: string;
   score: number;
@@ -410,9 +412,18 @@ function ResultCard({
 
       <p className="italic">{message}</p>
 
-      <p className="text-xs text-muted-foreground">
-        Le classement complet sera affiché par le créateur du quizz.
-      </p>
+      <div className="flex flex-col gap-2 pt-2">
+        <a
+          href={`/q/${code}/classement`}
+          className="inline-block px-5 py-2.5 rounded-md font-semibold"
+          style={{
+            backgroundColor: "var(--color-gold)",
+            color: "var(--color-violet-deep)",
+          }}
+        >
+          🏆 Voir le classement
+        </a>
+      </div>
     </div>
   );
 }
