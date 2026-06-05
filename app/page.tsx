@@ -345,9 +345,134 @@ export default async function Home() {
           </div>
 
           <p className="text-xs text-muted-foreground mt-6 italic">
-            Abonnement bars : à partir de 25 €/mois, multi-lieux. Page tarifs
-            détaillée à venir.
+            Pour les pros (bars, hôtels, restos, séminaires) : abonnement
+            mensuel ci-dessous.
           </p>
+        </div>
+      </section>
+
+      {/* ============================================ */}
+      {/* ABONNEMENTS PRO */}
+      {/* ============================================ */}
+      <section
+        className="py-20"
+        style={{
+          background:
+            "linear-gradient(160deg, #1F1B3A 0%, #4C1D95 60%, #6B46C1 100%)",
+        }}
+      >
+        <div className="max-w-5xl mx-auto px-6 text-[var(--color-lavender)]">
+          <div className="text-center mb-10">
+            <p className="text-xs uppercase tracking-[3px] text-[var(--color-gold)] font-semibold mb-2">
+              ✨ Abonnements pros
+            </p>
+            <h2 className="font-display text-3xl md:text-4xl font-bold tracking-wide mb-3">
+              Quizz illimités pour ton lieu
+            </h2>
+            <p className="text-[var(--color-lavender-2)] opacity-90 max-w-2xl mx-auto">
+              Idéal pour bars, hôtels, restaurants, escape rooms ou tout
+              organisateur d'événements récurrents. Sans engagement, résiliable
+              à tout moment.
+            </p>
+          </div>
+
+          <div className="grid gap-5 md:grid-cols-2 max-w-3xl mx-auto">
+            {/* Bar Essentiel */}
+            <div className="rounded-2xl bg-white/5 border border-white/15 p-6 flex flex-col gap-4 backdrop-blur-sm">
+              <div>
+                <p className="text-xs uppercase tracking-[2px] text-[var(--color-gold)] font-semibold">
+                  Bar Essentiel
+                </p>
+                <p className="font-display text-3xl font-bold mt-1">
+                  25 €
+                  <span className="text-base font-normal opacity-70">
+                    {" "}
+                    / mois
+                  </span>
+                </p>
+                <p className="text-xs opacity-70 mt-1">
+                  ou 250 €/an (10 mois facturés)
+                </p>
+              </div>
+              <ul className="text-sm space-y-1.5">
+                <li>✓ 1 lieu</li>
+                <li>✓ Quizz illimités</li>
+                <li>✓ 100 joueurs par session</li>
+                <li>✓ Mode pilotage live + afficheur</li>
+                <li>✓ Logo personnalisé</li>
+                <li>✓ Classement avec lots</li>
+                <li>✓ Conservation 6 mois</li>
+              </ul>
+            </div>
+
+            {/* Bar Pro */}
+            <div
+              className="rounded-2xl p-6 flex flex-col gap-4 relative"
+              style={{
+                background: "linear-gradient(160deg, #F59E0B22, #D946EF22)",
+                border: "2px solid var(--color-gold)",
+              }}
+            >
+              <span
+                className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-xs font-bold tracking-wider"
+                style={{
+                  backgroundColor: "var(--color-gold)",
+                  color: "var(--color-violet-deep)",
+                }}
+              >
+                MULTI-LIEUX
+              </span>
+              <div>
+                <p className="text-xs uppercase tracking-[2px] text-[var(--color-gold)] font-semibold">
+                  Bar Pro
+                </p>
+                <p className="font-display text-3xl font-bold mt-1">
+                  50 €
+                  <span className="text-base font-normal opacity-70">
+                    {" "}
+                    / mois
+                  </span>
+                </p>
+                <p className="text-xs opacity-70 mt-1">
+                  ou 500 €/an (10 mois facturés)
+                </p>
+              </div>
+              <ul className="text-sm space-y-1.5">
+                <li>✓ Lieux illimités</li>
+                <li>✓ Quizz illimités</li>
+                <li>✓ 500 joueurs par session</li>
+                <li>✓ Mode pilotage live + afficheur</li>
+                <li>✓ Logo + sous-domaine + thème custom</li>
+                <li>✓ Templates premium</li>
+                <li>
+                  ✓ <strong>Stats avancées + export CSV</strong>
+                </li>
+                <li>✓ Support prioritaire (&lt; 24h)</li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="mt-10 text-center text-sm">
+            <p className="opacity-80">
+              ✓ Sans engagement &nbsp;·&nbsp; ✓ Résiliation libre &nbsp;·&nbsp;
+              ✓ Pas de reconduction tacite
+            </p>
+            {!isLoggedIn && (
+              <div className="mt-6">
+                <Button
+                  asChild
+                  size="lg"
+                  style={{
+                    backgroundColor: "var(--color-gold)",
+                    color: "var(--color-violet-deep)",
+                  }}
+                  className="font-bold"
+                >
+                  <Link href="/signup">Créer un compte pro</Link>
+                </Button>
+              </div>
+            )}
+          </div>
         </div>
       </section>
 

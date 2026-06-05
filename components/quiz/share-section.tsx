@@ -156,6 +156,13 @@ export async function ShareSection({
             >
               🖨️ Affiche A4 imprimable
             </a>
+            <a
+              href={`/dashboard/quizzes/${quizId}/live`}
+              className="inline-flex items-center gap-1 text-sm font-medium underline-offset-4 hover:underline"
+              style={{ color: "var(--color-violet-primary)" }}
+            >
+              🎩 Panel live (mode pilotage admin)
+            </a>
           </div>
         )}
       </CardContent>

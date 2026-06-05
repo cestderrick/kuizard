@@ -3,7 +3,9 @@ import { notFound } from "next/navigation";
 
 import { prisma } from "@/lib/db";
 import { QuizPlayer } from "@/components/play/quiz-player";
+import { LivePlayer } from "@/components/play/live-player";
 import { parseTheme } from "@/lib/quiz/theme";
+import { parseLiveState } from "@/lib/live/state";
 import {
   ScheduledClosed,
   ScheduledCountdown,
@@ -43,6 +45,7 @@ export default async function PlayPage({
       coverImageUrl: true,
       status: true,
       mode: true,
+      liveState: true,
       scheduledOpenAt: true,
       scheduledCloseAt: true,
       theme: true,
@@ -63,8 +66,13 @@ export default async function PlayPage({
 
   if (!quiz) notFound();
 
-  // Pour le MVP : seuls les quizz PUBLISHED ou RUNNING sont jouables
-  if (quiz.status !== "PUBLISHED" && quiz.status !== "RUNNING") {
+  // Pour le MVP : on accepte PUBLISHED, RUNNING (en LIVE_MANUAL), FINISHED (pour les rejoignants du live qui veulent voir le résultat)
+  const isPlayable =
+    quiz.status === "PUBLISHED" ||
+    quiz.status === "RUNNING" ||
+    (quiz.mode === "LIVE_MANUAL" && quiz.status === "FINISHED");
+
+  if (!isPlayable) {
     return (
       <main className="min-h-screen flex items-center justify-center px-4 py-12 bg-[var(--color-night)] text-[var(--color-lavender)]">
         <div className="max-w-md text-center">
@@ -139,6 +147,27 @@ export default async function PlayPage({
   });
 
   const theme = parseTheme(quiz.theme);
+
+  // Mode LIVE_MANUAL → composant dédié avec gating par SSE
+  if (quiz.mode === "LIVE_MANUAL") {
+    const live = parseLiveState(quiz.liveState);
+    return (
+      <LivePlayer
+        code={quiz.code}
+        title={quiz.title}
+        description={quiz.description}
+        coverImageUrl={quiz.coverImageUrl}
+        questions={sanitizedQuestions}
+        theme={theme}
+        initialState={{
+          status: quiz.status,
+          currentQuestionIndex: live.currentQuestionIndex,
+          isPaused: live.isPaused,
+          totalQuestions: sanitizedQuestions.length,
+        }}
+      />
+    );
+  }
 
   return (
     <QuizPlayer
