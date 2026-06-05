@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { prisma } from "@/lib/db";
 import { QuizPlayer } from "@/components/play/quiz-player";
+import { parseTheme } from "@/lib/quiz/theme";
 
 export async function generateMetadata({
   params,
@@ -36,6 +37,7 @@ export default async function PlayPage({
       title: true,
       description: true,
       status: true,
+      theme: true,
       questions: {
         orderBy: { order: "asc" },
         select: {
@@ -100,12 +102,15 @@ export default async function PlayPage({
     };
   });
 
+  const theme = parseTheme(quiz.theme);
+
   return (
     <QuizPlayer
       code={quiz.code}
       title={quiz.title}
       description={quiz.description}
       questions={sanitizedQuestions}
+      theme={theme}
     />
   );
 }

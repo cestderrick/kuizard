@@ -12,6 +12,11 @@ import {
   submitAnswersAction,
 } from "@/lib/actions/participation";
 
+type Theme = {
+  primaryColor: string;
+  background: "night" | "light";
+};
+
 type Question = {
   id: string;
   order: number;
@@ -32,9 +37,10 @@ type Props = {
   title: string;
   description: string | null;
   questions: Question[];
+  theme: Theme;
 };
 
-export function QuizPlayer({ code, title, description, questions }: Props) {
+export function QuizPlayer({ code, title, description, questions, theme }: Props) {
   const [phase, setPhase] = useState<Phase>("intro");
   const [nickname, setNickname] = useState("");
   const [participationId, setParticipationId] = useState<string | null>(null);
@@ -115,8 +121,20 @@ export function QuizPlayer({ code, title, description, questions }: Props) {
   // RENDER
   // ============================================================
 
+  const isLight = theme.background === "light";
+
   return (
-    <main className="min-h-screen flex flex-col items-center px-4 py-10 bg-[var(--color-night)] text-[var(--color-lavender)]">
+    <main
+      className="min-h-screen flex flex-col items-center px-4 py-10"
+      style={{
+        backgroundColor: isLight
+          ? "var(--color-lavender)"
+          : "var(--color-night)",
+        color: isLight ? "var(--color-foreground)" : "var(--color-lavender)",
+        // CSS custom property utilisable par tous les enfants : var(--quiz-primary)
+        ["--quiz-primary" as string]: theme.primaryColor,
+      }}
+    >
       <div className="w-full max-w-2xl flex flex-col gap-6">
         {phase === "intro" && (
           <IntroCard
@@ -273,7 +291,7 @@ function IntroCard({
         size="lg"
         disabled={isPending}
         style={{
-          backgroundColor: "var(--color-violet-primary)",
+          backgroundColor: "var(--quiz-primary, var(--color-violet-primary))",
           color: "white",
         }}
       >
@@ -387,7 +405,7 @@ function ResultCard({
       <div className="text-5xl" aria-hidden>
         ✨
       </div>
-      <p className="text-sm uppercase tracking-[3px] text-[var(--color-violet-primary)] font-semibold">
+      <p className="text-sm uppercase tracking-[3px] font-semibold" style={{ color: "var(--quiz-primary, var(--color-violet-primary))" }}>
         Bravo {nickname} !
       </p>
       <h1
@@ -400,7 +418,7 @@ function ResultCard({
       <div className="my-2">
         <p
           className="font-display text-6xl font-bold"
-          style={{ color: "var(--color-violet-primary)" }}
+          style={{ color: "var(--quiz-primary, var(--color-violet-primary))" }}
         >
           {score}
           <span className="text-2xl text-muted-foreground"> / {total}</span>

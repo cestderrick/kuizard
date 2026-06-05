@@ -188,6 +188,64 @@ export async function updateQuizMetaAction(
 }
 
 // -----------------------------------------------------
+// THEME (couleur principale + fond)
+// -----------------------------------------------------
+
+const themeSchema = z.object({
+  quizId: z.string().min(1),
+  primaryColor: z
+    .string()
+    .regex(/^#[0-9A-Fa-f]{6}$/, "Couleur hex invalide (ex : #6B46C1)."),
+  background: z.enum(["night", "light"]),
+});
+
+export type UpdateThemeState = {
+  ok: boolean;
+  message?: string;
+};
+
+export async function updateThemeAction(
+  _prev: UpdateThemeState,
+  formData: FormData
+): Promise<UpdateThemeState> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { ok: false, message: "Non authentifié." };
+  }
+
+  const parsed = themeSchema.safeParse({
+    quizId: formData.get("quizId"),
+    primaryColor: formData.get("primaryColor"),
+    background: formData.get("background") ?? "night",
+  });
+
+  if (!parsed.success) {
+    return {
+      ok: false,
+      message: parsed.error.issues[0]?.message ?? "Données invalides.",
+    };
+  }
+
+  const { quizId, primaryColor, background } = parsed.data;
+
+  const result = await prisma.quiz.updateMany({
+    where: { id: quizId, userId: session.user.id },
+    data: {
+      theme: { primaryColor, background } as unknown as Prisma.InputJsonValue,
+    },
+  });
+
+  if (result.count === 0) {
+    return { ok: false, message: "Quizz introuvable." };
+  }
+
+  revalidatePath(`/dashboard/quizzes/${quizId}/edit`);
+  revalidatePath(`/q/${quizId}`); // path utilisé par revalidate, n'importe quel pattern
+
+  return { ok: true, message: "Thème enregistré." };
+}
+
+// -----------------------------------------------------
 // PRIZES (lots associés aux rangs du classement)
 // -----------------------------------------------------
 

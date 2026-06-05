@@ -135,9 +135,9 @@ export async function ShareSection({
           </div>
         )}
 
-        {/* Lien direct vers le classement (visible quel que soit le statut) */}
+        {/* Liens utilitaires : classement, affiche imprimable */}
         {isPublished && (
-          <div className="pt-2 border-t flex flex-wrap gap-2">
+          <div className="pt-2 border-t flex flex-wrap gap-x-4 gap-y-2">
             <a
               href={`/q/${code}/classement`}
               target="_blank"
@@ -146,6 +146,15 @@ export async function ShareSection({
               style={{ color: "var(--color-violet-primary)" }}
             >
               🏆 Voir le classement public
+            </a>
+            <a
+              href={`/dashboard/quizzes/${quizId}/poster`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-sm font-medium underline-offset-4 hover:underline"
+              style={{ color: "var(--color-violet-primary)" }}
+            >
+              🖨️ Affiche A4 imprimable
             </a>
           </div>
         )}

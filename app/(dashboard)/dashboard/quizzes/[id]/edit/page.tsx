@@ -18,7 +18,9 @@ import { DeleteQuizButton } from "@/components/quiz/delete-quiz-button";
 import { ShareSection } from "@/components/quiz/share-section";
 import { AdminLeaderboard } from "@/components/quiz/admin-leaderboard";
 import { PrizesEditor } from "@/components/quiz/prizes-editor";
+import { ThemeEditor } from "@/components/quiz/theme-editor";
 import { parsePrizes } from "@/lib/quiz/prizes";
+import { parseTheme } from "@/lib/quiz/theme";
 
 export const metadata: Metadata = {
   title: "Éditer un quizz",
@@ -171,6 +173,25 @@ export default async function EditQuizPage({
               ))}
             </ol>
           )}
+        </CardContent>
+      </Card>
+
+      {/* Apparence visuelle */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="font-display tracking-wide">
+            🎨 Apparence
+          </CardTitle>
+          <CardDescription>
+            Couleur principale et ambiance — visible côté joueur sur la page de
+            jeu.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ThemeEditor
+            quizId={quiz.id}
+            defaultTheme={parseTheme(quiz.theme)}
+          />
         </CardContent>
       </Card>
 
