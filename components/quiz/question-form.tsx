@@ -11,6 +11,11 @@ import {
   updateQuestionAction,
   type UpdateQuestionState,
 } from "@/lib/actions/question";
+import {
+  uploadQuestionImageAction,
+  removeQuestionImageAction,
+} from "@/lib/actions/upload";
+import { ImageUploader } from "@/components/quiz/image-uploader";
 
 type QuestionType =
   | "SINGLE_CHOICE"
@@ -29,6 +34,7 @@ type Props = {
     points: number;
     timerSeconds: number | null;
     options: unknown; // venant de Prisma JSONB
+    imageUrl: string | null;
   };
 };
 
@@ -158,6 +164,22 @@ export function QuestionForm({ quizId, question }: Props) {
           <option value="TRUE_FALSE">Vrai / Faux</option>
           <option value="TEXT">Réponse texte libre</option>
         </select>
+      </div>
+
+      {/* Image (optionnelle) */}
+      <div className="flex flex-col gap-2">
+        <Label>Image (optionnel)</Label>
+        <p className="text-xs text-muted-foreground -mt-1">
+          L'image sera affichée au-dessus du texte de la question.
+        </p>
+        <ImageUploader
+          currentUrl={question.imageUrl}
+          uploadAction={uploadQuestionImageAction}
+          removeAction={removeQuestionImageAction}
+          hiddenFields={{ quizId, questionId: question.id }}
+          emptyLabel="Glisse une image ou clique pour parcourir"
+          previewHeightClass="h-40"
+        />
       </div>
 
       {/* Texte de la question */}

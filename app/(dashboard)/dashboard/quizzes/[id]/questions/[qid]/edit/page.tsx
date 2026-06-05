@@ -46,6 +46,7 @@ export default async function EditQuestionPage({
           points: true,
           timerSeconds: true,
           options: true,
+          imageUrl: true,
         },
       },
     },

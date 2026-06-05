@@ -44,6 +44,9 @@ yarn-error.log*
 !prisma/migrations/**/*.sql
 !prisma/migrations/**/migration.sql
 
+# Uploads des images de quizz (locales). Cloudflare R2 viendra plus tard.
+/public/uploads/
+
 # vercel
 .vercel
 

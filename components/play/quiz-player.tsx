@@ -24,6 +24,7 @@ type Question = {
   text: string;
   points: number;
   options: { label: string }[]; // sans isCorrect
+  imageUrl: string | null;
 };
 
 type Answer =
@@ -36,11 +37,19 @@ type Props = {
   code: string;
   title: string;
   description: string | null;
+  coverImageUrl: string | null;
   questions: Question[];
   theme: Theme;
 };
 
-export function QuizPlayer({ code, title, description, questions, theme }: Props) {
+export function QuizPlayer({
+  code,
+  title,
+  description,
+  coverImageUrl,
+  questions,
+  theme,
+}: Props) {
   const [phase, setPhase] = useState<Phase>("intro");
   const [nickname, setNickname] = useState("");
   const [participationId, setParticipationId] = useState<string | null>(null);
@@ -140,6 +149,7 @@ export function QuizPlayer({ code, title, description, questions, theme }: Props
           <IntroCard
             title={title}
             description={description}
+            coverImageUrl={coverImageUrl}
             nickname={nickname}
             setNickname={setNickname}
             onSubmit={handleStart}
@@ -220,6 +230,7 @@ export function QuizPlayer({ code, title, description, questions, theme }: Props
 function IntroCard({
   title,
   description,
+  coverImageUrl,
   nickname,
   setNickname,
   onSubmit,
@@ -229,6 +240,7 @@ function IntroCard({
 }: {
   title: string;
   description: string | null;
+  coverImageUrl: string | null;
   nickname: string;
   setNickname: (v: string) => void;
   onSubmit: (e: React.FormEvent) => void;
@@ -239,8 +251,20 @@ function IntroCard({
   return (
     <form
       onSubmit={onSubmit}
-      className="bg-white text-[var(--color-foreground)] rounded-2xl shadow-2xl p-8 flex flex-col gap-5 text-center"
+      className="bg-white text-[var(--color-foreground)] rounded-2xl shadow-2xl overflow-hidden flex flex-col text-center"
     >
+      {coverImageUrl ? (
+        <div className="w-full aspect-[16/9] overflow-hidden bg-zinc-100">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={coverImageUrl}
+            alt=""
+            className="w-full h-full object-cover"
+          />
+        </div>
+      ) : null}
+
+      <div className="p-8 flex flex-col gap-5">
       <div className="text-5xl" aria-hidden>
         🎩
       </div>
@@ -297,6 +321,7 @@ function IntroCard({
       >
         {isPending ? "Connexion…" : "Commencer le quizz ✨"}
       </Button>
+      </div>
     </form>
   );
 }
@@ -319,7 +344,19 @@ function QuestionBlock({
   const isMulti = question.type === "MULTIPLE_CHOICE";
 
   return (
-    <div className="bg-[var(--color-night-2)] rounded-xl p-5 flex flex-col gap-4 border border-[rgba(167,139,250,0.2)]">
+    <div className="bg-[var(--color-night-2)] rounded-xl overflow-hidden flex flex-col border border-[rgba(167,139,250,0.2)]">
+      {question.imageUrl ? (
+        <div className="w-full aspect-[16/9] bg-black overflow-hidden">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={question.imageUrl}
+            alt=""
+            className="w-full h-full object-cover"
+          />
+        </div>
+      ) : null}
+
+      <div className="p-5 flex flex-col gap-4">
       <div className="flex items-start justify-between gap-2">
         <p className="text-xs uppercase tracking-[3px] text-[var(--color-gold)] font-semibold">
           Question {index + 1}
@@ -373,6 +410,7 @@ function QuestionBlock({
           )}
         </div>
       )}
+      </div>
     </div>
   );
 }

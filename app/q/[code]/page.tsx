@@ -40,6 +40,7 @@ export default async function PlayPage({
       code: true,
       title: true,
       description: true,
+      coverImageUrl: true,
       status: true,
       mode: true,
       scheduledOpenAt: true,
@@ -54,6 +55,7 @@ export default async function PlayPage({
           text: true,
           options: true,
           points: true,
+          imageUrl: true,
         },
       },
     },
@@ -130,6 +132,7 @@ export default async function PlayPage({
       type: q.type,
       text: q.text,
       points: q.points,
+      imageUrl: q.imageUrl,
       // Pour TEXT, on n'envoie pas la réponse attendue (sinon c'est trichable)
       options: q.type === "TEXT" ? [] : opts,
     };
@@ -142,6 +145,7 @@ export default async function PlayPage({
       code={quiz.code}
       title={quiz.title}
       description={quiz.description}
+      coverImageUrl={quiz.coverImageUrl}
       questions={sanitizedQuestions}
       theme={theme}
     />

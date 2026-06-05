@@ -19,6 +19,11 @@ import { ShareSection } from "@/components/quiz/share-section";
 import { AdminLeaderboard } from "@/components/quiz/admin-leaderboard";
 import { PrizesEditor } from "@/components/quiz/prizes-editor";
 import { ThemeEditor } from "@/components/quiz/theme-editor";
+import { ImageUploader } from "@/components/quiz/image-uploader";
+import {
+  uploadCoverImageAction,
+  removeCoverImageAction,
+} from "@/lib/actions/upload";
 import { parsePrizes } from "@/lib/quiz/prizes";
 import { parseTheme } from "@/lib/quiz/theme";
 
@@ -175,6 +180,29 @@ export default async function EditQuizPage({
               ))}
             </ol>
           )}
+        </CardContent>
+      </Card>
+
+      {/* Photo de couverture */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="font-display tracking-wide">
+            🖼️ Photo de couverture
+          </CardTitle>
+          <CardDescription>
+            Affichée à l'arrivée des participants sur le quizz. Fortement
+            recommandée pour l'ambiance.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ImageUploader
+            currentUrl={quiz.coverImageUrl}
+            uploadAction={uploadCoverImageAction}
+            removeAction={removeCoverImageAction}
+            hiddenFields={{ quizId: quiz.id }}
+            emptyLabel="Glisse une photo de couverture ou clique pour parcourir"
+            previewHeightClass="h-56"
+          />
         </CardContent>
       </Card>
 
