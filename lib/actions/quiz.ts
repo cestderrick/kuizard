@@ -12,6 +12,7 @@ import type { Prisma } from "@prisma/client";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { generateUniqueQuizCode } from "@/lib/quiz/generate-code";
+import { getTemplateBySlug } from "@/lib/quiz/templates";
 
 // -----------------------------------------------------
 // CREATE QUIZ
@@ -81,6 +82,51 @@ export async function createQuizAction(
   revalidatePath("/dashboard/quizzes");
 
   // Rediriger vers l'éditeur (la page sera créée au Sprint 2.2)
+  redirect(`/dashboard/quizzes/${quiz.id}/edit`);
+}
+
+// -----------------------------------------------------
+// CREATE FROM TEMPLATE
+// -----------------------------------------------------
+
+export async function createFromTemplateAction(formData: FormData) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Non authentifié.");
+
+  const slug = formData.get("slug");
+  if (typeof slug !== "string" || !slug) throw new Error("Template manquant.");
+
+  const template = getTemplateBySlug(slug);
+  if (!template) throw new Error("Template introuvable.");
+
+  const code = await generateUniqueQuizCode();
+
+  const quiz = await prisma.quiz.create({
+    data: {
+      userId: session.user.id,
+      code,
+      title: template.quizTitle,
+      description: template.quizDescription,
+      mode: "LIVE_MANUAL",
+      status: "DRAFT",
+      plan: "FREE",
+      theme: {
+        primaryColor: template.themeColor,
+        background: "night",
+      } as unknown as Prisma.InputJsonValue,
+      questions: {
+        create: template.questions.map((q, index) => ({
+          order: index + 1,
+          type: q.type,
+          text: q.text,
+          points: q.points,
+          options: q.options as unknown as Prisma.InputJsonValue,
+        })),
+      },
+    },
+  });
+
+  revalidatePath("/dashboard/quizzes");
   redirect(`/dashboard/quizzes/${quiz.id}/edit`);
 }
 

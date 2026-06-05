@@ -3,6 +3,7 @@ import { Cinzel, Plus_Jakarta_Sans, Geist } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/sonner";
+import { CookieBanner } from "@/components/legal/cookie-banner";
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
@@ -49,6 +50,7 @@ export default function RootLayout({
             },
           }}
         />
+        <CookieBanner />
       </body>
     </html>
   );

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
 import { LogoutButton } from "@/components/auth/logout-button";
+import { KuizardLogo } from "@/components/brand/kuizard-logo";
 
 export default async function DashboardLayout({
   children,
@@ -24,23 +25,30 @@ export default async function DashboardLayout({
           <div className="flex items-center gap-6">
             <Link
               href="/dashboard"
-              className="font-display text-xl font-bold tracking-[2px]"
+              className="inline-flex items-center gap-2 font-display text-xl font-bold tracking-[2px]"
               style={{ color: "var(--color-violet-deep)" }}
             >
-              Kuizard
+              <KuizardLogo size={32} />
+              <span>Kuizard</span>
             </Link>
             <nav className="hidden sm:flex items-center gap-4 text-sm">
               <Link
                 href="/dashboard"
                 className="text-muted-foreground hover:text-[var(--color-violet-primary)]"
               >
-                Accueil
+                Tableau de bord
               </Link>
               <Link
                 href="/dashboard/quizzes"
                 className="text-muted-foreground hover:text-[var(--color-violet-primary)]"
               >
                 Mes quizz
+              </Link>
+              <Link
+                href="/"
+                className="text-muted-foreground hover:text-[var(--color-violet-primary)]"
+              >
+                Page d'accueil
               </Link>
             </nav>
           </div>

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { auth } from "@/auth";
 import { Button } from "@/components/ui/button";
 import { VideoEmbed } from "@/components/home/video-embed";
+import { KuizardLogo } from "@/components/brand/kuizard-logo";
 
 // 👉 Pour activer une vidéo plus tard, remplace `null` par une URL (YouTube
 // embed, Vimeo, ou .mp4 direct). Exemples :
@@ -82,6 +83,9 @@ export default async function Home() {
           }}
         />
         <div className="relative max-w-5xl mx-auto px-6 py-20 md:py-28 text-center flex flex-col items-center">
+          <div className="mb-6 flex justify-center">
+            <KuizardLogo size={84} />
+          </div>
           <p className="text-sm tracking-[0.3em] uppercase text-[var(--color-violet-primary)] font-semibold mb-6">
             ✨ Bienvenue ✨
           </p>
@@ -520,13 +524,38 @@ export default async function Home() {
       {/* ============================================ */}
       {/* FOOTER MINI */}
       {/* ============================================ */}
-      <footer className="bg-[var(--color-night)] text-[var(--color-lavender-2)] py-6 px-6 text-center text-xs">
-        <p>
-          <span className="font-display tracking-wide">Kuizard</span> · pour un
-          moment magique · v0.1
+      <footer className="bg-[var(--color-night)] text-[var(--color-lavender-2)] py-8 px-6 text-center text-xs">
+        <p className="mb-3">
+          <span className="font-display tracking-wide text-base">Kuizard</span>{" "}
+          · pour un moment magique · édité par Projiat
         </p>
-        <p className="opacity-60 mt-1">
-          Mentions légales, CGU et CGV à venir.
+        <nav className="flex flex-wrap gap-x-4 gap-y-2 justify-center mb-3">
+          <Link href="/mentions-legales" className="hover:underline">
+            Mentions légales
+          </Link>
+          <span>·</span>
+          <Link href="/cgu" className="hover:underline">
+            CGU
+          </Link>
+          <span>·</span>
+          <Link href="/cgv" className="hover:underline">
+            CGV
+          </Link>
+          <span>·</span>
+          <Link href="/confidentialite" className="hover:underline">
+            Confidentialité
+          </Link>
+          <span>·</span>
+          <Link href="/cookies" className="hover:underline">
+            Cookies
+          </Link>
+          <span>·</span>
+          <Link href="/suggestion" className="hover:underline">
+            ✨ Suggestion
+          </Link>
+        </nav>
+        <p className="opacity-60">
+          © 2026 Projiat — Tous droits réservés.
         </p>
       </footer>
     </div>

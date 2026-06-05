@@ -58,15 +58,22 @@ export default async function QuizzesPage() {
           </p>
         </div>
 
-        <Button
-          asChild
-          style={{
-            backgroundColor: "var(--color-violet-primary)",
-            color: "white",
-          }}
-        >
-          <Link href="/dashboard/quizzes/new">+ Nouveau quizz</Link>
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button asChild variant="outline">
+            <Link href="/dashboard/quizzes/templates">
+              ✨ Depuis un template
+            </Link>
+          </Button>
+          <Button
+            asChild
+            style={{
+              backgroundColor: "var(--color-violet-primary)",
+              color: "white",
+            }}
+          >
+            <Link href="/dashboard/quizzes/new">+ Nouveau quizz</Link>
+          </Button>
+        </div>
       </div>
 
       {/* Liste ou état vide */}

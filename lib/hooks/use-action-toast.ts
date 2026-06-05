@@ -4,27 +4,30 @@ import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 
 /**
- * Affiche un toast vert "✅ ..." dès qu'un state d'useActionState
- * passe à { ok: true, message }. Utilise un compteur pour éviter de
- * re-afficher le même toast plusieurs fois (React peut renvoyer le même
- * objet state plusieurs fois).
+ * Affiche un toast (vert ✓ ou rouge ✕) dès qu'un state d'useActionState
+ * change. On utilise un useRef pour ne pas dupliquer le même toast.
  */
 export function useActionToast<S extends { ok: boolean; message?: string }>(
-  state: S,
-  options?: { successPrefix?: string }
+  state: S
 ) {
   const lastShown = useRef<S | null>(null);
 
   useEffect(() => {
     if (!state) return;
     if (state === lastShown.current) return;
-    if (state.ok && state.message) {
-      const prefix = options?.successPrefix ?? "✅ ";
-      toast.success(prefix + state.message);
-      lastShown.current = state;
-    } else if (!state.ok && state.message && lastShown.current !== state) {
-      // Pas de toast d'erreur ici — l'erreur est déjà affichée dans le form
-      // via <Alert>. Évite la double notif.
+    if (!state.message) return;
+
+    if (state.ok) {
+      toast.success(state.message, {
+        icon: "✓",
+        duration: 3500,
+      });
+    } else {
+      toast.error(state.message, {
+        icon: "✕",
+        duration: 5000,
+      });
     }
-  }, [state, options?.successPrefix]);
+    lastShown.current = state;
+  }, [state]);
 }

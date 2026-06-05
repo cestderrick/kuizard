@@ -153,6 +153,22 @@ export default async function PlayPage({
 
   const theme = parseTheme(quiz.theme);
 
+  // Reprise de session : si le joueur a déjà un cookie de participation, on
+  // récupère son pseudo + id et on saute la JoinCard.
+  const { cookies: getCookies } = await import("next/headers");
+  const cookieStore = await getCookies();
+  const existingParticipationId = cookieStore.get(`kz_play_${quiz.id}`)?.value;
+  let existingParticipation: { id: string; nickname: string } | null = null;
+  if (existingParticipationId) {
+    const p = await prisma.participation.findUnique({
+      where: { id: existingParticipationId },
+      select: { id: true, nickname: true, quizId: true },
+    });
+    if (p && p.quizId === quiz.id) {
+      existingParticipation = { id: p.id, nickname: p.nickname };
+    }
+  }
+
   // Mode LIVE_MANUAL → composant dédié avec gating par SSE
   if (quiz.mode === "LIVE_MANUAL") {
     const live = parseLiveState(quiz.liveState);
@@ -170,6 +186,7 @@ export default async function PlayPage({
           isPaused: live.isPaused,
           totalQuestions: sanitizedQuestions.length,
         }}
+        existingParticipation={existingParticipation}
       />
     );
   }

@@ -46,6 +46,8 @@ type Props = {
   questions: Question[];
   theme: Theme;
   initialState: LiveState;
+  /** Si le joueur a déjà un cookie de participation valide, on reprend là où il en était. */
+  existingParticipation?: { id: string; nickname: string } | null;
 };
 
 export function LivePlayer({
@@ -56,9 +58,14 @@ export function LivePlayer({
   questions,
   theme,
   initialState,
+  existingParticipation,
 }: Props) {
-  const [nickname, setNickname] = useState("");
-  const [participationId, setParticipationId] = useState<string | null>(null);
+  const [nickname, setNickname] = useState(
+    existingParticipation?.nickname ?? ""
+  );
+  const [participationId, setParticipationId] = useState<string | null>(
+    existingParticipation?.id ?? null
+  );
   const [answers, setAnswers] = useState<Record<string, Answer>>({});
   const [liveState, setLiveState] = useState<LiveState>(initialState);
   const [submitted, setSubmitted] = useState<{

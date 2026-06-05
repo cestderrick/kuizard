@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { KuizardLogo } from "@/components/brand/kuizard-logo";
 
 export default function AuthLayout({
   children,
@@ -30,6 +31,7 @@ export default function AuthLayout({
         href="/"
         className="mb-8 inline-flex items-center gap-3 text-white"
       >
+        <KuizardLogo size={48} />
         <span
           className="font-display text-3xl font-bold tracking-[3px]"
           style={{ color: "var(--color-lavender)" }}
