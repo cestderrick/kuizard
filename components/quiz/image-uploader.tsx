@@ -174,6 +174,20 @@ export function ImageUploader({
           </form>
         )}
       </div>
+
+      {/* Disclaimer légal photos */}
+      <div className="rounded-md border border-amber-300 bg-amber-50 p-3 text-xs text-amber-900 leading-relaxed">
+        <p className="font-semibold mb-1">
+          ⚠️ Important — droit à l'image
+        </p>
+        <p>
+          Kuizard et Projiat ne peuvent pas être tenus responsables des photos
+          ajoutées. Assure-toi que ton public et les personnes présentes sur
+          les photos sont d'accord. Les photos sont stockées de manière
+          sécurisée pendant <strong>1 mois après la fin du quizz</strong> puis
+          supprimées automatiquement.
+        </p>
+      </div>
     </div>
   );
 }

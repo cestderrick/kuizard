@@ -9,9 +9,10 @@
    ============================================ */
 :root {
   /* Couleurs marque */
-  --color-violet-primary: #6b46c1;
-  --color-violet-deep: #4c1d95;
-  --color-violet-darker: #5b21b6;
+  /* Couleur brand mise à jour vers #5523bb (V1.x) */
+  --color-violet-primary: #5523bb;
+  --color-violet-deep: #3d1786;
+  --color-violet-darker: #4a1ea3;
   --color-violet-light: #a78bfa;
   --color-night: #0f0a2e;
   --color-night-2: #1f1b3a;

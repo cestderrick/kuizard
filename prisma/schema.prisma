@@ -178,6 +178,24 @@ enum QuestionType {
   TEXT
 }
 
+// ====================================================
+// SUGGESTIONS — Boîte à idées / signalements utilisateurs
+// ====================================================
+
+model Suggestion {
+  id        String   @id @default(cuid())
+  category  String?  // "bug" | "feature" | "design" | "other"
+  message   String   @db.Text
+  email     String?
+  userId    String?  // si l'utilisateur est connecté
+  status    String   @default("new") // "new" | "seen" | "done" | "wont_fix"
+
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([status])
+}
+
 model Participation {
   id          String    @id @default(cuid())
   quizId      String
