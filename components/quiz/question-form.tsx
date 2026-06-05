@@ -16,6 +16,7 @@ import {
   removeQuestionImageAction,
 } from "@/lib/actions/upload";
 import { ImageUploader } from "@/components/quiz/image-uploader";
+import { useActionToast } from "@/lib/hooks/use-action-toast";
 
 type QuestionType =
   | "SINGLE_CHOICE"
@@ -82,6 +83,7 @@ export function QuestionForm({ quizId, question }: Props) {
     updateQuestionAction,
     initialState
   );
+  useActionToast(state);
 
   // Quand l'utilisateur change le type, on adapte les options
   function handleTypeChange(newType: QuestionType) {

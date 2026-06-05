@@ -66,11 +66,16 @@ export default async function PlayPage({
 
   if (!quiz) notFound();
 
-  // Pour le MVP : on accepte PUBLISHED, RUNNING (en LIVE_MANUAL), FINISHED (pour les rejoignants du live qui veulent voir le résultat)
+  // Mode LIVE_MANUAL terminé → on emmène direct au classement plutôt que
+  // de redemander un pseudo dans le vide.
+  if (quiz.mode === "LIVE_MANUAL" && quiz.status === "FINISHED") {
+    const { redirect } = await import("next/navigation");
+    redirect(`/q/${code}/classement`);
+  }
+
+  // Pour le MVP : seuls les quizz PUBLISHED ou RUNNING sont jouables
   const isPlayable =
-    quiz.status === "PUBLISHED" ||
-    quiz.status === "RUNNING" ||
-    (quiz.mode === "LIVE_MANUAL" && quiz.status === "FINISHED");
+    quiz.status === "PUBLISHED" || quiz.status === "RUNNING";
 
   if (!isPlayable) {
     return (

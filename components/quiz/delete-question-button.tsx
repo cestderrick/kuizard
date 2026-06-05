@@ -3,7 +3,6 @@
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -59,14 +58,12 @@ export function DeleteQuestionButton({
           <input type="hidden" name="questionId" value={questionId} />
           <AlertDialogFooter>
             <AlertDialogCancel>Annuler</AlertDialogCancel>
-            <AlertDialogAction asChild>
-              <Button
-                type="submit"
-                className="bg-destructive text-white hover:bg-destructive/90"
-              >
-                Supprimer
-              </Button>
-            </AlertDialogAction>
+            <Button
+              type="submit"
+              className="bg-destructive text-white hover:bg-destructive/90"
+            >
+              Supprimer
+            </Button>
           </AlertDialogFooter>
         </form>
       </AlertDialogContent>

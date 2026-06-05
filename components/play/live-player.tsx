@@ -96,6 +96,46 @@ export function LivePlayer({
     };
   }, [code]);
 
+  // 🛟 FALLBACK polling toutes les 3s — si nginx coupe le SSE ou que le
+  // proxy filtre les long-polls, on garde le quizz réactif.
+  useEffect(() => {
+    let cancelled = false;
+    async function tick() {
+      try {
+        const res = await fetch(`/api/quiz/${code}/state`, {
+          cache: "no-store",
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (!cancelled) {
+            setLiveState((prev) => {
+              if (
+                prev.status === data.status &&
+                prev.currentQuestionIndex === data.currentQuestionIndex &&
+                prev.isPaused === data.isPaused
+              ) {
+                return prev;
+              }
+              return {
+                status: data.status,
+                currentQuestionIndex: data.currentQuestionIndex,
+                isPaused: data.isPaused,
+                totalQuestions: data.totalQuestions,
+              };
+            });
+          }
+        }
+      } catch {
+        // silence — on retentera
+      }
+      if (!cancelled) setTimeout(tick, 3000);
+    }
+    tick();
+    return () => {
+      cancelled = true;
+    };
+  }, [code]);
+
   // Soumission auto des réponses dès que le quizz passe FINISHED
   useEffect(() => {
     if (

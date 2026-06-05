@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Cinzel, Plus_Jakarta_Sans, Geist } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
+import { Toaster } from "@/components/ui/sonner";
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
@@ -37,7 +38,18 @@ export default function RootLayout({
       lang="fr"
       className={cn("h-full", "antialiased", cinzel.variable, jakarta.variable, "font-sans", geist.variable)}
     >
-      <body className="min-h-full flex flex-col font-sans">{children}</body>
+      <body className="min-h-full flex flex-col font-sans">
+        {children}
+        <Toaster
+          position="top-center"
+          richColors
+          toastOptions={{
+            classNames: {
+              success: "bg-green-50 text-green-900 border-green-200",
+            },
+          }}
+        />
+      </body>
     </html>
   );
 }

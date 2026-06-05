@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -96,22 +95,23 @@ export function DeleteQuizButton({
           )}
         </div>
 
-        {/* IMPORTANT : le bouton de soumission DOIT être enfant d'un form
-            ET utiliser asChild pour que la fermeture du dialog ne supprime
-            pas le bouton avant la fin de la submission server action. */}
+        {/* IMPORTANT : on N'utilise PAS AlertDialogAction ici.
+            Radix ferme le dialog au clic, ce qui démontait le bouton avant
+            que React 19 propage la submission. On laisse un simple <Button
+            type="submit"> qui soumet le form ; le server action redirige
+            ensuite vers /dashboard/quizzes, ce qui ferme le dialog naturel-
+            lement via navigation. */}
         <form action={deleteQuizAction}>
           <input type="hidden" name="quizId" value={quizId} />
           <AlertDialogFooter>
             <AlertDialogCancel>Annuler</AlertDialogCancel>
-            <AlertDialogAction asChild>
-              <Button
-                type="submit"
-                disabled={!canDelete}
-                className="bg-destructive text-white hover:bg-destructive/90 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Supprimer définitivement
-              </Button>
-            </AlertDialogAction>
+            <Button
+              type="submit"
+              disabled={!canDelete}
+              className="bg-destructive text-white hover:bg-destructive/90 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Supprimer définitivement
+            </Button>
           </AlertDialogFooter>
         </form>
       </AlertDialogContent>

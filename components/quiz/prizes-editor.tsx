@@ -11,6 +11,7 @@ import {
   updatePrizesAction,
   type UpdatePrizesState,
 } from "@/lib/actions/quiz";
+import { useActionToast } from "@/lib/hooks/use-action-toast";
 
 type Prize = {
   rank: number;
@@ -38,6 +39,7 @@ export function PrizesEditor({ quizId, defaultPrizes }: Props) {
     updatePrizesAction,
     initial
   );
+  useActionToast(state);
 
   function updatePrize(index: number, patch: Partial<Prize>) {
     setPrizes((prev) =>

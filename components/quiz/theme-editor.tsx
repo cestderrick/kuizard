@@ -11,6 +11,7 @@ import {
   type UpdateThemeState,
 } from "@/lib/actions/quiz";
 import { DEFAULT_THEME, type QuizTheme } from "@/lib/quiz/theme";
+import { useActionToast } from "@/lib/hooks/use-action-toast";
 
 const PRESETS: { name: string; color: string; emoji: string }[] = [
   { name: "Magicien", color: "#6B46C1", emoji: "🎩" },
@@ -38,6 +39,7 @@ export function ThemeEditor({ quizId, defaultTheme }: Props) {
     updateThemeAction,
     initial
   );
+  useActionToast(state);
 
   function reset() {
     setPrimary(DEFAULT_THEME.primaryColor);

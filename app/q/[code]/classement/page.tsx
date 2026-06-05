@@ -34,6 +34,57 @@ export default async function ClassementPage({
   const cookieStore = await cookies();
   const myParticipationId = cookieStore.get(`kz_play_${data.quizId}`)?.value;
 
+  // 🚪 Mode SCHEDULED : on ne révèle le classement qu'après la fermeture
+  // du créneau. Avant et pendant, on affiche un message d'attente.
+  const quizMeta = await prisma.quiz.findUnique({
+    where: { id: data.quizId },
+    select: {
+      mode: true,
+      scheduledCloseAt: true,
+      prizes: true,
+    },
+  });
+  if (
+    quizMeta?.mode === "SCHEDULED" &&
+    quizMeta.scheduledCloseAt &&
+    Date.now() < quizMeta.scheduledCloseAt.getTime()
+  ) {
+    const closeStr = new Intl.DateTimeFormat("fr-FR", {
+      dateStyle: "long",
+      timeStyle: "short",
+    }).format(quizMeta.scheduledCloseAt);
+
+    return (
+      <main className="min-h-screen flex items-center justify-center px-4 py-12 bg-[var(--color-night)] text-[var(--color-lavender)]">
+        <div className="max-w-md text-center">
+          <div className="text-6xl mb-4" aria-hidden>
+            🤫
+          </div>
+          <p className="text-xs uppercase tracking-[3px] text-[var(--color-gold)] font-semibold mb-2">
+            Surprise en préparation
+          </p>
+          <h1 className="font-display text-2xl tracking-wide mb-3">
+            {data.title}
+          </h1>
+          <p className="text-[var(--color-lavender-2)] opacity-80 mb-6">
+            Le classement et les scores seront dévoilés à la clôture du
+            quizz, le <strong>{closeStr}</strong>.
+          </p>
+          <Link
+            href={`/q/${data.code}`}
+            className="inline-block px-5 py-2.5 rounded-md font-semibold"
+            style={{
+              backgroundColor: "var(--color-gold)",
+              color: "var(--color-violet-deep)",
+            }}
+          >
+            Retour au quizz
+          </Link>
+        </div>
+      </main>
+    );
+  }
+
   // Lots configurés par le créateur (jsonb sur Quiz)
   const quizPrizesRow = await prisma.quiz.findUnique({
     where: { id: data.quizId },

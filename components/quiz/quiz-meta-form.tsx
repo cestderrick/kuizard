@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,7 @@ import {
   updateQuizMetaAction,
   type UpdateQuizMetaState,
 } from "@/lib/actions/quiz";
+import { useActionToast } from "@/lib/hooks/use-action-toast";
 
 const initialState: UpdateQuizMetaState = { ok: false };
 
@@ -25,7 +26,7 @@ type Props = {
 
 /**
  * Convertit une Date en string compatible avec <input type="datetime-local">
- * (format : "YYYY-MM-DDTHH:mm", heure locale).
+ * (format : "YYYY-MM-DDTHH:mm", heure locale du navigateur).
  */
 function toDatetimeLocalValue(d: Date | null | undefined): string {
   if (!d) return "";
@@ -33,6 +34,17 @@ function toDatetimeLocalValue(d: Date | null | undefined): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(
     d.getHours()
   )}:${pad(d.getMinutes())}`;
+}
+
+/**
+ * Convertit une string datetime-local (interprétée en heure locale du
+ * navigateur) en ISO UTC pour envoi au server.
+ * ⚠️ Sans ça, le serveur en UTC interprète "15:15" comme 15:15 UTC = 17:15
+ * heure de Paris → décalage de +2 h.
+ */
+function localStringToIso(local: string): string {
+  if (!local) return "";
+  return new Date(local).toISOString();
 }
 
 export function QuizMetaForm({
@@ -44,15 +56,48 @@ export function QuizMetaForm({
   defaultCloseAt,
 }: Props) {
   const [mode, setMode] = useState<"LIVE_MANUAL" | "SCHEDULED">(defaultMode);
+  const [openLocal, setOpenLocal] = useState(
+    toDatetimeLocalValue(defaultOpenAt)
+  );
+  const [closeLocal, setCloseLocal] = useState(
+    toDatetimeLocalValue(defaultCloseAt)
+  );
+
+  // 🔄 Sync avec les nouvelles props quand la page revalide après save.
+  // Sans ça, après modif des dates, le mode revenait sur "live" en affichage
+  // alors qu'il était bien SCHEDULED en BDD.
+  useEffect(() => {
+    setMode(defaultMode);
+  }, [defaultMode]);
+  useEffect(() => {
+    setOpenLocal(toDatetimeLocalValue(defaultOpenAt));
+  }, [defaultOpenAt]);
+  useEffect(() => {
+    setCloseLocal(toDatetimeLocalValue(defaultCloseAt));
+  }, [defaultCloseAt]);
 
   const [state, formAction, isPending] = useActionState(
     updateQuizMetaAction,
     initialState
   );
+  useActionToast(state);
 
   return (
     <form action={formAction} className="flex flex-col gap-5">
       <input type="hidden" name="quizId" value={quizId} />
+      {/* Hidden inputs des dates au format ISO (UTC) — c'est ce que le server
+          reçoit. Les <input type="datetime-local"> ci-dessous sont juste pour
+          l'UX (affichage en heure locale). */}
+      <input
+        type="hidden"
+        name="scheduledOpenAt"
+        value={mode === "SCHEDULED" ? localStringToIso(openLocal) : ""}
+      />
+      <input
+        type="hidden"
+        name="scheduledCloseAt"
+        value={mode === "SCHEDULED" ? localStringToIso(closeLocal) : ""}
+      />
 
       {state.message && (
         <Alert variant={state.ok ? "default" : "destructive"}>
@@ -117,7 +162,10 @@ export function QuizMetaForm({
 
       {mode === "SCHEDULED" && (
         <div className="rounded-lg border border-[var(--color-violet-light)] bg-[var(--color-lavender)] p-4 flex flex-col gap-3">
-          <p className="text-sm font-medium" style={{ color: "var(--color-violet-deep)" }}>
+          <p
+            className="text-sm font-medium"
+            style={{ color: "var(--color-violet-deep)" }}
+          >
             ⏰ Créneau d'ouverture
           </p>
           <p className="text-xs text-muted-foreground">
@@ -126,14 +174,14 @@ export function QuizMetaForm({
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="flex flex-col gap-1">
-              <Label htmlFor="scheduledOpenAt" className="text-xs">
+              <Label htmlFor="scheduledOpenAtLocal" className="text-xs">
                 Ouverture
               </Label>
               <Input
-                id="scheduledOpenAt"
-                name="scheduledOpenAt"
+                id="scheduledOpenAtLocal"
                 type="datetime-local"
-                defaultValue={toDatetimeLocalValue(defaultOpenAt)}
+                value={openLocal}
+                onChange={(e) => setOpenLocal(e.target.value)}
                 required={mode === "SCHEDULED"}
               />
               {state.errors?.scheduledOpenAt && (
@@ -143,14 +191,14 @@ export function QuizMetaForm({
               )}
             </div>
             <div className="flex flex-col gap-1">
-              <Label htmlFor="scheduledCloseAt" className="text-xs">
+              <Label htmlFor="scheduledCloseAtLocal" className="text-xs">
                 Fermeture
               </Label>
               <Input
-                id="scheduledCloseAt"
-                name="scheduledCloseAt"
+                id="scheduledCloseAtLocal"
                 type="datetime-local"
-                defaultValue={toDatetimeLocalValue(defaultCloseAt)}
+                value={closeLocal}
+                onChange={(e) => setCloseLocal(e.target.value)}
                 required={mode === "SCHEDULED"}
               />
               {state.errors?.scheduledCloseAt && (
