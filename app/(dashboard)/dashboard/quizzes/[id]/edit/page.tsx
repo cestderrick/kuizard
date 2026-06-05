@@ -98,6 +98,8 @@ export default async function EditQuizPage({
             defaultTitle={quiz.title}
             defaultDescription={quiz.description}
             defaultMode={quiz.mode as "LIVE_MANUAL" | "SCHEDULED"}
+            defaultOpenAt={quiz.scheduledOpenAt}
+            defaultCloseAt={quiz.scheduledCloseAt}
           />
         </CardContent>
       </Card>

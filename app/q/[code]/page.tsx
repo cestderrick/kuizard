@@ -4,6 +4,10 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { QuizPlayer } from "@/components/play/quiz-player";
 import { parseTheme } from "@/lib/quiz/theme";
+import {
+  ScheduledClosed,
+  ScheduledCountdown,
+} from "@/components/play/scheduled-states";
 
 export async function generateMetadata({
   params,
@@ -37,6 +41,9 @@ export default async function PlayPage({
       title: true,
       description: true,
       status: true,
+      mode: true,
+      scheduledOpenAt: true,
+      scheduledCloseAt: true,
       theme: true,
       questions: {
         orderBy: { order: "asc" },
@@ -72,6 +79,32 @@ export default async function PlayPage({
         </div>
       </main>
     );
+  }
+
+  // Mode SCHEDULED : on vérifie la fenêtre d'ouverture
+  if (quiz.mode === "SCHEDULED") {
+    const now = Date.now();
+    const openAt = quiz.scheduledOpenAt?.getTime();
+    const closeAt = quiz.scheduledCloseAt?.getTime();
+
+    if (openAt && now < openAt) {
+      return (
+        <ScheduledCountdown
+          title={quiz.title}
+          openAt={quiz.scheduledOpenAt!.toISOString()}
+          code={quiz.code}
+        />
+      );
+    }
+    if (closeAt && now > closeAt) {
+      return (
+        <ScheduledClosed
+          title={quiz.title}
+          closeAt={quiz.scheduledCloseAt!.toISOString()}
+          code={quiz.code}
+        />
+      );
+    }
   }
 
   // Sanitize les options envoyées au client : on enlève le flag isCorrect

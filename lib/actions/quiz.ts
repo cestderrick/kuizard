@@ -129,15 +129,41 @@ export async function getMyQuiz(quizId: string) {
 // UPDATE QUIZ META (titre, description, mode)
 // -----------------------------------------------------
 
-const updateQuizMetaSchema = z.object({
-  quizId: z.string().min(1),
-  title: z
-    .string()
-    .min(3, "Le titre doit faire au moins 3 caractères.")
-    .max(80),
-  description: z.string().max(500).optional().or(z.literal("")),
-  mode: z.enum(["LIVE_MANUAL", "SCHEDULED"]),
-});
+const updateQuizMetaSchema = z
+  .object({
+    quizId: z.string().min(1),
+    title: z
+      .string()
+      .min(3, "Le titre doit faire au moins 3 caractères.")
+      .max(80),
+    description: z.string().max(500).optional().or(z.literal("")),
+    mode: z.enum(["LIVE_MANUAL", "SCHEDULED"]),
+    scheduledOpenAt: z.string().optional().or(z.literal("")),
+    scheduledCloseAt: z.string().optional().or(z.literal("")),
+  })
+  .refine(
+    (data) => {
+      if (data.mode !== "SCHEDULED") return true;
+      // En mode SCHEDULED, les deux dates sont requises
+      return !!data.scheduledOpenAt && !!data.scheduledCloseAt;
+    },
+    {
+      message:
+        "En mode créneau horaire, l'ouverture et la fermeture sont obligatoires.",
+      path: ["scheduledOpenAt"],
+    }
+  )
+  .refine(
+    (data) => {
+      if (data.mode !== "SCHEDULED") return true;
+      if (!data.scheduledOpenAt || !data.scheduledCloseAt) return true;
+      return new Date(data.scheduledOpenAt) < new Date(data.scheduledCloseAt);
+    },
+    {
+      message: "La date de fermeture doit être après l'ouverture.",
+      path: ["scheduledCloseAt"],
+    }
+  );
 
 export type UpdateQuizMetaState = {
   ok: boolean;
@@ -159,6 +185,8 @@ export async function updateQuizMetaAction(
     title: formData.get("title"),
     description: formData.get("description") ?? "",
     mode: formData.get("mode") ?? "LIVE_MANUAL",
+    scheduledOpenAt: formData.get("scheduledOpenAt") ?? "",
+    scheduledCloseAt: formData.get("scheduledCloseAt") ?? "",
   });
 
   if (!parsed.success) {
@@ -169,12 +197,26 @@ export async function updateQuizMetaAction(
     };
   }
 
-  const { quizId, title, description, mode } = parsed.data;
+  const { quizId, title, description, mode, scheduledOpenAt, scheduledCloseAt } =
+    parsed.data;
+
+  const openAt =
+    mode === "SCHEDULED" && scheduledOpenAt ? new Date(scheduledOpenAt) : null;
+  const closeAt =
+    mode === "SCHEDULED" && scheduledCloseAt
+      ? new Date(scheduledCloseAt)
+      : null;
 
   // updateMany pour garantir qu'on touche uniquement nos quizz
   const result = await prisma.quiz.updateMany({
     where: { id: quizId, userId: session.user.id },
-    data: { title, description: description || null, mode },
+    data: {
+      title,
+      description: description || null,
+      mode,
+      scheduledOpenAt: openAt,
+      scheduledCloseAt: closeAt,
+    },
   });
 
   if (result.count === 0) {
