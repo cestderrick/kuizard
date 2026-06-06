@@ -4,6 +4,7 @@ import { requireAdmin } from "@/lib/auth/require-admin";
 import { countUnreadForAdmin } from "@/lib/actions/messages";
 import { LogoutButton } from "@/components/auth/logout-button";
 import { KuizardLogo } from "@/components/brand/kuizard-logo";
+import { SiteFooterNight } from "@/components/legal/site-footer-night";
 
 export default async function AdminLayout({
   children,
@@ -77,6 +78,8 @@ export default async function AdminLayout({
 
         <main className="min-w-0">{children}</main>
       </div>
+
+      <SiteFooterNight />
     </div>
   );
 }

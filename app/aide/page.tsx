@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { InteractiveFaq } from "@/components/faq/interactive-faq";
 import { KuizardLogo } from "@/components/brand/kuizard-logo";
+import { SiteFooterNight } from "@/components/legal/site-footer-night";
 
 export const metadata: Metadata = {
   title: "Aide",
@@ -50,6 +51,10 @@ export default function AidePage() {
             Retour à l'accueil
           </Link>
         </p>
+      </div>
+
+      <div className="relative z-10 w-full mt-12">
+        <SiteFooterNight />
       </div>
     </main>
   );

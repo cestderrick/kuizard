@@ -29,6 +29,7 @@ export default async function MyStatsPage() {
     last30dParticipations,
     totalPaymentsSucceeded,
     topQuizzes,
+    quizzesWithStats,
   ] = await Promise.all([
     prisma.quiz.count({ where: { userId } }),
     prisma.quiz.count({ where: { userId, status: "PUBLISHED" } }),
@@ -60,12 +61,62 @@ export default async function MyStatsPage() {
         _count: { select: { participations: true, questions: true } },
       },
     }),
+    prisma.quiz.findMany({
+      where: { userId },
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        title: true,
+        code: true,
+        status: true,
+        mode: true,
+        isPaid: true,
+        createdAt: true,
+        participations: {
+          select: {
+            score: true,
+            completedAt: true,
+          },
+        },
+        _count: { select: { questions: true, participations: true } },
+      },
+    }),
   ]);
 
   const completionRate =
     totalParticipations > 0
       ? Math.round((completedParticipations / totalParticipations) * 100)
       : 0;
+
+  // Pré-calcul des stats par quizz (score moyen, % complétion)
+  const perQuizStats = quizzesWithStats.map((q) => {
+    const totalP = q.participations.length;
+    const completedP = q.participations.filter((p) => p.completedAt).length;
+    const avgScore =
+      totalP > 0
+        ? Math.round(
+            q.participations.reduce((sum, p) => sum + p.score, 0) / totalP
+          )
+        : 0;
+    const compRate = totalP > 0 ? Math.round((completedP / totalP) * 100) : 0;
+    return {
+      id: q.id,
+      title: q.title,
+      code: q.code,
+      status: q.status,
+      mode: q.mode,
+      isPaid: q.isPaid,
+      createdAt: q.createdAt,
+      questionsCount: q._count.questions,
+      participationsCount: q._count.participations,
+      completedCount: completedP,
+      avgScore,
+      compRate,
+    };
+  });
+
+  const fmtDate = (d: Date) =>
+    new Intl.DateTimeFormat("fr-FR", { dateStyle: "short" }).format(d);
 
   return (
     <div className="flex flex-col gap-6 max-w-5xl">
@@ -77,12 +128,136 @@ export default async function MyStatsPage() {
           className="font-display text-3xl md:text-4xl font-bold tracking-wide"
           style={{ color: "var(--color-violet-deep)" }}
         >
-          Mes stats globales
+          Mes stats
         </h1>
         <p className="mt-2 text-muted-foreground text-sm max-w-xl">
-          L'activité de tous tes quizz d'un coup d'œil.
+          Vue détaillée par quizz, puis vue globale en bas.
         </p>
       </header>
+
+      {/* ============================================
+          ENCART : Mes statistiques par quizz
+          ============================================ */}
+      <section>
+        <h2 className="font-display text-xl tracking-wide mb-3 flex items-center gap-2">
+          🎩 Mes statistiques par quizz
+          <span className="text-xs font-normal text-muted-foreground">
+            ({perQuizStats.length} quizz)
+          </span>
+        </h2>
+        {perQuizStats.length === 0 ? (
+          <div className="rounded-2xl border bg-white p-8 text-center">
+            <p className="text-muted-foreground">
+              Tu n'as pas encore créé de quizz.
+            </p>
+            <Link
+              href="/dashboard/quizzes/templates"
+              className="inline-block mt-3 text-sm font-semibold text-[var(--color-violet-primary)] hover:underline"
+            >
+              Démarrer à partir d'un template →
+            </Link>
+          </div>
+        ) : (
+          <div className="rounded-2xl bg-white border overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-zinc-50 text-xs uppercase tracking-wide text-muted-foreground">
+                  <tr>
+                    <th className="text-left px-3 py-3">Quizz</th>
+                    <th className="text-left px-3 py-3">Statut</th>
+                    <th className="text-right px-3 py-3" title="Nombre de questions">
+                      Q
+                    </th>
+                    <th className="text-right px-3 py-3" title="Participants">
+                      👥
+                    </th>
+                    <th className="text-right px-3 py-3" title="Complétion">
+                      ✓
+                    </th>
+                    <th className="text-right px-3 py-3" title="Score moyen">
+                      ⭐ Moy.
+                    </th>
+                    <th className="text-left px-3 py-3"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {perQuizStats.map((q) => (
+                    <tr key={q.id} className="border-t hover:bg-zinc-50">
+                      <td className="px-3 py-2.5 min-w-[180px]">
+                        <Link
+                          href={`/dashboard/quizzes/${q.id}/edit`}
+                          className="font-medium hover:text-[var(--color-violet-primary)] hover:underline truncate block max-w-[240px]"
+                        >
+                          {q.title}
+                          {q.isPaid && (
+                            <span className="ml-1 text-[10px] text-amber-600">
+                              ★
+                            </span>
+                          )}
+                        </Link>
+                        <p className="text-[11px] text-muted-foreground">
+                          <span className="font-mono">{q.code}</span> ·{" "}
+                          {fmtDate(q.createdAt)}
+                        </p>
+                      </td>
+                      <td className="px-3 py-2.5 text-xs">
+                        <span
+                          className={`px-2 py-0.5 rounded ${statusBadge(q.status)}`}
+                        >
+                          {statusLabel(q.status)}
+                        </span>
+                      </td>
+                      <td className="px-3 py-2.5 text-right">
+                        {q.questionsCount}
+                      </td>
+                      <td className="px-3 py-2.5 text-right font-semibold text-[var(--color-violet-primary)]">
+                        {q.participationsCount}
+                      </td>
+                      <td className="px-3 py-2.5 text-right">
+                        {q.participationsCount > 0 ? (
+                          <span className="text-xs">
+                            {q.completedCount}{" "}
+                            <span className="opacity-60">
+                              ({q.compRate}%)
+                            </span>
+                          </span>
+                        ) : (
+                          <span className="opacity-40">—</span>
+                        )}
+                      </td>
+                      <td className="px-3 py-2.5 text-right font-semibold">
+                        {q.participationsCount > 0 ? q.avgScore : "—"}
+                      </td>
+                      <td className="px-3 py-2.5">
+                        {q._count !== undefined && q.participationsCount > 0 && (
+                          <Link
+                            href={`/q/${q.code}/classement`}
+                            className="text-xs text-[var(--color-violet-primary)] hover:underline"
+                          >
+                            🏆 →
+                          </Link>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+      </section>
+
+      {/* Séparateur visuel */}
+      <div className="border-t border-violet-100" />
+
+      <div>
+        <h2 className="font-display text-xl tracking-wide mb-1 flex items-center gap-2">
+          🌍 Stats globales (tout cumulé)
+        </h2>
+        <p className="text-xs text-muted-foreground">
+          Récap de l'ensemble de ton activité.
+        </p>
+      </div>
 
       {/* Cartes principales */}
       <section className="grid grid-cols-2 lg:grid-cols-4 gap-3">
@@ -231,5 +406,29 @@ function Box({
       </p>
       {children}
     </div>
+  );
+}
+
+function statusLabel(s: string): string {
+  return (
+    {
+      DRAFT: "Brouillon",
+      PUBLISHED: "Publié",
+      RUNNING: "En direct",
+      FINISHED: "Terminé",
+      ARCHIVED: "Archivé",
+    }[s] ?? s
+  );
+}
+
+function statusBadge(s: string): string {
+  return (
+    {
+      PUBLISHED: "bg-green-100 text-green-800",
+      RUNNING: "bg-amber-100 text-amber-800",
+      FINISHED: "bg-zinc-100 text-zinc-700",
+      DRAFT: "bg-blue-100 text-blue-800",
+      ARCHIVED: "bg-zinc-100 text-zinc-500",
+    }[s] ?? "bg-zinc-100 text-zinc-600"
   );
 }

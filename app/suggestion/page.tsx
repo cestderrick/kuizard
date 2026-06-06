@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { auth } from "@/auth";
 import { SuggestionForm } from "@/components/feedback/suggestion-form";
+import { SiteFooterNight } from "@/components/legal/site-footer-night";
 
 export const metadata: Metadata = {
   title: "Suggestion d'amélioration",
@@ -55,6 +56,10 @@ export default async function SuggestionPage() {
             Retour à l'accueil
           </Link>
         </p>
+      </div>
+
+      <div className="relative z-10 w-full mt-12">
+        <SiteFooterNight />
       </div>
     </main>
   );

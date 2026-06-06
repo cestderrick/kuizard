@@ -50,6 +50,28 @@ export default function AuthLayout({
       >
         ✨ pour un moment magique
       </p>
+
+      {/* Liens légaux compacts */}
+      <nav
+        className="relative z-10 mt-8 flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs"
+        style={{ color: "var(--color-lavender-2)", opacity: 0.7 }}
+      >
+        <Link href="/mentions-legales" className="hover:opacity-100">
+          Mentions légales
+        </Link>
+        <Link href="/cgu" className="hover:opacity-100">
+          CGU
+        </Link>
+        <Link href="/cgv" className="hover:opacity-100">
+          CGV
+        </Link>
+        <Link href="/confidentialite" className="hover:opacity-100">
+          Confidentialité
+        </Link>
+        <Link href="/cookies" className="hover:opacity-100">
+          Cookies
+        </Link>
+      </nav>
     </div>
   );
 }

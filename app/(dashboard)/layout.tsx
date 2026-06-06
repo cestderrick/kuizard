@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { LogoutButton } from "@/components/auth/logout-button";
 import { KuizardLogo } from "@/components/brand/kuizard-logo";
+import { SiteFooter } from "@/components/legal/site-footer";
 
 export default async function DashboardLayout({
   children,
@@ -95,6 +96,8 @@ export default async function DashboardLayout({
       <main className="flex-1 mx-auto max-w-6xl w-full px-4 py-8">
         {children}
       </main>
+
+      <SiteFooter />
     </div>
   );
 }

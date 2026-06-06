@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
+import { SiteFooterNight } from "@/components/legal/site-footer-night";
 
 export const metadata: Metadata = {
   title: "Paiement annulé",
@@ -17,8 +18,9 @@ export default async function PaymentCancelPage({
   const { quiz_id } = await searchParams;
 
   return (
-    <main className="min-h-screen flex items-center justify-center px-4 py-12 bg-[var(--color-night)] text-[var(--color-lavender)]">
-      <div className="max-w-md w-full rounded-3xl bg-[var(--color-night-2)] border border-[rgba(167,139,250,0.2)] p-10 text-center flex flex-col gap-5">
+    <main className="min-h-screen flex flex-col bg-[var(--color-night)] text-[var(--color-lavender)]">
+      <div className="flex-1 flex items-center justify-center px-4 py-12">
+        <div className="max-w-md w-full rounded-3xl bg-[var(--color-night-2)] border border-[rgba(167,139,250,0.2)] p-10 text-center flex flex-col gap-5">
         <div className="text-6xl" aria-hidden>
           🪄
         </div>
@@ -41,7 +43,9 @@ export default async function PaymentCancelPage({
             <Link href="/dashboard/quizzes">Mes quizz</Link>
           </Button>
         </div>
+        </div>
       </div>
+      <SiteFooterNight />
     </main>
   );
 }
