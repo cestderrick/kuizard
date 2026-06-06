@@ -18,6 +18,7 @@ type Promo = {
   percentOff?: number | null;
   amountOffCents?: number | null;
   planSlug?: string | null;
+  giftPlanSlug?: string | null;
   maxRedemptions?: number | null;
   redemptions?: number;
   expiresAt?: Date | null;
@@ -126,6 +127,27 @@ export function PromoForm({
               className="kz-input"
             />
           </Field>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 rounded-lg p-3 bg-[rgba(245,158,11,0.05)] border border-[rgba(245,158,11,0.2)]">
+          <Field label="🎁 Plan offert (code cadeau)">
+            <select
+              name="giftPlanSlug"
+              defaultValue={promo?.giftPlanSlug ?? ""}
+              className="kz-input"
+            >
+              <option value="">— (code de réduction classique)</option>
+              {planSlugs.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <p className="text-[11px] opacity-70 self-end pb-2">
+            Si renseigné, ce code débloque DIRECTEMENT un quizz au plan choisi
+            (sans paiement Stripe). Utile pour offrir.
+          </p>
         </div>
 
         <div className="grid grid-cols-2 gap-3">

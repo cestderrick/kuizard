@@ -12,7 +12,7 @@ import type { Prisma } from "@prisma/client";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { generateUniqueQuizCode } from "@/lib/quiz/generate-code";
-import { getTemplateBySlug } from "@/lib/quiz/templates";
+import { getTemplateBySlugUnified } from "@/lib/quiz/templates-source";
 
 // -----------------------------------------------------
 // CREATE QUIZ
@@ -103,7 +103,7 @@ export async function createFromTemplateAction(formData: FormData) {
   const slug = formData.get("slug");
   if (typeof slug !== "string" || !slug) throw new Error("Template manquant.");
 
-  const template = getTemplateBySlug(slug);
+  const template = await getTemplateBySlugUnified(slug);
   if (!template) throw new Error("Template introuvable.");
 
   const code = await generateUniqueQuizCode();

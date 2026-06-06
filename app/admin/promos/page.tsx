@@ -64,6 +64,7 @@ export default async function AdminPromosPage() {
                 percentOff: p.percentOff,
                 amountOffCents: p.amountOffCents,
                 planSlug: p.planSlug,
+                giftPlanSlug: p.giftPlanSlug,
                 maxRedemptions: p.maxRedemptions,
                 redemptions: p.redemptions,
                 expiresAt: p.expiresAt,

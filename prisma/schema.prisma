@@ -272,6 +272,10 @@ model PromoCode {
   // Limiter à un plan, null = applicable à tous les plans
   planSlug        String?
 
+  // Code "cadeau" : si renseigné, ce code débloque DIRECTEMENT un quizz
+  // avec ce plan, sans passer par Stripe (utile pour offrir, partenariats…)
+  giftPlanSlug    String?
+
   maxRedemptions  Int?     // null = illimité
   redemptions     Int      @default(0)
   expiresAt       DateTime?

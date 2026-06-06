@@ -31,12 +31,12 @@ export default async function DashboardLayout({
               <KuizardLogo size={32} />
               <span>Kuizard</span>
             </Link>
-            <nav className="hidden sm:flex items-center gap-4 text-sm">
+            <nav className="hidden md:flex items-center gap-4 text-sm">
               <Link
                 href="/dashboard"
                 className="text-muted-foreground hover:text-[var(--color-violet-primary)]"
               >
-                Tableau de bord
+                Accueil
               </Link>
               <Link
                 href="/dashboard/quizzes"
@@ -45,10 +45,34 @@ export default async function DashboardLayout({
                 Mes quizz
               </Link>
               <Link
-                href="/"
+                href="/dashboard/stats"
                 className="text-muted-foreground hover:text-[var(--color-violet-primary)]"
               >
-                Page d'accueil
+                Stats
+              </Link>
+              <Link
+                href="/dashboard/subscription"
+                className="text-muted-foreground hover:text-[var(--color-violet-primary)]"
+              >
+                Abo
+              </Link>
+              <Link
+                href="/dashboard/promos"
+                className="text-muted-foreground hover:text-[var(--color-violet-primary)]"
+              >
+                Codes promos
+              </Link>
+              <Link
+                href="/dashboard/messages"
+                className="text-muted-foreground hover:text-[var(--color-violet-primary)]"
+              >
+                Messages
+              </Link>
+              <Link
+                href="/dashboard/suggestions"
+                className="text-muted-foreground hover:text-[var(--color-violet-primary)]"
+              >
+                Suggestions
               </Link>
             </nav>
           </div>

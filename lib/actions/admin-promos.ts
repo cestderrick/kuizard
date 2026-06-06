@@ -33,6 +33,7 @@ const promoSchema = z
     percentOff: z.coerce.number().int().min(0).max(100).optional(),
     amountOffCents: z.coerce.number().int().min(0).optional(),
     planSlug: z.string().max(40).optional().or(z.literal("")),
+    giftPlanSlug: z.string().max(40).optional().or(z.literal("")),
     maxRedemptions: z.coerce.number().int().min(0).optional(),
     expiresAt: z.string().optional().or(z.literal("")),
     isActive: z.boolean().optional().default(true),
@@ -40,9 +41,11 @@ const promoSchema = z
   .refine(
     (v) =>
       (v.percentOff && v.percentOff > 0) ||
-      (v.amountOffCents && v.amountOffCents > 0),
+      (v.amountOffCents && v.amountOffCents > 0) ||
+      (v.giftPlanSlug && v.giftPlanSlug.length > 0),
     {
-      message: "Renseigne soit un % de réduction, soit un montant en centimes.",
+      message:
+        "Renseigne un % de réduction, un montant, ou un plan cadeau (giftPlanSlug).",
       path: ["percentOff"],
     }
   );
@@ -67,6 +70,7 @@ export async function upsertPromoAction(
     percentOff: formData.get("percentOff") || undefined,
     amountOffCents: formData.get("amountOffCents") || undefined,
     planSlug: formData.get("planSlug") || "",
+    giftPlanSlug: formData.get("giftPlanSlug") || "",
     maxRedemptions: formData.get("maxRedemptions") || undefined,
     expiresAt: formData.get("expiresAt") || "",
     isActive: checkbox(formData.get("isActive")),
@@ -85,6 +89,8 @@ export async function upsertPromoAction(
     v.expiresAt && v.expiresAt.length > 0 ? new Date(v.expiresAt) : null;
 
   // Création du Coupon Stripe (uniquement à la création initiale)
+  // Pour les codes "cadeau" pur (sans %/montant), on n'a PAS besoin de Stripe
+  // — l'application se fait côté serveur sans paiement
   let stripeCouponId: string | null = null;
   let existingFromDb: { stripeCouponId: string | null } | null = null;
   if (v.id) {
@@ -95,7 +101,12 @@ export async function upsertPromoAction(
     stripeCouponId = existingFromDb?.stripeCouponId ?? null;
   }
 
-  if (!stripeCouponId) {
+  const isPureGift =
+    !!v.giftPlanSlug &&
+    !(v.percentOff && v.percentOff > 0) &&
+    !(v.amountOffCents && v.amountOffCents > 0);
+
+  if (!stripeCouponId && !isPureGift) {
     try {
       const coupon = await stripe.coupons.create({
         name: code,
@@ -132,6 +143,7 @@ export async function upsertPromoAction(
       v.amountOffCents && v.amountOffCents > 0 ? v.amountOffCents : null,
     stripeCouponId,
     planSlug: v.planSlug || null,
+    giftPlanSlug: v.giftPlanSlug || null,
     maxRedemptions:
       v.maxRedemptions && v.maxRedemptions > 0 ? v.maxRedemptions : null,
     expiresAt,

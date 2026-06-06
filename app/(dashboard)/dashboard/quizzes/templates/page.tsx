@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { QUIZ_TEMPLATES } from "@/lib/quiz/templates";
+import { listAllTemplates } from "@/lib/quiz/templates-source";
 import { createFromTemplateAction } from "@/lib/actions/quiz";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,7 +16,9 @@ export const metadata: Metadata = {
   title: "Templates de quizz",
 };
 
-export default function TemplatesPage() {
+export default async function TemplatesPage() {
+  const templates = await listAllTemplates();
+
   return (
     <div className="max-w-5xl mx-auto flex flex-col gap-6">
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -45,7 +47,7 @@ export default function TemplatesPage() {
       </header>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {QUIZ_TEMPLATES.map((tpl) => (
+        {templates.map((tpl) => (
           <Card
             key={tpl.slug}
             className="flex flex-col hover:shadow-lg transition-shadow"
