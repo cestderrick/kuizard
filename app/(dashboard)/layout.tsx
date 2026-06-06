@@ -51,6 +51,12 @@ export default async function DashboardLayout({
                 Stats
               </Link>
               <Link
+                href="/dashboard/payments"
+                className="text-muted-foreground hover:text-[var(--color-violet-primary)]"
+              >
+                Paiements
+              </Link>
+              <Link
                 href="/dashboard/subscription"
                 className="text-muted-foreground hover:text-[var(--color-violet-primary)]"
               >

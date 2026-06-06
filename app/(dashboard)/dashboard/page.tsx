@@ -161,20 +161,40 @@ export default async function DashboardPage() {
         </CardContent>
       </Card>
 
-      {/* Placeholders Sprint 3/4 */}
+      {/* Accès rapides */}
       <div className="grid gap-4 md:grid-cols-2">
-        <Card className="opacity-60">
-          <CardHeader>
-            <CardTitle className="text-base">Mes paiements</CardTitle>
-            <CardDescription>Bientôt (Sprint 4)</CardDescription>
-          </CardHeader>
-        </Card>
-        <Card className="opacity-60">
-          <CardHeader>
-            <CardTitle className="text-base">Statistiques</CardTitle>
-            <CardDescription>Bientôt (V1.2)</CardDescription>
-          </CardHeader>
-        </Card>
+        <Link
+          href="/dashboard/payments"
+          className="group rounded-lg border bg-white p-5 hover:shadow-md transition-shadow"
+        >
+          <div className="flex items-center justify-between mb-2">
+            <p className="font-display text-base tracking-wide group-hover:text-[var(--color-violet-primary)]">
+              💳 Mes paiements
+            </p>
+            <span className="text-muted-foreground group-hover:translate-x-0.5 transition-transform">
+              →
+            </span>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Historique des achats de quizz et abonnements, accès aux factures.
+          </p>
+        </Link>
+        <Link
+          href="/dashboard/stats"
+          className="group rounded-lg border bg-white p-5 hover:shadow-md transition-shadow"
+        >
+          <div className="flex items-center justify-between mb-2">
+            <p className="font-display text-base tracking-wide group-hover:text-[var(--color-violet-primary)]">
+              📊 Statistiques
+            </p>
+            <span className="text-muted-foreground group-hover:translate-x-0.5 transition-transform">
+              →
+            </span>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Vue globale de l'activité : participations, top quizz, performances.
+          </p>
+        </Link>
       </div>
     </div>
   );

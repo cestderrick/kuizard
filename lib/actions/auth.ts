@@ -82,6 +82,22 @@ export async function signupAction(
     },
   });
 
+  // Email de bienvenue (fire and forget — on n'attend pas la réponse Resend
+  // pour ne pas ralentir l'inscription, et on tolère un échec silencieux)
+  try {
+    const { sendEmail } = await import("@/lib/email/client");
+    const { welcomeEmail } = await import("@/lib/email/templates");
+    const tpl = welcomeEmail({ name });
+    void sendEmail({
+      to: emailLower,
+      subject: tpl.subject,
+      html: tpl.html,
+      text: tpl.text,
+    });
+  } catch (err) {
+    console.error("[signup] welcome email failed:", err);
+  }
+
   // 4. Auto-login après création.
   // ⚠️ signIn() avec redirectTo va LANCER une exception NEXT_REDIRECT,
   // que Next.js intercepte naturellement pour effectuer le redirect.

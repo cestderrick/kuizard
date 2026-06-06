@@ -15,6 +15,11 @@ import type Stripe from "stripe";
 
 import { prisma } from "@/lib/db";
 import { stripe } from "@/lib/stripe/client";
+import { sendEmail } from "@/lib/email/client";
+import {
+  paymentReceiptEmail,
+  subscriptionActivatedEmail,
+} from "@/lib/email/templates";
 
 // Body brut requis pour la vérif de signature
 export const dynamic = "force-dynamic";
@@ -131,6 +136,44 @@ async function handleCheckoutCompleted(
         isPaid: true,
       },
     });
+
+    // Envoi du reçu par email (fire and forget)
+    try {
+      const [user, plan, quiz] = await Promise.all([
+        userId
+          ? prisma.user.findUnique({
+              where: { id: userId },
+              select: { email: true, name: true },
+            })
+          : null,
+        prisma.planConfig.findUnique({
+          where: { slug: planSlug },
+          select: { name: true },
+        }),
+        prisma.quiz.findUnique({
+          where: { id: quizId },
+          select: { title: true, code: true },
+        }),
+      ]);
+      if (user?.email && plan && quiz) {
+        const tpl = paymentReceiptEmail({
+          name: user.name,
+          amountCents: session.amount_total ?? 0,
+          planSlug,
+          planName: plan.name,
+          quizTitle: quiz.title,
+          quizCode: quiz.code,
+        });
+        void sendEmail({
+          to: user.email,
+          subject: tpl.subject,
+          html: tpl.html,
+          text: tpl.text,
+        });
+      }
+    } catch (err) {
+      console.error("[stripe webhook] receipt email failed:", err);
+    }
   }
 
   // Si pas trouvé via stripeSessionId (cas rare où on a perdu le pending),
@@ -184,23 +227,36 @@ async function handleSubscriptionUpsert(
     typeof sub.customer === "string" ? sub.customer : sub.customer.id;
   const user = await prisma.user.findFirst({
     where: { stripeCustomerId: customerId },
-    select: { id: true },
+    select: { id: true, email: true, name: true },
   });
   if (!user) return;
 
   // On essaye d'extraire le plan via le Price ID (qu'on a stocké côté PlanConfig)
   const priceId = sub.items.data[0]?.price?.id;
   let planSlug = "unknown";
+  let planName: string | null = null;
+  let planAmountCents = 0;
+  let planInterval: string | null = null;
   if (priceId) {
     const plan = await prisma.planConfig.findFirst({
       where: { stripePriceId: priceId },
-      select: { slug: true },
+      select: { slug: true, name: true, priceCents: true, interval: true },
     });
-    if (plan) planSlug = plan.slug;
+    if (plan) {
+      planSlug = plan.slug;
+      planName = plan.name;
+      planAmountCents = plan.priceCents;
+      planInterval = plan.interval;
+    }
   }
 
   const currentPeriodEnd = (sub as unknown as { current_period_end?: number })
     .current_period_end;
+
+  const wasNew =
+    (await prisma.subscription.count({
+      where: { stripeSubscriptionId: sub.id },
+    })) === 0;
 
   await prisma.subscription.upsert({
     where: { stripeSubscriptionId: sub.id },
@@ -225,6 +281,26 @@ async function handleSubscriptionUpsert(
       planSlug,
     },
   });
+
+  // Email "abo activé" uniquement à la première activation
+  if (wasNew && sub.status === "active" && planName && user.email) {
+    try {
+      const tpl = subscriptionActivatedEmail({
+        name: user.name,
+        planName,
+        amountCents: planAmountCents,
+        interval: planInterval,
+      });
+      void sendEmail({
+        to: user.email,
+        subject: tpl.subject,
+        html: tpl.html,
+        text: tpl.text,
+      });
+    } catch (err) {
+      console.error("[stripe webhook] sub email failed:", err);
+    }
+  }
 }
 
 async function handleSubscriptionDeleted(

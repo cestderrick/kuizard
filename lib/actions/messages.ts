@@ -17,7 +17,11 @@ import { z } from "zod";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { requireAdmin } from "@/lib/auth/require-admin";
+import { sendEmail } from "@/lib/email/client";
+import { newMessageNotificationEmail } from "@/lib/email/templates";
 import type { MessagesState } from "@/lib/messages/types";
+
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://kuizard.fr";
 
 // Note : MessagesState et initialMessagesState sont exposés depuis
 // `@/lib/messages/types` car ce fichier "use server" ne peut exporter
@@ -217,6 +221,34 @@ export async function postAdminMessageAction(
       },
     }),
   ]);
+
+  // Notification email au user (fire and forget)
+  try {
+    const full = await prisma.conversation.findUnique({
+      where: { id: convo.id },
+      select: {
+        subject: true,
+        user: { select: { email: true, name: true } },
+      },
+    });
+    if (full?.user.email) {
+      const tpl = newMessageNotificationEmail({
+        name: full.user.name,
+        senderRole: "ADMIN",
+        subject: full.subject,
+        preview: parsed.data.body,
+        conversationUrl: `${APP_URL}/dashboard/messages/${convo.id}`,
+      });
+      void sendEmail({
+        to: full.user.email,
+        subject: tpl.subject,
+        html: tpl.html,
+        text: tpl.text,
+      });
+    }
+  } catch (err) {
+    console.error("[messages] admin reply email failed:", err);
+  }
 
   revalidatePath(`/admin/messages/${convo.id}`);
   revalidatePath("/admin/messages");
