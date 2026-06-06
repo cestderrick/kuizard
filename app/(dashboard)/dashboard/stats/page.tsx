@@ -229,7 +229,7 @@ export default async function MyStatsPage() {
                         {q.participationsCount > 0 ? q.avgScore : "—"}
                       </td>
                       <td className="px-3 py-2.5">
-                        {q._count !== undefined && q.participationsCount > 0 && (
+                        {q.participationsCount > 0 && (
                           <Link
                             href={`/q/${q.code}/classement`}
                             className="text-xs text-[var(--color-violet-primary)] hover:underline"
