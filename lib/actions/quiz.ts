@@ -255,6 +255,22 @@ export async function updateQuizMetaAction(
   const { quizId, title, description, mode, scheduledOpenAt, scheduledCloseAt } =
     parsed.data;
 
+  // Gating : check que le mode est autorisé par le plan
+  const { getEffectivePlan } = await import("@/lib/plans/gating");
+  const plan = await getEffectivePlan(quizId);
+  if (mode === "SCHEDULED" && plan.limits.scheduledMode === false) {
+    return {
+      ok: false,
+      message: `Le mode "Créneau horaire" n'est pas inclus dans ton plan "${plan.name}". Passe à un plan supérieur pour l'activer.`,
+    };
+  }
+  if (mode === "LIVE_MANUAL" && plan.limits.liveMode === false) {
+    return {
+      ok: false,
+      message: `Le mode "Pilotage live" n'est pas inclus dans ton plan "${plan.name}". Passe à un plan supérieur pour l'activer.`,
+    };
+  }
+
   const openAt =
     mode === "SCHEDULED" && scheduledOpenAt ? new Date(scheduledOpenAt) : null;
   const closeAt =
@@ -325,6 +341,16 @@ export async function updateThemeAction(
 
   const { quizId, primaryColor, background } = parsed.data;
 
+  // Gating : personnalisation des couleurs
+  const { getEffectivePlan } = await import("@/lib/plans/gating");
+  const plan = await getEffectivePlan(quizId);
+  if (plan.limits.customColors === false) {
+    return {
+      ok: false,
+      message: `La personnalisation des couleurs n'est pas incluse dans ton plan "${plan.name}". Passe à un plan supérieur pour l'activer.`,
+    };
+  }
+
   const result = await prisma.quiz.updateMany({
     where: { id: quizId, userId: session.user.id },
     data: {
@@ -376,6 +402,16 @@ export async function updatePrizesAction(
     prizesJson: formData.get("prizesJson") ?? "[]",
   });
   if (!parsed.success) return { ok: false, message: "Données invalides." };
+
+  // Gating : lots personnalisés
+  const { getEffectivePlan } = await import("@/lib/plans/gating");
+  const plan = await getEffectivePlan(parsed.data.quizId);
+  if (plan.limits.customPrizes === false) {
+    return {
+      ok: false,
+      message: `Les lots personnalisés ne sont pas inclus dans ton plan "${plan.name}". Passe à un plan supérieur pour les activer.`,
+    };
+  }
 
   let prizes: unknown;
   try {

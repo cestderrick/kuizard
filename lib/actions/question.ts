@@ -10,6 +10,7 @@ import { z } from "zod";
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
+import { getEffectivePlan } from "@/lib/plans/gating";
 
 // -----------------------------------------------------
 // Vérifie qu'un quizz appartient bien à l'utilisateur connecté.
@@ -37,6 +38,16 @@ export async function createQuestionAction(formData: FormData) {
 
   const quiz = await assertOwnQuiz(quizId, session.user.id);
   if (!quiz) throw new Error("Quizz introuvable.");
+
+  // Gating : check du nombre max de questions du plan en cours
+  const plan = await getEffectivePlan(quizId);
+  const currentCount = await prisma.question.count({ where: { quizId } });
+  const maxQuestions = plan.limits.maxQuestions ?? 5;
+  if (currentCount >= maxQuestions) {
+    throw new Error(
+      `Limite atteinte : ${currentCount}/${maxQuestions} questions sur le plan "${plan.name}". Passe à un plan supérieur pour en ajouter davantage.`
+    );
+  }
 
   // Détermine l'ordre = (max existant + 1)
   const last = await prisma.question.findFirst({

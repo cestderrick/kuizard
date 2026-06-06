@@ -26,6 +26,7 @@ import {
 } from "@/lib/actions/upload";
 import { parsePrizes } from "@/lib/quiz/prizes";
 import { parseTheme } from "@/lib/quiz/theme";
+import { getEffectivePlan } from "@/lib/plans/gating";
 
 export const metadata: Metadata = {
   title: "Éditer un quizz",
@@ -46,6 +47,12 @@ export default async function EditQuizPage({
   const { id } = await params;
   const quiz = await getMyQuiz(id);
   if (!quiz) notFound();
+
+  // Plan effectif (sert à afficher les limites + features verrouillées)
+  const plan = await getEffectivePlan(quiz.id);
+  const limits = plan.limits;
+  const usedQuestions = quiz.questions.length;
+  const maxQuestions = limits.maxQuestions ?? 5;
 
   return (
     <div className="max-w-4xl mx-auto flex flex-col gap-6">
@@ -81,23 +88,41 @@ export default async function EditQuizPage({
       {/* Encart Plan / Paiement */}
       <Card
         className={
-          quiz.isPaid
+          plan.slug !== "free"
             ? "border-green-300 bg-green-50/60"
             : "border-[var(--color-violet-primary)] bg-[rgba(85,35,187,0.04)]"
         }
       >
-        <CardHeader className="flex flex-row items-center justify-between gap-3">
-          <div>
+        <CardHeader className="flex flex-row items-start justify-between gap-3 flex-wrap">
+          <div className="min-w-0">
             <CardTitle className="text-base">
-              {quiz.isPaid ? "✓ Quizz débloqué" : "🪄 Débloquer ce quizz"}
+              {plan.slug !== "free"
+                ? `✓ Plan ${plan.name}`
+                : "🪄 Plan Découverte (gratuit)"}
             </CardTitle>
-            <CardDescription>
-              {quiz.isPaid
-                ? "Toutes les options de ton plan sont actives."
-                : "Le mode gratuit limite à 5 questions et 20 participants. Choisis un plan pour profiter de tout."}
+            <CardDescription className="mt-1">
+              <span className="block">
+                Questions : <strong>{usedQuestions} / {maxQuestions}</strong>{" "}
+                · Participants max :{" "}
+                <strong>{limits.maxParticipants ?? 20}</strong>
+              </span>
+              <span className="block mt-1 text-xs">
+                {[
+                  limits.customColors && "🎨 Couleurs",
+                  limits.coverImage && "📸 Cover",
+                  limits.questionImages && "🖼️ Photos questions",
+                  limits.customPrizes && "🎁 Lots",
+                  limits.finalMessage && "💌 Message fin",
+                  limits.scheduledMode && "⏰ Créneau",
+                  limits.liveMode && "🎩 Live",
+                  limits.tvDisplay && "📺 TV",
+                ]
+                  .filter(Boolean)
+                  .join(" · ") || "Aucune option activée."}
+              </span>
             </CardDescription>
           </div>
-          {!quiz.isPaid && (
+          {plan.slug === "free" && (
             <Button
               asChild
               style={{

@@ -11,6 +11,7 @@ import { cookies } from "next/headers";
 import type { Prisma } from "@prisma/client";
 
 import { prisma } from "@/lib/db";
+import { getEffectivePlan } from "@/lib/plans/gating";
 
 const COOKIE_PREFIX = "kz_play_"; // un cookie par quizId
 
@@ -123,6 +124,19 @@ export async function startParticipationAction(
   if (!quiz) return { ok: false, message: "Quizz introuvable." };
   if (quiz.status !== "PUBLISHED" && quiz.status !== "RUNNING") {
     return { ok: false, message: "Ce quizz n'est pas actif." };
+  }
+
+  // Gating : nombre max de participants du plan
+  const plan = await getEffectivePlan(quiz.id);
+  const maxParticipants = plan.limits.maxParticipants ?? 20;
+  const currentCount = await prisma.participation.count({
+    where: { quizId: quiz.id },
+  });
+  if (currentCount >= maxParticipants) {
+    return {
+      ok: false,
+      message: `Ce quizz a atteint sa limite de ${maxParticipants} participants. Demande au créateur de passer à un plan supérieur.`,
+    };
   }
 
   const trimmedNickname = nickname.trim();

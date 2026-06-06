@@ -9,6 +9,7 @@ import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { saveImageFile, deleteImageByUrl } from "@/lib/upload/save";
+import { getEffectivePlan } from "@/lib/plans/gating";
 
 export type UploadState = {
   ok: boolean;
@@ -45,6 +46,15 @@ export async function uploadCoverImageAction(
     select: { id: true, coverImageUrl: true },
   });
   if (!quiz) return { ok: false, message: "Quizz introuvable." };
+
+  // Gating : photo de couverture
+  const plan = await getEffectivePlan(quizId);
+  if (plan.limits.coverImage === false) {
+    return {
+      ok: false,
+      message: `La photo de couverture n'est pas incluse dans ton plan "${plan.name}". Passe à un plan supérieur pour l'activer.`,
+    };
+  }
 
   const result = await saveImageFile(file, `quizzes-${quizId}`);
   if (!result.ok) return { ok: false, message: result.message };
@@ -120,6 +130,15 @@ export async function uploadQuestionImageAction(
     select: { id: true, imageUrl: true },
   });
   if (!question) return { ok: false, message: "Question introuvable." };
+
+  // Gating : photo sur les questions
+  const plan = await getEffectivePlan(quizId);
+  if (plan.limits.questionImages === false) {
+    return {
+      ok: false,
+      message: `Les photos sur les questions ne sont pas incluses dans ton plan "${plan.name}". Passe à un plan supérieur pour les activer.`,
+    };
+  }
 
   const result = await saveImageFile(file, `quizzes-${quizId}`);
   if (!result.ok) return { ok: false, message: result.message };
