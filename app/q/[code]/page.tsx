@@ -6,7 +6,7 @@ import { QuizPlayer } from "@/components/play/quiz-player";
 import { LivePlayer } from "@/components/play/live-player";
 import { parseTheme } from "@/lib/quiz/theme";
 import { parseLiveState } from "@/lib/live/state";
-import { canModifyAnswers } from "@/lib/actions/participation";
+import { canModifyAnswers } from "@/lib/quiz/can-modify";
 import {
   ScheduledClosed,
   ScheduledCountdown,
