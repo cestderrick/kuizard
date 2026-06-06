@@ -8,7 +8,7 @@
 // Cette logique pourrait migrer dans `prisma/seed.ts` standard si on
 // configure `prisma.seed` dans package.json.
 
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Prisma } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -186,6 +186,7 @@ async function main() {
   console.log("🎩 Kuizard — Seed des plans");
 
   for (const plan of PLANS) {
+    const limits = plan.limits as unknown as Prisma.InputJsonValue;
     await prisma.planConfig.upsert({
       where: { slug: plan.slug },
       update: {
@@ -195,12 +196,21 @@ async function main() {
         type: plan.type,
         interval: plan.interval,
         priceCents: plan.priceCents,
-        limits: plan.limits,
+        limits,
         displayOrder: plan.displayOrder,
         isHighlighted: plan.isHighlighted,
       },
       create: {
-        ...plan,
+        slug: plan.slug,
+        name: plan.name,
+        tagline: plan.tagline,
+        description: plan.description,
+        type: plan.type,
+        interval: plan.interval,
+        priceCents: plan.priceCents,
+        limits,
+        displayOrder: plan.displayOrder,
+        isHighlighted: plan.isHighlighted,
       },
     });
     console.log(`  ✓ ${plan.slug} (${plan.name}) — ${plan.priceCents}cts`);
