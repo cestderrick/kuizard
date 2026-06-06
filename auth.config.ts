@@ -21,12 +21,15 @@ export const authConfig = {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
       const isOnDashboard = nextUrl.pathname.startsWith("/dashboard");
+      const isOnAdmin = nextUrl.pathname.startsWith("/admin");
       const isOnAuthPage =
         nextUrl.pathname.startsWith("/login") ||
         nextUrl.pathname.startsWith("/signup");
 
-      if (isOnDashboard) {
-        // Pour /dashboard et sous-routes : il faut être connecté
+      if (isOnDashboard || isOnAdmin) {
+        // Auth requise sur /dashboard et /admin (la vérif du rôle ADMIN
+        // se fait côté layout/page via requireAdmin — on ne peut pas faire
+        // de query Prisma ici en Edge runtime).
         return isLoggedIn;
       }
 

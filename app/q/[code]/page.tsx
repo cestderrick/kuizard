@@ -6,6 +6,7 @@ import { QuizPlayer } from "@/components/play/quiz-player";
 import { LivePlayer } from "@/components/play/live-player";
 import { parseTheme } from "@/lib/quiz/theme";
 import { parseLiveState } from "@/lib/live/state";
+import { canModifyAnswers } from "@/lib/actions/participation";
 import {
   ScheduledClosed,
   ScheduledCountdown,
@@ -65,6 +66,27 @@ export default async function PlayPage({
   });
 
   if (!quiz) notFound();
+
+  // Pas de question encore → affichage "en préparation" pour éviter de laisser
+  // un joueur taper un pseudo dans le vide.
+  if (quiz.questions.length === 0) {
+    return (
+      <main className="min-h-screen flex items-center justify-center px-4 py-12 bg-[var(--color-night)] text-[var(--color-lavender)]">
+        <div className="max-w-md text-center">
+          <div className="text-6xl mb-4" aria-hidden>
+            🎩
+          </div>
+          <h1 className="font-display text-2xl mb-2 tracking-wide">
+            {quiz.title}
+          </h1>
+          <p className="text-[var(--color-lavender-2)] opacity-80">
+            Le créateur est en train de finaliser ce quizz. Reviens dans
+            quelques instants ✨
+          </p>
+        </div>
+      </main>
+    );
+  }
 
   // Mode LIVE_MANUAL terminé → on emmène direct au classement plutôt que
   // de redemander un pseudo dans le vide.
@@ -154,18 +176,46 @@ export default async function PlayPage({
   const theme = parseTheme(quiz.theme);
 
   // Reprise de session : si le joueur a déjà un cookie de participation, on
-  // récupère son pseudo + id et on saute la JoinCard.
+  // récupère son pseudo + id + ses réponses pour reprendre exactement là où il
+  // s'est arrêté (utile en SCHEDULED où on peut revenir plusieurs fois).
   const { cookies: getCookies } = await import("next/headers");
   const cookieStore = await getCookies();
   const existingParticipationId = cookieStore.get(`kz_play_${quiz.id}`)?.value;
   let existingParticipation: { id: string; nickname: string } | null = null;
+  let resumeData: {
+    participationId: string;
+    nickname: string;
+    answers: Record<string, unknown>;
+    completedAt: Date | null;
+    canModify: boolean;
+  } | null = null;
+
   if (existingParticipationId) {
     const p = await prisma.participation.findUnique({
       where: { id: existingParticipationId },
-      select: { id: true, nickname: true, quizId: true },
+      select: {
+        id: true,
+        nickname: true,
+        quizId: true,
+        answers: true,
+        completedAt: true,
+      },
     });
     if (p && p.quizId === quiz.id) {
       existingParticipation = { id: p.id, nickname: p.nickname };
+      const canModify = canModifyAnswers(
+        quiz.mode,
+        quiz.status,
+        p.completedAt,
+        quiz.scheduledCloseAt
+      );
+      resumeData = {
+        participationId: p.id,
+        nickname: p.nickname,
+        answers: (p.answers as Record<string, unknown>) ?? {},
+        completedAt: p.completedAt,
+        canModify,
+      };
     }
   }
 
@@ -199,6 +249,18 @@ export default async function PlayPage({
       coverImageUrl={quiz.coverImageUrl}
       questions={sanitizedQuestions}
       theme={theme}
+      resume={
+        resumeData
+          ? {
+              participationId: resumeData.participationId,
+              nickname: resumeData.nickname,
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              answers: resumeData.answers as any,
+              completedAt: resumeData.completedAt,
+              canModify: resumeData.canModify,
+            }
+          : null
+      }
     />
   );
 }

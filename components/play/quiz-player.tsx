@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 import {
+  saveProgressAction,
   startParticipationAction,
   submitAnswersAction,
 } from "@/lib/actions/participation";
@@ -33,6 +34,14 @@ type Answer =
 
 type Phase = "intro" | "playing" | "result";
 
+type ResumeData = {
+  participationId: string;
+  nickname: string;
+  answers: Record<string, Answer>;
+  completedAt: Date | null;
+  canModify: boolean;
+};
+
 type Props = {
   code: string;
   title: string;
@@ -40,6 +49,8 @@ type Props = {
   coverImageUrl: string | null;
   questions: Question[];
   theme: Theme;
+  /** Données pour reprendre une session existante (cookie kz_play_<quizId>) */
+  resume?: ResumeData | null;
 };
 
 export function QuizPlayer({
@@ -49,16 +60,55 @@ export function QuizPlayer({
   coverImageUrl,
   questions,
   theme,
+  resume,
 }: Props) {
-  const [phase, setPhase] = useState<Phase>("intro");
-  const [nickname, setNickname] = useState("");
-  const [participationId, setParticipationId] = useState<string | null>(null);
-  const [answers, setAnswers] = useState<Record<string, Answer>>({});
+  // Si on a une session reprise terminée et modifiable (SCHEDULED), on
+  // l'amène directement en phase "playing" en pré-remplissant tout.
+  const initialPhase: Phase = resume
+    ? resume.completedAt && !resume.canModify
+      ? "result"
+      : "playing"
+    : "intro";
+
+  const [phase, setPhase] = useState<Phase>(initialPhase);
+  const [nickname, setNickname] = useState(resume?.nickname ?? "");
+  const [participationId, setParticipationId] = useState<string | null>(
+    resume?.participationId ?? null
+  );
+  const [answers, setAnswers] = useState<Record<string, Answer>>(
+    resume?.answers ?? {}
+  );
   const [score, setScore] = useState<number | null>(null);
   const [total, setTotal] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [autosaveStatus, setAutosaveStatus] = useState<
+    "idle" | "saving" | "saved"
+  >("idle");
 
   const [isPending, startTransition] = useTransition();
+
+  // ----------------------------------------------------------------
+  // AUTOSAVE — debounced à chaque changement de answers
+  // (utile en mode SCHEDULED pour reprendre après fermeture nav)
+  // ----------------------------------------------------------------
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    if (!participationId || phase !== "playing") return;
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    setAutosaveStatus("saving");
+    saveTimerRef.current = setTimeout(async () => {
+      const fd = new FormData();
+      fd.set("code", code);
+      fd.set("participationId", participationId);
+      fd.set("answersJson", JSON.stringify(answers));
+      fd.set("currentQuestionIndex", "0");
+      await saveProgressAction({ ok: false }, fd);
+      setAutosaveStatus("saved");
+    }, 800);
+    return () => {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    };
+  }, [answers, participationId, phase, code]);
 
   // --- Intro : démarrer la participation
   function handleStart(e: React.FormEvent) {
@@ -169,6 +219,16 @@ export function QuizPlayer({
                 {questions.length} question{questions.length > 1 ? "s" : ""} ·{" "}
                 Réponds à toutes puis valide en bas de page
               </p>
+              {resume?.completedAt && resume.canModify && (
+                <p className="mt-3 inline-block text-xs px-3 py-1.5 rounded-full bg-[rgba(245,158,11,0.15)] border border-[var(--color-gold)] text-[var(--color-gold)]">
+                  📝 Tu peux modifier tes réponses tant que le créneau est ouvert
+                </p>
+              )}
+              {participationId && autosaveStatus !== "idle" && (
+                <p className="mt-2 text-[10px] uppercase tracking-wider opacity-50">
+                  {autosaveStatus === "saving" ? "💾 sauvegarde…" : "✓ sauvegardé"}
+                </p>
+              )}
             </header>
 
             {questions.map((q, idx) => (
@@ -199,7 +259,11 @@ export function QuizPlayer({
                 }}
                 className="font-bold"
               >
-                {isPending ? "Calcul…" : "Voir mon score ✨"}
+                {isPending
+                  ? "Calcul…"
+                  : resume?.completedAt && resume.canModify
+                  ? "Mettre à jour mes réponses 📝"
+                  : "Voir mon score ✨"}
               </Button>
             </div>
           </form>
@@ -212,6 +276,8 @@ export function QuizPlayer({
             nickname={nickname}
             score={score}
             total={total}
+            canModify={resume?.canModify ?? false}
+            onModify={() => setPhase("playing")}
           />
         )}
       </div>
@@ -421,12 +487,16 @@ function ResultCard({
   nickname,
   score,
   total,
+  canModify,
+  onModify,
 }: {
   code: string;
   title: string;
   nickname: string;
   score: number;
   total: number;
+  canModify: boolean;
+  onModify: () => void;
 }) {
   const ratio = total > 0 ? Math.round((score / total) * 100) : 0;
   const message =
@@ -469,6 +539,20 @@ function ResultCard({
       <p className="italic">{message}</p>
 
       <div className="flex flex-col gap-2 pt-2">
+        {canModify && (
+          <button
+            type="button"
+            onClick={onModify}
+            className="inline-block px-5 py-2.5 rounded-md font-semibold border-2"
+            style={{
+              borderColor: "var(--color-violet-primary)",
+              color: "var(--color-violet-primary)",
+              backgroundColor: "transparent",
+            }}
+          >
+            📝 Modifier mes réponses
+          </button>
+        )}
         <a
           href={`/q/${code}/classement`}
           className="inline-block px-5 py-2.5 rounded-md font-semibold"

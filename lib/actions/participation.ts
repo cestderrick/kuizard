@@ -259,3 +259,106 @@ export async function submitAnswersAction(
 
   return { ok: true, score, total };
 }
+
+// -----------------------------------------------------
+// SAVE PROGRESS (autosave silencieux pour reprise multi-session)
+// -----------------------------------------------------
+//
+// Appelée à intervalles réguliers ou sur changement par le QuizPlayer.
+// Ne calcule pas le score, ne marque pas completedAt — on persiste juste
+// l'état d'avancement pour pouvoir reprendre après fermeture du navigateur.
+// En mode SCHEDULED, tant que le créneau est ouvert, on autorise même la
+// modification après "soumission" (completedAt non-null mais SCHEDULED open).
+
+export type SaveProgressState = {
+  ok: boolean;
+  message?: string;
+};
+
+export async function saveProgressAction(
+  _prev: SaveProgressState,
+  formData: FormData
+): Promise<SaveProgressState> {
+  const code = formData.get("code");
+  const participationId = formData.get("participationId");
+  const answersJson = formData.get("answersJson");
+  const currentIndexRaw = formData.get("currentQuestionIndex");
+
+  if (typeof code !== "string" || !code) {
+    return { ok: false, message: "Code manquant." };
+  }
+  if (typeof participationId !== "string" || !participationId) {
+    return { ok: false, message: "Participation introuvable." };
+  }
+  if (typeof answersJson !== "string") {
+    return { ok: false, message: "Réponses invalides." };
+  }
+
+  let answers: Record<string, Answer>;
+  try {
+    answers = JSON.parse(answersJson);
+  } catch {
+    return { ok: false, message: "Réponses corrompues." };
+  }
+
+  const currentQuestionIndex =
+    typeof currentIndexRaw === "string"
+      ? Math.max(0, parseInt(currentIndexRaw, 10) || 0)
+      : 0;
+
+  const quiz = await prisma.quiz.findUnique({
+    where: { code },
+    select: {
+      id: true,
+      status: true,
+      mode: true,
+      scheduledCloseAt: true,
+    },
+  });
+  if (!quiz) return { ok: false, message: "Quizz introuvable." };
+
+  // Si SCHEDULED fermé, on bloque l'écriture
+  if (
+    quiz.mode === "SCHEDULED" &&
+    quiz.scheduledCloseAt &&
+    new Date() > quiz.scheduledCloseAt
+  ) {
+    return { ok: false, message: "Le créneau est terminé." };
+  }
+
+  await prisma.participation.updateMany({
+    where: { id: participationId, quizId: quiz.id },
+    data: {
+      answers: answers as unknown as Prisma.InputJsonValue,
+      currentQuestionIndex,
+    },
+  });
+
+  return { ok: true };
+}
+
+// -----------------------------------------------------
+// CAN MODIFY ANSWERS — utilitaire pour la page q/[code]
+// -----------------------------------------------------
+//
+// Règles :
+// - LIVE_MANUAL : une fois completedAt set, plus de modif possible
+// - SCHEDULED : on peut modifier tant que now < scheduledCloseAt
+// - PUBLISHED (sans mode actif) : on peut tant que pas completedAt
+
+export function canModifyAnswers(
+  mode: string,
+  status: string,
+  completedAt: Date | null,
+  scheduledCloseAt: Date | null
+): boolean {
+  if (status !== "PUBLISHED" && status !== "RUNNING") return false;
+
+  if (mode === "SCHEDULED") {
+    if (scheduledCloseAt && new Date() > scheduledCloseAt) return false;
+    return true; // tant que c'est ouvert, on peut modifier (même après "fin")
+  }
+
+  // LIVE_MANUAL ou autre
+  return completedAt === null;
+}

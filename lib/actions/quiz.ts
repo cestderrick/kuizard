@@ -65,7 +65,13 @@ export async function createQuizAction(
   // Générer un code court unique
   const code = await generateUniqueQuizCode();
 
-  // Créer le quizz en BDD (status = DRAFT, plan = FREE par défaut)
+  // Créer le quizz en BDD.
+  // 👉 Plus de DRAFT : le quizz est directement PUBLISHED. Le gating se fait par
+  // mode (LIVE attend l'admin, SCHEDULED attend les dates) et la page joueur
+  // affiche "quizz en préparation" tant qu'il n'y a pas de question.
+  // Conservation FREE : 30 jours par défaut, recalculé au moment de l'envoi
+  // si le plan change.
+  const expiresAt = new Date(Date.now() + 30 * 86400 * 1000);
   const quiz = await prisma.quiz.create({
     data: {
       userId: session.user.id,
@@ -73,8 +79,9 @@ export async function createQuizAction(
       title,
       description: description || null,
       mode,
-      status: "DRAFT",
+      status: "PUBLISHED",
       plan: "FREE",
+      expiresAt,
     },
   });
 
@@ -101,6 +108,7 @@ export async function createFromTemplateAction(formData: FormData) {
 
   const code = await generateUniqueQuizCode();
 
+  const expiresAt = new Date(Date.now() + 30 * 86400 * 1000);
   const quiz = await prisma.quiz.create({
     data: {
       userId: session.user.id,
@@ -108,8 +116,9 @@ export async function createFromTemplateAction(formData: FormData) {
       title: template.quizTitle,
       description: template.quizDescription,
       mode: "LIVE_MANUAL",
-      status: "DRAFT",
+      status: "PUBLISHED",
       plan: "FREE",
+      expiresAt,
       theme: {
         primaryColor: template.themeColor,
         background: "night",

@@ -28,6 +28,8 @@ model User {
   // Null si l'utilisateur s'est inscrit uniquement via OAuth (Google, etc.).
   passwordHash     String?
   accountType      AccountType @default(INDIVIDUAL)
+  // Rôle global : USER par défaut, ADMIN pour les comptes staff.
+  role             UserRole    @default(USER)
   stripeCustomerId String?     @unique
 
   createdAt        DateTime    @default(now())
@@ -36,11 +38,17 @@ model User {
   accounts         Account[]
   sessions         Session[]
   quizzes          Quiz[]
+  conversations    Conversation[]
 }
 
 enum AccountType {
   INDIVIDUAL
   BUSINESS
+}
+
+enum UserRole {
+  USER
+  ADMIN
 }
 
 model Account {
@@ -196,19 +204,62 @@ model Suggestion {
   @@index([status])
 }
 
+// ====================================================
+// MESSAGERIE — Conversations user ↔ admin (support intégré)
+// ====================================================
+
+model Conversation {
+  id            String   @id @default(cuid())
+  userId        String
+  subject       String
+  status        String   @default("open") // "open" | "closed"
+  lastMessageAt DateTime @default(now())
+  // Flags de "non lu" pour afficher des badges sans recalculer à chaque request
+  unreadByAdmin Boolean  @default(true)
+  unreadByUser  Boolean  @default(false)
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages      Message[]
+
+  @@index([userId])
+  @@index([status, lastMessageAt(sort: Desc)])
+}
+
+model Message {
+  id             String   @id @default(cuid())
+  conversationId String
+  // Rôle de l'expéditeur — pas une FK pour permettre une réponse "support" sans
+  // lier à un user admin précis (multi-admins supportés sans complication)
+  senderRole     String   // "USER" | "ADMIN"
+  body           String   @db.Text
+
+  createdAt      DateTime @default(now())
+
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
+}
+
 model Participation {
-  id          String    @id @default(cuid())
-  quizId      String
-  nickname    String
-  email       String?
+  id                   String    @id @default(cuid())
+  quizId               String
+  nickname             String
+  email                String?
   // Réponses par question : { [questionId]: { selectedOptionIds: [], textAnswer: "..." } }
-  answers     Json      @default("{}")
-  score       Int       @default(0)
+  answers              Json      @default("{}")
+  score                Int       @default(0)
+  // Index de la question en cours pour reprendre la session après fermeture du navigateur
+  currentQuestionIndex Int       @default(0)
 
-  startedAt   DateTime  @default(now())
-  completedAt DateTime?
+  startedAt            DateTime  @default(now())
+  completedAt          DateTime?
+  // Dernière modification (pour debug + tri "en cours")
+  lastActivityAt       DateTime  @default(now()) @updatedAt
 
-  quiz        Quiz      @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  quiz                 Quiz      @relation(fields: [quizId], references: [id], onDelete: Cascade)
 
   @@index([quizId])
   @@index([quizId, score(sort: Desc)])

@@ -550,6 +550,10 @@ export default async function Home() {
             Cookies
           </Link>
           <span>·</span>
+          <Link href="/aide" className="hover:underline">
+            💬 Aide
+          </Link>
+          <span>·</span>
           <Link href="/suggestion" className="hover:underline">
             ✨ Suggestion
           </Link>

@@ -163,6 +163,15 @@ export async function ShareSection({
             >
               🎩 Panel live (mode pilotage admin)
             </a>
+            <a
+              href={`/q/${code}/display`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-sm font-medium underline-offset-4 hover:underline"
+              style={{ color: "var(--color-violet-primary)" }}
+            >
+              📺 Affichage TV (pour bars / écrans)
+            </a>
           </div>
         )}
       </CardContent>

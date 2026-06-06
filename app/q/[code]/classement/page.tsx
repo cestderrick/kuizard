@@ -54,9 +54,13 @@ export default async function ClassementPage({
       timeStyle: "short",
     }).format(quizMeta.scheduledCloseAt);
 
+    // Stats anonymisées pour donner un aperçu sans permettre la triche
+    const completedCount = data.entries.length;
+    const topScore = completedCount > 0 ? data.entries[0].score : 0;
+
     return (
       <main className="min-h-screen flex items-center justify-center px-4 py-12 bg-[var(--color-night)] text-[var(--color-lavender)]">
-        <div className="max-w-md text-center">
+        <div className="max-w-lg text-center w-full">
           <div className="text-6xl mb-4" aria-hidden>
             🤫
           </div>
@@ -67,9 +71,32 @@ export default async function ClassementPage({
             {data.title}
           </h1>
           <p className="text-[var(--color-lavender-2)] opacity-80 mb-6">
-            Le classement et les scores seront dévoilés à la clôture du
+            Le classement et les pseudos seront dévoilés à la clôture du
             quizz, le <strong>{closeStr}</strong>.
           </p>
+
+          {/* Stats anonymisées */}
+          {completedCount > 0 && (
+            <div className="grid grid-cols-2 gap-3 mb-6">
+              <div className="rounded-xl bg-[var(--color-night-2)] border border-[rgba(167,139,250,0.2)] p-4">
+                <p className="text-3xl font-display font-bold text-[var(--color-gold-light)]">
+                  {completedCount}
+                </p>
+                <p className="text-xs uppercase tracking-wide opacity-70 mt-1">
+                  Participant{completedCount > 1 ? "s" : ""}
+                </p>
+              </div>
+              <div className="rounded-xl bg-[var(--color-night-2)] border border-[rgba(167,139,250,0.2)] p-4">
+                <p className="text-3xl font-display font-bold text-[var(--color-gold-light)]">
+                  {topScore}
+                </p>
+                <p className="text-xs uppercase tracking-wide opacity-70 mt-1">
+                  Meilleur score
+                </p>
+              </div>
+            </div>
+          )}
+
           <Link
             href={`/q/${data.code}`}
             className="inline-block px-5 py-2.5 rounded-md font-semibold"

@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { auth } from "@/auth";
+import { prisma } from "@/lib/db";
 import { listMyQuizzes } from "@/lib/actions/quiz";
+import { countUnreadForUser } from "@/lib/actions/messages";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -23,22 +25,61 @@ export default async function DashboardPage() {
   const quizzes = await listMyQuizzes();
   const recent = quizzes.slice(0, 3);
 
+  // Lien admin discret, visible uniquement si rôle ADMIN
+  const me = session?.user?.id
+    ? await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { role: true },
+      })
+    : null;
+  const isAdmin = me?.role === "ADMIN";
+
+  // Badge messages non lus
+  const unreadMessages = session?.user?.id
+    ? await countUnreadForUser(session.user.id)
+    : 0;
+
   return (
     <div className="flex flex-col gap-8">
       {/* Hero accueil */}
       <section>
-        <p className="text-sm uppercase tracking-[3px] text-[var(--color-violet-primary)] mb-2 font-semibold">
-          ✨ Bienvenue
-        </p>
-        <h1
-          className="font-display text-4xl md:text-5xl font-bold tracking-wide"
-          style={{ color: "var(--color-violet-deep)" }}
-        >
-          Salut {userName} !
-        </h1>
-        <p className="mt-2 text-muted-foreground max-w-xl">
-          Ton espace pour créer, gérer et partager des quizz personnalisés.
-        </p>
+        <div className="flex items-start justify-between gap-3 flex-wrap">
+          <div>
+            <p className="text-sm uppercase tracking-[3px] text-[var(--color-violet-primary)] mb-2 font-semibold">
+              ✨ Bienvenue
+            </p>
+            <h1
+              className="font-display text-4xl md:text-5xl font-bold tracking-wide"
+              style={{ color: "var(--color-violet-deep)" }}
+            >
+              Salut {userName} !
+            </h1>
+            <p className="mt-2 text-muted-foreground max-w-xl">
+              Ton espace pour créer, gérer et partager des quizz personnalisés.
+            </p>
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <Link
+              href="/dashboard/messages"
+              className="relative text-xs uppercase tracking-[2px] px-3 py-2 rounded-full border-2 border-[var(--color-violet-primary)] text-[var(--color-violet-primary)] hover:bg-[var(--color-violet-primary)] hover:text-white transition font-semibold whitespace-nowrap"
+            >
+              ✉️ Messages
+              {unreadMessages > 0 && (
+                <span className="absolute -top-2 -right-2 text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-[var(--color-gold)] text-white min-w-[18px] text-center">
+                  {unreadMessages}
+                </span>
+              )}
+            </Link>
+            {isAdmin && (
+              <Link
+                href="/admin"
+                className="text-xs uppercase tracking-[2px] px-3 py-2 rounded-full border-2 border-[var(--color-violet-primary)] text-[var(--color-violet-primary)] hover:bg-[var(--color-violet-primary)] hover:text-white transition font-semibold whitespace-nowrap"
+              >
+                🛡️ Admin
+              </Link>
+            )}
+          </div>
+        </div>
       </section>
 
       {/* Mes quizz (récents) */}
