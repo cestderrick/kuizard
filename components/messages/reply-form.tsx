@@ -8,7 +8,7 @@ import { useActionState, useEffect, useRef } from "react";
 import {
   type MessagesState,
   initialMessagesState,
-} from "@/lib/actions/messages";
+} from "@/lib/messages/types";
 import { useActionToast } from "@/lib/hooks/use-action-toast";
 
 type ReplyAction = (

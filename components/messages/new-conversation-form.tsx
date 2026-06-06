@@ -2,10 +2,8 @@
 
 import { useActionState } from "react";
 
-import {
-  createConversationAction,
-  initialMessagesState,
-} from "@/lib/actions/messages";
+import { createConversationAction } from "@/lib/actions/messages";
+import { initialMessagesState } from "@/lib/messages/types";
 import { useActionToast } from "@/lib/hooks/use-action-toast";
 
 export function NewConversationForm() {

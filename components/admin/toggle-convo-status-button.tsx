@@ -2,10 +2,8 @@
 
 import { useActionState } from "react";
 
-import {
-  toggleConvoStatusAction,
-  initialMessagesState,
-} from "@/lib/actions/messages";
+import { toggleConvoStatusAction } from "@/lib/actions/messages";
+import { initialMessagesState } from "@/lib/messages/types";
 import { useActionToast } from "@/lib/hooks/use-action-toast";
 
 export function ToggleConvoStatusButton({

@@ -17,16 +17,11 @@ import { z } from "zod";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { requireAdmin } from "@/lib/auth/require-admin";
+import type { MessagesState } from "@/lib/messages/types";
 
-export type MessagesState = {
-  ok: boolean;
-  message?: string;
-  errors?: Record<string, string[]>;
-  conversationId?: string;
-};
-
-const INITIAL: MessagesState = { ok: false };
-export const initialMessagesState = INITIAL;
+// Note : MessagesState et initialMessagesState sont exposés depuis
+// `@/lib/messages/types` car ce fichier "use server" ne peut exporter
+// que des fonctions async.
 
 // =============================================
 // USER — créer une conversation
