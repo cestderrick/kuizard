@@ -17,16 +17,17 @@ export default async function PaymentSuccessPage({
 }) {
   const { session_id } = await searchParams;
 
-  // Récupère le payment lié à la session
+  // Récupère le payment lié à la session, puis le quizz en deux étapes
+  // (Payment n'a pas de relation directe vers Quiz dans le schéma — on
+  // garde le quizId nu pour simplifier et éviter les cascades non voulues).
   let quizCode: string | null = null;
   if (session_id) {
-    const payment = await prisma.payment.findUnique({
-      where: { stripeSessionId: session_id },
-      select: {
-        quizId: true,
-        quiz: { select: { code: true } } as never, // pas de relation directe Quiz<-Payment
-      },
-    }).catch(() => null);
+    const payment = await prisma.payment
+      .findUnique({
+        where: { stripeSessionId: session_id },
+        select: { quizId: true },
+      })
+      .catch(() => null);
 
     if (payment?.quizId) {
       const quiz = await prisma.quiz.findUnique({
