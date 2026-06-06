@@ -157,6 +157,10 @@ export async function postUserMessageAction(
 // =============================================
 // USER — marquer lu
 // =============================================
+// Pas de revalidatePath ici : cette action est appelée pendant le render
+// d'un server component (la page conversation) — Next 16 refuse les
+// revalidate en cours de render. Le compteur unread sera à jour au prochain
+// chargement de la liste de toutes manières.
 
 export async function markConvoReadByUserAction(conversationId: string) {
   const session = await auth();
@@ -166,7 +170,6 @@ export async function markConvoReadByUserAction(conversationId: string) {
     where: { id: conversationId, userId: session.user.id },
     data: { unreadByUser: false },
   });
-  revalidatePath("/dashboard/messages");
 }
 
 // =============================================
@@ -233,7 +236,7 @@ export async function markConvoReadByAdminAction(conversationId: string) {
     where: { id: conversationId },
     data: { unreadByAdmin: false },
   });
-  revalidatePath("/admin/messages");
+  // Pas de revalidatePath : appelée pendant le render (voir note plus haut)
 }
 
 export async function toggleConvoStatusAction(
