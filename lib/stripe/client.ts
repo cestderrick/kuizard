@@ -14,9 +14,10 @@ if (!apiKey) {
   );
 }
 
+// On laisse Stripe utiliser la version d'API associée au compte par défaut.
+// On pourra l'épingler plus tard quand on aura validé une cible précise
+// (ex: après bump du SDK Stripe).
 export const stripe = new Stripe(apiKey ?? "sk_test_placeholder", {
-  // Épingle la version d'API pour éviter les surprises lors d'updates SDK
-  apiVersion: "2025-09-30.clover",
   typescript: true,
   appInfo: {
     name: "Kuizard",
