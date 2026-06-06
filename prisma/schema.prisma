@@ -39,6 +39,8 @@ model User {
   sessions         Session[]
   quizzes          Quiz[]
   conversations    Conversation[]
+  payments         Payment[]
+  subscriptions    Subscription[]
 }
 
 enum AccountType {
@@ -202,6 +204,165 @@ model Suggestion {
 
   @@index([createdAt])
   @@index([status])
+}
+
+// ====================================================
+// MONETIZATION — Plans, paiements, abos, codes promos
+// ====================================================
+//
+// Architecture :
+// - PlanConfig : config dynamique des plans (modifiable par admin)
+// - Payment : historique paiements one-shot (par quizz)
+// - Subscription : abos Pro/Bar récurrents
+// - PromoCode : codes de réduction synchronisés avec Stripe Coupons
+
+model PlanConfig {
+  id              String   @id @default(cuid())
+  // Slug stable utilisé par le code ("essentiel", "festif", "magique", "bar_essentiel", "bar_pro")
+  slug            String   @unique
+  name            String   // "Essentiel", "Bar Pro", etc.
+  tagline         String?  // courte phrase d'accroche
+  description     String?  @db.Text
+
+  // "one_shot" : paiement à l'usage (par quizz)
+  // "subscription" : abonnement récurrent
+  type            String   @default("one_shot")
+  // Pour les subscriptions : "month" | "year" ; null sinon
+  interval        String?
+
+  // Prix en centimes EUR (ex: 500 = 5,00 €)
+  priceCents      Int      @default(0)
+
+  // Stripe Price ID (créé manuellement dans Stripe puis collé ici)
+  stripePriceId   String?
+
+  // Limites et features. Schéma libre, ex :
+  // { "maxQuestions": 10, "maxParticipants": 100,
+  //   "customColors": true, "customPrizes": false,
+  //   "finalMessage": true, "coverImage": true,
+  //   "questionImages": true, "scheduledMode": true,
+  //   "liveMode": false, "ranking": true, "tvDisplay": false }
+  limits          Json     @default("{}")
+
+  displayOrder    Int      @default(0)
+  isActive        Boolean  @default(true)
+  // Mis en avant sur la page tarifs
+  isHighlighted   Boolean  @default(false)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([slug])
+  @@index([type, isActive])
+}
+
+model PromoCode {
+  id              String   @id @default(cuid())
+  // Code que le user tape, normalisé en uppercase
+  code            String   @unique
+  description     String?
+
+  // Une seule des deux est renseignée (null = autre type)
+  percentOff      Int?     // 1-100
+  amountOffCents  Int?     // ex : 500 = 5€
+
+  // Stripe coupon ID synchronisé via API
+  stripeCouponId  String?
+
+  // Limiter à un plan, null = applicable à tous les plans
+  planSlug        String?
+
+  maxRedemptions  Int?     // null = illimité
+  redemptions     Int      @default(0)
+  expiresAt       DateTime?
+  isActive        Boolean  @default(true)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  payments        Payment[]
+
+  @@index([code])
+  @@index([isActive])
+}
+
+model Payment {
+  id                    String   @id @default(cuid())
+  userId                String?
+  quizId                String?
+
+  // Stripe IDs
+  stripeSessionId       String?  @unique
+  stripePaymentIntentId String?
+
+  amountCents           Int
+  currency              String   @default("eur")
+  planSlug              String?  // plan acheté
+  promoCodeId           String?
+
+  // "pending" | "succeeded" | "failed" | "refunded"
+  status                String   @default("pending")
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  user                  User?      @relation(fields: [userId], references: [id], onDelete: SetNull)
+  promoCode             PromoCode? @relation(fields: [promoCodeId], references: [id])
+
+  @@index([userId])
+  @@index([quizId])
+  @@index([status])
+  @@index([createdAt(sort: Desc)])
+}
+
+model Subscription {
+  id                   String    @id @default(cuid())
+  userId               String
+  planSlug             String
+
+  // Stripe IDs
+  stripeSubscriptionId String?   @unique
+  stripePriceId        String?
+
+  // "active" | "past_due" | "canceled" | "trialing" | "incomplete"
+  status               String    @default("active")
+  currentPeriodEnd     DateTime?
+  cancelAtPeriodEnd    Boolean   @default(false)
+
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+  endedAt              DateTime?
+
+  user                 User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+}
+
+// ====================================================
+// TEMPLATES — Modèles de quizz prédéfinis (CRUD admin)
+// ====================================================
+// Remplace progressivement le hardcoded TypeScript de lib/quiz/templates.ts
+
+model QuizTemplate {
+  id              String   @id @default(cuid())
+  slug            String   @unique
+  title           String
+  description     String   @db.Text
+  category        String   // "mariage" | "anniversaire" | "team_building" | etc.
+  coverImageUrl   String?
+
+  // Définition complète des questions : array de
+  // { type, text, points, options: [{ label, isCorrect }] }
+  questions       Json     @default("[]")
+
+  displayOrder    Int      @default(0)
+  isActive        Boolean  @default(true)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([category, isActive])
 }
 
 // ====================================================

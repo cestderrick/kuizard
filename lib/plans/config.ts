@@ -1,0 +1,87 @@
+// =============================================
+// Helper pour lire la config des plans + vérifier les limites
+// =============================================
+//
+// On lit la BDD plutôt que l'enum Prisma `Plan` car l'admin peut modifier
+// tarifs et limites à la volée. Les plans existants gardent leur slug stable.
+
+import { prisma } from "@/lib/db";
+
+export type PlanLimits = {
+  maxQuestions?: number;
+  maxParticipants?: number;
+  customColors?: boolean;
+  customPrizes?: boolean;
+  finalMessage?: boolean;
+  coverImage?: boolean;
+  questionImages?: boolean;
+  scheduledMode?: boolean;
+  liveMode?: boolean;
+  ranking?: boolean;
+  tvDisplay?: boolean;
+};
+
+export type PlanConfigDTO = {
+  id: string;
+  slug: string;
+  name: string;
+  tagline: string | null;
+  description: string | null;
+  type: string;
+  interval: string | null;
+  priceCents: number;
+  stripePriceId: string | null;
+  limits: PlanLimits;
+  displayOrder: number;
+  isActive: boolean;
+  isHighlighted: boolean;
+};
+
+function toDTO(p: {
+  id: string;
+  slug: string;
+  name: string;
+  tagline: string | null;
+  description: string | null;
+  type: string;
+  interval: string | null;
+  priceCents: number;
+  stripePriceId: string | null;
+  limits: unknown;
+  displayOrder: number;
+  isActive: boolean;
+  isHighlighted: boolean;
+}): PlanConfigDTO {
+  return {
+    ...p,
+    limits: (p.limits as PlanLimits) ?? {},
+  };
+}
+
+export async function getActivePlans(
+  type?: "one_shot" | "subscription"
+): Promise<PlanConfigDTO[]> {
+  const plans = await prisma.planConfig.findMany({
+    where: {
+      isActive: true,
+      ...(type ? { type } : {}),
+    },
+    orderBy: [{ displayOrder: "asc" }, { priceCents: "asc" }],
+  });
+  return plans.map(toDTO);
+}
+
+export async function getPlanBySlug(
+  slug: string
+): Promise<PlanConfigDTO | null> {
+  const p = await prisma.planConfig.findUnique({ where: { slug } });
+  return p ? toDTO(p) : null;
+}
+
+/**
+ * Récupère le plan "FREE" (gratuit) — celui qui s'applique à tout quizz
+ * dont l'utilisateur n'a pas payé.
+ */
+export async function getFreePlan(): Promise<PlanConfigDTO | null> {
+  return getPlanBySlug("free");
+}

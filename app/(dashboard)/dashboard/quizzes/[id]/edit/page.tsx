@@ -78,6 +78,42 @@ export default async function EditQuizPage({
         </div>
       </div>
 
+      {/* Encart Plan / Paiement */}
+      <Card
+        className={
+          quiz.isPaid
+            ? "border-green-300 bg-green-50/60"
+            : "border-[var(--color-violet-primary)] bg-[rgba(85,35,187,0.04)]"
+        }
+      >
+        <CardHeader className="flex flex-row items-center justify-between gap-3">
+          <div>
+            <CardTitle className="text-base">
+              {quiz.isPaid ? "✓ Quizz débloqué" : "🪄 Débloquer ce quizz"}
+            </CardTitle>
+            <CardDescription>
+              {quiz.isPaid
+                ? "Toutes les options de ton plan sont actives."
+                : "Le mode gratuit limite à 5 questions et 20 participants. Choisis un plan pour profiter de tout."}
+            </CardDescription>
+          </div>
+          {!quiz.isPaid && (
+            <Button
+              asChild
+              style={{
+                backgroundColor: "var(--color-gold)",
+                color: "var(--color-violet-deep)",
+              }}
+              className="font-semibold"
+            >
+              <Link href={`/dashboard/quizzes/${quiz.id}/upgrade`}>
+                Voir les plans →
+              </Link>
+            </Button>
+          )}
+        </CardHeader>
+      </Card>
+
       {/* Partage et publication */}
       <ShareSection
         quizId={quiz.id}

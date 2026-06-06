@@ -59,18 +59,19 @@ export default async function AdminLayout({
               label="✉️ Messagerie"
               badge={unreadConvos > 0 ? unreadConvos : undefined}
             />
+            <div className="mt-2 pt-2 border-t border-[rgba(167,139,250,0.1)]">
+              <p className="px-3 text-[10px] uppercase tracking-[2px] opacity-50 mb-1">
+                Monétisation
+              </p>
+            </div>
+            <AdminNavLink href="/admin/plans" label="💳 Plans & tarifs" />
+            <AdminNavLink href="/admin/promos" label="🎟️ Codes promos" />
+            <AdminNavLink href="/admin/payments" label="💰 Paiements" />
             <AdminNavLink
-              href="/admin/coming-soon"
-              label="📝 Templates (V2)"
+              href="/admin/subscriptions"
+              label="🔁 Abonnements"
             />
-            <AdminNavLink
-              href="/admin/coming-soon"
-              label="💳 Abonnements (V2)"
-            />
-            <AdminNavLink
-              href="/admin/coming-soon"
-              label="🎟️ Codes promos (V2)"
-            />
+            <AdminNavLink href="/admin/templates" label="📝 Templates" />
           </nav>
         </aside>
 
