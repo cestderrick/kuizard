@@ -23,6 +23,9 @@ export default async function ProfilePage() {
       name: true,
       email: true,
       accountType: true,
+      siret: true,
+      companyName: true,
+      vatNumber: true,
       createdAt: true,
       passwordHash: true,
     },
@@ -58,6 +61,9 @@ export default async function ProfilePage() {
             name: user.name,
             email: user.email,
             accountType: user.accountType,
+            siret: user.siret,
+            companyName: user.companyName,
+            vatNumber: user.vatNumber,
           }}
         />
       </section>

@@ -11,6 +11,7 @@ import bcrypt from "bcryptjs";
 
 import { auth, signOut } from "@/auth";
 import { prisma } from "@/lib/db";
+import { checkSiret, normalizeSiret } from "@/lib/siret/validate";
 
 export type ProfileState = {
   ok: boolean;
@@ -22,6 +23,10 @@ const updateProfileSchema = z.object({
   name: z.string().min(2, "Nom trop court.").max(80, "Nom trop long.").optional(),
   email: z.string().email("Email invalide.").max(200),
   accountType: z.enum(["INDIVIDUAL", "BUSINESS"]).optional(),
+  // Champs entreprise — optionnels au schéma, validés ci-dessous si pro
+  siret: z.string().max(20).optional().or(z.literal("")),
+  companyName: z.string().max(140).optional().or(z.literal("")),
+  vatNumber: z.string().max(40).optional().or(z.literal("")),
 });
 
 export async function updateProfileAction(
@@ -37,6 +42,9 @@ export async function updateProfileAction(
     name: formData.get("name") || undefined,
     email: formData.get("email"),
     accountType: formData.get("accountType") || undefined,
+    siret: formData.get("siret") || "",
+    companyName: formData.get("companyName") || "",
+    vatNumber: formData.get("vatNumber") || "",
   });
   if (!parsed.success) {
     return {
@@ -62,12 +70,29 @@ export async function updateProfileAction(
     };
   }
 
+  // Validation SIRET si compte pro avec SIRET renseigné
+  let siretNormalized: string | null = null;
+  if (v.accountType === "BUSINESS" && v.siret && v.siret.trim().length > 0) {
+    const check = checkSiret(v.siret);
+    if (!check.ok) {
+      return {
+        ok: false,
+        errors: { siret: [check.message] },
+        message: check.message,
+      };
+    }
+    siretNormalized = normalizeSiret(v.siret);
+  }
+
   await prisma.user.update({
     where: { id: session.user.id },
     data: {
       name: v.name,
       email: emailLower,
       accountType: v.accountType,
+      siret: siretNormalized,
+      companyName: v.companyName || null,
+      vatNumber: v.vatNumber || null,
     },
   });
 

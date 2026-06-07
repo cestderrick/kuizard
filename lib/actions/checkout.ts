@@ -90,22 +90,60 @@ export async function createCheckoutSessionAction(
   // côté Stripe ; pas obligatoire mais pratique pour le portail client futur)
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { stripeCustomerId: true, email: true, name: true },
+    select: {
+      stripeCustomerId: true,
+      email: true,
+      name: true,
+      accountType: true,
+      companyName: true,
+      siret: true,
+      vatNumber: true,
+    },
   });
   if (!user) return { ok: false, message: "Utilisateur introuvable." };
 
+  const isPro = user.accountType === "BUSINESS";
   let customerId = user.stripeCustomerId;
   if (!customerId) {
     const customer = await stripe.customers.create({
       email: user.email,
-      name: user.name ?? undefined,
-      metadata: { userId: session.user.id },
+      // Pour un compte pro, on met le nom légal de la société comme nom de
+      // facturation (apparaît sur les factures Stripe)
+      name: isPro
+        ? user.companyName ?? user.name ?? undefined
+        : user.name ?? undefined,
+      tax_id_data:
+        isPro && user.vatNumber
+          ? [{ type: "eu_vat", value: user.vatNumber }]
+          : undefined,
+      metadata: {
+        userId: session.user.id,
+        accountType: user.accountType,
+        siret: user.siret ?? "",
+        companyName: user.companyName ?? "",
+      },
     });
     customerId = customer.id;
     await prisma.user.update({
       where: { id: session.user.id },
       data: { stripeCustomerId: customerId },
     });
+  } else if (isPro && (user.companyName || user.siret)) {
+    // Pro : on met à jour le customer existant pour propager les changements
+    // de raison sociale / SIRET
+    try {
+      await stripe.customers.update(customerId, {
+        name: user.companyName ?? user.name ?? undefined,
+        metadata: {
+          userId: session.user.id,
+          accountType: user.accountType,
+          siret: user.siret ?? "",
+          companyName: user.companyName ?? "",
+        },
+      });
+    } catch (err) {
+      console.warn("[checkout] stripe customer update failed:", err);
+    }
   }
 
   // Construction de la session de paiement

@@ -32,6 +32,14 @@ model User {
   role             UserRole    @default(USER)
   stripeCustomerId String?     @unique
 
+  // ====== Comptes professionnels (BUSINESS) ======
+  // Champs collectés pour la facturation B2B (apparaissent sur les factures Stripe).
+  // Le SIRET est validé par algorithme Luhn + (idéalement) appel API recherche-entreprises.
+  // Tous nullable pour rester compatible avec les comptes existants.
+  siret            String?     // 14 chiffres
+  companyName      String?     // Raison sociale officielle
+  vatNumber        String?     // N° TVA intracom optionnel
+
   createdAt        DateTime    @default(now())
   updatedAt        DateTime    @updatedAt
   // Date de la dernière connexion réussie (mise à jour côté signin).

@@ -68,6 +68,24 @@ export default async function AdminUserDetailPage({
             Inscrit le {fmt(user.createdAt)}
           </span>
         </div>
+
+        {/* Fiche entreprise si compte pro */}
+        {user.accountType === "BUSINESS" && (user.siret || user.companyName) && (
+          <div className="mt-4 rounded-xl border border-[var(--color-gold)]/30 bg-[var(--color-night-2)] p-4 text-sm">
+            <p className="text-xs uppercase tracking-[2px] text-[var(--color-gold)] font-semibold mb-2">
+              🏢 Entreprise
+            </p>
+            <p className="font-display">{user.companyName ?? "—"}</p>
+            <p className="text-xs opacity-80 mt-1 font-mono">
+              SIRET : {user.siret ?? "—"}
+            </p>
+            {user.vatNumber && (
+              <p className="text-xs opacity-80 font-mono">
+                TVA : {user.vatNumber}
+              </p>
+            )}
+          </div>
+        )}
       </header>
 
       <section className="grid grid-cols-2 md:grid-cols-4 gap-3">

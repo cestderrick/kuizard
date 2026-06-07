@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 
 import {
   updateProfileAction,
@@ -8,6 +8,7 @@ import {
   type ProfileState,
 } from "@/lib/actions/profile";
 import { useActionToast } from "@/lib/hooks/use-action-toast";
+import { SiretLookup } from "@/components/profile/siret-lookup";
 
 const INITIAL: ProfileState = { ok: false };
 
@@ -15,11 +16,15 @@ type User = {
   name: string | null;
   email: string;
   accountType: "INDIVIDUAL" | "BUSINESS";
+  siret?: string | null;
+  companyName?: string | null;
+  vatNumber?: string | null;
 };
 
 export function ProfileForm({ user }: { user: User }) {
   const [state, action, pending] = useActionState(updateProfileAction, INITIAL);
   useActionToast(state);
+  const [accountType, setAccountType] = useState(user.accountType);
 
   return (
     <form action={action} className="flex flex-col gap-4">
@@ -64,7 +69,10 @@ export function ProfileForm({ user }: { user: User }) {
         </span>
         <select
           name="accountType"
-          defaultValue={user.accountType}
+          value={accountType}
+          onChange={(e) =>
+            setAccountType(e.target.value as "INDIVIDUAL" | "BUSINESS")
+          }
           disabled={pending}
           className="rounded-lg px-3 py-2 border bg-white text-sm focus:outline-none focus:border-[var(--color-violet-primary)]"
         >
@@ -72,6 +80,20 @@ export function ProfileForm({ user }: { user: User }) {
           <option value="BUSINESS">🏢 Professionnel</option>
         </select>
       </label>
+
+      {/* Champs entreprise — affichés uniquement si compte pro */}
+      {accountType === "BUSINESS" && (
+        <fieldset className="rounded-xl border-2 border-[var(--color-violet-primary)]/20 bg-violet-50/40 p-4 flex flex-col gap-3">
+          <legend className="text-xs uppercase tracking-[2px] text-[var(--color-violet-primary)] font-semibold px-2">
+            🏢 Informations entreprise
+          </legend>
+          <SiretLookup
+            initialSiret={user.siret}
+            initialCompanyName={user.companyName}
+            initialVatNumber={user.vatNumber}
+          />
+        </fieldset>
+      )}
 
       <div className="flex justify-end">
         <button
