@@ -3,10 +3,20 @@
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 
-import {
-  lookupSiretByValue,
-  type LookupState,
-} from "@/lib/actions/siret";
+type LookupState = {
+  ok: boolean;
+  message?: string;
+  company?: {
+    siret: string;
+    siren: string;
+    companyName: string;
+    activity: string | null;
+    state: "active" | "ceased" | "unknown";
+    address: string | null;
+    postalCode: string | null;
+    city: string | null;
+  };
+};
 
 /**
  * Bloc "Entreprise" — SIRET (avec lookup INSEE auto), nom société, TVA.
@@ -38,13 +48,22 @@ export function SiretLookup({
       return;
     }
     startTransition(async () => {
-      const r = await lookupSiretByValue(siret);
-      setResult(r);
-      if (r.ok && r.company?.companyName) {
-        setCompanyName(r.company.companyName);
-        toast.success(`✓ ${r.company.companyName}`);
-      } else if (!r.ok && r.message) {
-        toast.error(r.message);
+      try {
+        const res = await fetch(
+          `/api/siret/lookup?siret=${encodeURIComponent(siret)}`,
+          { cache: "no-store" }
+        );
+        const r: LookupState = await res.json();
+        setResult(r);
+        if (r.ok && r.company?.companyName) {
+          setCompanyName(r.company.companyName);
+          toast.success(`✓ ${r.company.companyName}`);
+        } else if (!r.ok && r.message) {
+          toast.error(r.message);
+        }
+      } catch (err) {
+        console.error("[siret-lookup] err:", err);
+        toast.error("Erreur réseau. Vérifie ta connexion.");
       }
     });
   }

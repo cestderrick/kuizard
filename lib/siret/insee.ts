@@ -43,12 +43,17 @@ export async function lookupSiret(siret: string): Promise<LookupResult> {
 
   try {
     const url = `${API_BASE}?q=${s}&page=1&per_page=1`;
+    // Timeout 8s pour ne pas bloquer si l'API est lente
+    const ctrl = new AbortController();
+    const tid = setTimeout(() => ctrl.abort(), 8000);
     const res = await fetch(url, {
       method: "GET",
       headers: { Accept: "application/json" },
-      // Cache court côté Next pour ne pas re-frapper l'API à chaque rendu
-      next: { revalidate: 3600 },
-    });
+      signal: ctrl.signal,
+      // Pas de revalidation Next ici — c'est un appel dynamique dans une
+      // server action, on veut juste un fetch standard
+      cache: "no-store",
+    }).finally(() => clearTimeout(tid));
 
     if (!res.ok) {
       return {
