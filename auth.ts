@@ -45,7 +45,21 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const ok = await verifyPassword(password, user.passwordHash);
         if (!ok) return null;
 
-        // 4. Retourner l'objet user pour la session
+        // 4. Tracer la connexion (sert au cron de cleanup auto)
+        try {
+          await prisma.user.update({
+            where: { id: user.id },
+            data: {
+              lastLoginAt: new Date(),
+              // Si le user avait reçu un avertissement d'inactivité, on le reset
+              inactivityWarnedAt: null,
+            },
+          });
+        } catch (err) {
+          console.error("[auth] lastLoginAt update failed:", err);
+        }
+
+        // 5. Retourner l'objet user pour la session
         return {
           id: user.id,
           email: user.email,

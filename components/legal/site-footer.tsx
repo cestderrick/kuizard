@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { LocaleSwitcher } from "@/components/i18n/locale-switcher";
+
 /**
  * Footer global présent sur toutes les pages "normales" (dashboard, admin,
  * auth, payments, etc.). Les pages joueur (/q/[code]) et l'home gardent
@@ -67,6 +69,7 @@ export function SiteFooter() {
           >
             Cookies
           </Link>
+          <LocaleSwitcher variant="light" />
         </nav>
       </div>
     </footer>

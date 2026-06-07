@@ -1,13 +1,20 @@
 // =============================================
-// Stockage local des images uploadées
+// Stockage des images uploadées (R2 si configuré, sinon local)
 // =============================================
-// Pour V1 on stocke sur disque dans public/uploads/. Les fichiers sont alors
-// servis automatiquement par Next à l'URL /uploads/...
-// Quand on scalera, on migrera vers Cloudflare R2 ou S3.
+// Backend automatiquement choisi :
+//   1. Cloudflare R2 si les variables d'env R2_* sont définies
+//   2. Local public/uploads/ sinon (dev ou prod sans R2)
 
 import { randomBytes } from "node:crypto";
 import { mkdir, writeFile, unlink } from "node:fs/promises";
 import path from "node:path";
+
+import {
+  r2IsConfigured,
+  putToR2,
+  deleteFromR2,
+  r2KeyFromUrl,
+} from "@/lib/upload/r2";
 
 const ALLOWED_MIME = new Set([
   "image/jpeg",
@@ -22,9 +29,16 @@ export type UploadResult =
   | { ok: true; url: string; path: string }
   | { ok: false; message: string };
 
+const MIME_TO_EXT: Record<string, string> = {
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+  "image/gif": "gif",
+};
+
 /**
- * Sauvegarde un File dans public/uploads/<subdir>/ et retourne son URL publique.
- * Le nom de fichier est randomisé pour éviter les collisions et le path traversal.
+ * Sauvegarde un File et retourne son URL publique.
+ * Auto-route entre R2 et local selon la configuration.
  */
 export async function saveImageFile(
   file: File,
@@ -52,41 +66,58 @@ export async function saveImageFile(
   const safeSubdir = subdir.replace(/[^a-zA-Z0-9_-]/g, "");
   if (!safeSubdir) return { ok: false, message: "Sous-dossier invalide." };
 
-  // Extension à partir du type MIME
   const ext = MIME_TO_EXT[file.type] ?? "jpg";
   const filename = `${randomBytes(12).toString("hex")}.${ext}`;
+  const buffer = Buffer.from(await file.arrayBuffer());
 
+  // ---- BRANCHE R2 ----
+  if (r2IsConfigured()) {
+    const key = `${safeSubdir}/${filename}`;
+    try {
+      const { url } = await putToR2({
+        key,
+        body: buffer,
+        contentType: file.type,
+      });
+      return { ok: true, url, path: key };
+    } catch (err) {
+      console.error("[upload] R2 put failed:", err);
+      return { ok: false, message: "Échec de l'upload sur R2." };
+    }
+  }
+
+  // ---- BRANCHE LOCALE (fallback) ----
   const baseDir = path.join(process.cwd(), "public", "uploads", safeSubdir);
   await mkdir(baseDir, { recursive: true });
-
   const filePath = path.join(baseDir, filename);
-  const buffer = Buffer.from(await file.arrayBuffer());
   await writeFile(filePath, buffer);
-
-  // URL publique servie par Next
   const url = `/uploads/${safeSubdir}/${filename}`;
   return { ok: true, url, path: filePath };
 }
 
-const MIME_TO_EXT: Record<string, string> = {
-  "image/jpeg": "jpg",
-  "image/png": "png",
-  "image/webp": "webp",
-  "image/gif": "gif",
-};
-
 /**
- * Supprime un fichier image dans public/uploads/ (si l'URL pointe bien chez nous).
- * Best-effort : on n'échoue pas si le fichier n'existe plus.
+ * Supprime un fichier image. Détecte automatiquement R2 vs local depuis l'URL.
  */
 export async function deleteImageByUrl(url: string | null | undefined) {
   if (!url) return;
-  if (!url.startsWith("/uploads/")) return;
-  const safe = url.replace(/\.\.+/g, "");
-  const absolute = path.join(process.cwd(), "public", safe);
-  try {
-    await unlink(absolute);
-  } catch {
-    // ignore : fichier déjà absent
+
+  // R2 : URL préfixée par R2_PUBLIC_URL
+  if (r2IsConfigured()) {
+    const key = r2KeyFromUrl(url);
+    if (key) {
+      await deleteFromR2(key);
+      return;
+    }
+  }
+
+  // Local : URL préfixée par /uploads/
+  if (url.startsWith("/uploads/")) {
+    const safe = url.replace(/\.\.+/g, "");
+    const absolute = path.join(process.cwd(), "public", safe);
+    try {
+      await unlink(absolute);
+    } catch {
+      // ignore : fichier déjà absent
+    }
   }
 }

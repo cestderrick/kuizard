@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { LocaleSwitcher } from "@/components/i18n/locale-switcher";
+
 /**
  * Variante "night" du footer pour les pages au thème sombre (admin,
  * payment/success, payment/cancel, joueur si besoin).
@@ -51,6 +53,7 @@ export function SiteFooterNight() {
           <Link href="/cookies" className="hover:text-[var(--color-gold)]">
             Cookies
           </Link>
+          <LocaleSwitcher variant="night" />
         </nav>
       </div>
     </footer>

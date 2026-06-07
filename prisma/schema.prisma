@@ -34,6 +34,12 @@ model User {
 
   createdAt        DateTime    @default(now())
   updatedAt        DateTime    @updatedAt
+  // Date de la dernière connexion réussie (mise à jour côté signin).
+  // Sert au cron de suppression auto des comptes inactifs (> 3 ans).
+  // Si null : on retombe sur createdAt.
+  lastLoginAt      DateTime?
+  // Date d'envoi du dernier avertissement "compte sera supprimé dans 30j"
+  inactivityWarnedAt DateTime?
 
   accounts         Account[]
   sessions         Session[]

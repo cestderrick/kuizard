@@ -7,6 +7,7 @@ import { prisma } from "@/lib/db";
 import { parseLiveState } from "@/lib/live/state";
 import { Button } from "@/components/ui/button";
 import { LiveAdminPanel } from "@/components/quiz/live-admin-panel";
+import { LiveStatsPanel } from "@/components/quiz/live-stats-panel";
 
 export const metadata: Metadata = {
   title: "Pilotage live",
@@ -95,18 +96,31 @@ export default async function LiveAdminPage({
         <span>Pilotage live</span>
       </div>
 
-      <LiveAdminPanel
-        quizId={quiz.id}
-        code={quiz.code}
-        title={quiz.title}
-        questions={quiz.questions}
-        initialState={{
-          status: quiz.status,
-          currentQuestionIndex: liveState.currentQuestionIndex,
-          isPaused: liveState.isPaused,
-          totalQuestions: quiz.questions.length,
-        }}
-      />
+      <div className="grid lg:grid-cols-[1fr_320px] gap-6">
+        <LiveAdminPanel
+          quizId={quiz.id}
+          code={quiz.code}
+          title={quiz.title}
+          questions={quiz.questions}
+          initialState={{
+            status: quiz.status,
+            currentQuestionIndex: liveState.currentQuestionIndex,
+            isPaused: liveState.isPaused,
+            totalQuestions: quiz.questions.length,
+          }}
+        />
+
+        {/* Panneau temps réel */}
+        <aside className="flex flex-col gap-3">
+          <h2 className="font-display text-lg tracking-wide flex items-center gap-2">
+            📡 Temps réel
+            <span className="text-[10px] uppercase tracking-wider opacity-60">
+              actualisé toutes les 2s
+            </span>
+          </h2>
+          <LiveStatsPanel code={quiz.code} />
+        </aside>
+      </div>
 
       <div className="flex flex-wrap gap-3">
         <Button asChild variant="outline">
