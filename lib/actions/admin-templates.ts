@@ -43,6 +43,8 @@ const templateSchema = z.object({
   title: z.string().min(2).max(140),
   description: z.string().min(5).max(2000),
   category: z.string().min(2).max(40),
+  theme: z.string().max(40).optional().or(z.literal("")),
+  tagsCsv: z.string().max(500).optional().or(z.literal("")),
   coverImageUrl: z.string().max(500).optional().or(z.literal("")),
   displayOrder: z.coerce.number().int().min(0).default(0),
   isActive: z.boolean().default(true),
@@ -65,6 +67,8 @@ export async function upsertTemplateAction(
     title: formData.get("title"),
     description: formData.get("description"),
     category: formData.get("category"),
+    theme: formData.get("theme") || "",
+    tagsCsv: formData.get("tagsCsv") || "",
     coverImageUrl: formData.get("coverImageUrl") || "",
     displayOrder: formData.get("displayOrder"),
     isActive: checkbox(formData.get("isActive")),
@@ -97,11 +101,21 @@ export async function upsertTemplateAction(
     };
   }
 
+  // Parse les tags depuis une CSV ("famille, humour, années 90")
+  const tags = v.tagsCsv
+    ? v.tagsCsv
+        .split(",")
+        .map((t) => t.trim().toLowerCase())
+        .filter((t) => t.length > 0 && t.length <= 30)
+    : [];
+
   const data = {
     slug: v.slug,
     title: v.title,
     description: v.description,
     category: v.category,
+    theme: v.theme || null,
+    tags,
     coverImageUrl: v.coverImageUrl || null,
     displayOrder: v.displayOrder,
     isActive: v.isActive,

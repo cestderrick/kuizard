@@ -11,6 +11,7 @@ import {
   startParticipationAction,
   submitAnswersAction,
 } from "@/lib/actions/participation";
+import { QuestionTimer } from "@/components/play/question-timer";
 
 type Theme = {
   primaryColor: string;
@@ -23,6 +24,7 @@ type Question = {
   type: string;
   text: string;
   points: number;
+  timerSeconds: number | null;
   options: { label: string }[];
   imageUrl: string | null;
 };
@@ -36,6 +38,7 @@ type LiveState = {
   currentQuestionIndex: number;
   isPaused: boolean;
   totalQuestions: number;
+  questionStartedAtMs?: number | null;
 };
 
 type Props = {
@@ -89,6 +92,7 @@ export function LivePlayer({
             currentQuestionIndex: payload.currentQuestionIndex,
             isPaused: payload.isPaused,
             totalQuestions: payload.totalQuestions,
+            questionStartedAtMs: payload.questionStartedAtMs ?? null,
           });
         }
       } catch {
@@ -128,6 +132,7 @@ export function LivePlayer({
                 currentQuestionIndex: data.currentQuestionIndex,
                 isPaused: data.isPaused,
                 totalQuestions: data.totalQuestions,
+                questionStartedAtMs: data.questionStartedAtMs ?? null,
               };
             });
           }
@@ -299,10 +304,17 @@ export function LivePlayer({
         style={mainStyle}
       >
         <div className="w-full max-w-2xl flex flex-col gap-4">
-          <header className="text-center">
+          <header className="flex flex-col items-center gap-2 text-center">
             <p className="text-xs uppercase tracking-[3px] text-[var(--color-gold)] font-semibold">
               Question {idx + 1} / {liveState.totalQuestions}
             </p>
+            {question.timerSeconds && question.timerSeconds > 0 && (
+              <QuestionTimer
+                durationSeconds={question.timerSeconds}
+                startedAtMs={liveState.questionStartedAtMs ?? null}
+                mode="live"
+              />
+            )}
           </header>
 
           <LiveQuestionBlock

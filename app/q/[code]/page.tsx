@@ -59,6 +59,7 @@ export default async function PlayPage({
           text: true,
           options: true,
           points: true,
+          timerSeconds: true,
           imageUrl: true,
         },
       },
@@ -167,6 +168,7 @@ export default async function PlayPage({
       type: q.type,
       text: q.text,
       points: q.points,
+      timerSeconds: q.timerSeconds,
       imageUrl: q.imageUrl,
       // Pour TEXT, on n'envoie pas la réponse attendue (sinon c'est trichable)
       options: q.type === "TEXT" ? [] : opts,

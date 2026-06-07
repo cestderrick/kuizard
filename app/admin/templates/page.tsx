@@ -55,6 +55,8 @@ export default async function AdminTemplatesPage() {
                 title: t.title,
                 description: t.description,
                 category: t.category,
+                theme: t.theme,
+                tags: t.tags,
                 coverImageUrl: t.coverImageUrl,
                 displayOrder: t.displayOrder,
                 isActive: t.isActive,

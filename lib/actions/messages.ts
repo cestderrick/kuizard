@@ -170,9 +170,19 @@ export async function markConvoReadByUserAction(conversationId: string) {
   const session = await auth();
   if (!session?.user?.id) return;
 
+  const now = new Date();
   await prisma.conversation.updateMany({
     where: { id: conversationId, userId: session.user.id },
     data: { unreadByUser: false },
+  });
+  // Marque comme lus tous les messages ADMIN non encore vus
+  await prisma.message.updateMany({
+    where: {
+      conversationId,
+      senderRole: "ADMIN",
+      readByUserAt: null,
+    },
+    data: { readByUserAt: now },
   });
 }
 
@@ -264,9 +274,19 @@ export async function postAdminMessageAction(
 
 export async function markConvoReadByAdminAction(conversationId: string) {
   await requireAdmin();
+  const now = new Date();
   await prisma.conversation.update({
     where: { id: conversationId },
     data: { unreadByAdmin: false },
+  });
+  // Marque comme lus tous les messages USER non encore vus
+  await prisma.message.updateMany({
+    where: {
+      conversationId,
+      senderRole: "USER",
+      readByAdminAt: null,
+    },
+    data: { readByAdminAt: now },
   });
   // Pas de revalidatePath : appelée pendant le render (voir note plus haut)
 }
@@ -299,6 +319,90 @@ export async function toggleConvoStatusAction(
   return {
     ok: true,
     message: next === "closed" ? "Conversation clôturée." : "Réouverte.",
+  };
+}
+
+// =============================================
+// ADMIN — initier une conversation avec un user
+// =============================================
+
+const adminInitSchema = z.object({
+  userId: z.string().min(1),
+  subject: z.string().min(3, "Sujet trop court.").max(140),
+  body: z.string().min(5, "Message trop court.").max(4000),
+});
+
+export async function adminStartConversationAction(
+  _prev: MessagesState,
+  formData: FormData
+): Promise<MessagesState> {
+  await requireAdmin();
+
+  const parsed = adminInitSchema.safeParse({
+    userId: formData.get("userId"),
+    subject: formData.get("subject"),
+    body: formData.get("body"),
+  });
+  if (!parsed.success) {
+    return {
+      ok: false,
+      errors: z.flattenError(parsed.error).fieldErrors,
+      message: "Vérifie les champs.",
+    };
+  }
+
+  const target = await prisma.user.findUnique({
+    where: { id: parsed.data.userId },
+    select: { id: true, email: true, name: true },
+  });
+  if (!target) return { ok: false, message: "Utilisateur introuvable." };
+
+  const convo = await prisma.conversation.create({
+    data: {
+      userId: target.id,
+      subject: parsed.data.subject,
+      lastMessageAt: new Date(),
+      unreadByAdmin: false,
+      unreadByUser: true,
+      messages: {
+        create: {
+          senderRole: "ADMIN",
+          body: parsed.data.body,
+        },
+      },
+    },
+    select: { id: true },
+  });
+
+  // Email de notif au user (fire and forget)
+  try {
+    if (target.email) {
+      const tpl = newMessageNotificationEmail({
+        name: target.name,
+        senderRole: "ADMIN",
+        subject: parsed.data.subject,
+        preview: parsed.data.body,
+        conversationUrl: `${APP_URL}/dashboard/messages/${convo.id}`,
+      });
+      void sendEmail({
+        to: target.email,
+        subject: tpl.subject,
+        html: tpl.html,
+        text: tpl.text,
+      });
+    }
+  } catch (err) {
+    console.error("[messages] admin init email failed:", err);
+  }
+
+  revalidatePath("/admin/messages");
+  revalidatePath(`/dashboard/messages/${convo.id}`);
+  revalidatePath("/dashboard/messages");
+
+  return {
+    ok: true,
+    conversationId: convo.id,
+    message: "Message envoyé à l'utilisateur.",
   };
 }
 

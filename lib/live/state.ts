@@ -39,4 +39,7 @@ export type LiveBroadcast = {
   currentQuestionIndex: number;
   isPaused: boolean;
   totalQuestions: number;
+  // Timestamp Unix ms du moment où la question courante a été ouverte
+  // (sert au timer côté player pour calculer le temps restant en sync)
+  questionStartedAtMs: number | null;
 };

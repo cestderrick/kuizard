@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 
+import Link from "next/link";
+
 import { prisma } from "@/lib/db";
 import { requireAdmin } from "@/lib/auth/require-admin";
 
@@ -75,9 +77,21 @@ export default async function AdminUsersPage() {
                     key={u.id}
                     className="border-t border-[rgba(167,139,250,0.08)] hover:bg-[rgba(167,139,250,0.05)]"
                   >
-                    <td className="px-4 py-2.5">{u.name ?? "—"}</td>
+                    <td className="px-4 py-2.5">
+                      <Link
+                        href={`/admin/users/${u.id}`}
+                        className="hover:text-[var(--color-gold)]"
+                      >
+                        {u.name ?? "—"}
+                      </Link>
+                    </td>
                     <td className="px-4 py-2.5 font-mono text-xs">
-                      {u.email}
+                      <Link
+                        href={`/admin/users/${u.id}`}
+                        className="hover:text-[var(--color-gold)]"
+                      >
+                        {u.email}
+                      </Link>
                     </td>
                     <td className="px-4 py-2.5">
                       <span className="text-xs uppercase tracking-wide opacity-80">

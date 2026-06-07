@@ -37,6 +37,11 @@ export type UnifiedTemplate = {
   title: string;
   description: string;
   themeColor: string;
+  theme: string | null;
+  category: string;
+  tags: string[];
+  questionsCount: number;
+  popularity: number; // nombre de quizz créés à partir de ce template
   quizTitle: string;
   quizDescription: string;
   coverImageUrl: string | null;
@@ -49,33 +54,48 @@ function fromDB(t: {
   title: string;
   description: string;
   category: string;
+  theme: string | null;
+  tags: string[];
   coverImageUrl: string | null;
   questions: unknown;
 }): UnifiedTemplate {
   const emoji = FALLBACK_EMOJIS[t.category] ?? "✨";
   const themeColor =
     FALLBACK_COLORS[t.category] ?? "var(--color-violet-primary)";
+  const qList = (t.questions as QuizTemplate["questions"]) ?? [];
   return {
     slug: t.slug,
     emoji,
     title: t.title,
     description: t.description,
     themeColor,
+    theme: t.theme,
+    category: t.category,
+    tags: t.tags ?? [],
+    questionsCount: qList.length,
+    popularity: 0,
     quizTitle: t.title,
     quizDescription: t.description,
     coverImageUrl: t.coverImageUrl,
-    questions: (t.questions as QuizTemplate["questions"]) ?? [],
+    questions: qList,
     source: "db",
   };
 }
 
 function fromHardcoded(t: QuizTemplate): UnifiedTemplate {
+  // Catégorie déduite du slug pour les hardcoded
+  const category = t.slug;
   return {
     slug: t.slug,
     emoji: t.emoji,
     title: t.title,
     description: t.description,
     themeColor: t.themeColor,
+    theme: null,
+    category,
+    tags: [],
+    questionsCount: t.questions.length,
+    popularity: 0,
     quizTitle: t.quizTitle,
     quizDescription: t.quizDescription,
     coverImageUrl: null,
@@ -89,10 +109,22 @@ function fromHardcoded(t: QuizTemplate): UnifiedTemplate {
  * En cas de slug en doublon, la version BDD écrase la hardcoded.
  */
 export async function listAllTemplates(): Promise<UnifiedTemplate[]> {
-  const dbTemplates = await prisma.quizTemplate.findMany({
-    where: { isActive: true },
-    orderBy: [{ displayOrder: "asc" }, { createdAt: "asc" }],
-  });
+  const [dbTemplates, popularity] = await Promise.all([
+    prisma.quizTemplate.findMany({
+      where: { isActive: true },
+      orderBy: [{ displayOrder: "asc" }, { createdAt: "asc" }],
+    }),
+    // Compteur de popularité = nombre de quizz créés depuis chaque template
+    prisma.quiz.groupBy({
+      by: ["fromTemplateSlug"],
+      where: { fromTemplateSlug: { not: null } },
+      _count: true,
+    }),
+  ]);
+
+  const popMap = new Map(
+    popularity.map((p) => [p.fromTemplateSlug as string, p._count])
+  );
 
   const dbSlugs = new Set(dbTemplates.map((t) => t.slug));
   const merged: UnifiedTemplate[] = [
@@ -100,7 +132,20 @@ export async function listAllTemplates(): Promise<UnifiedTemplate[]> {
     ...QUIZ_TEMPLATES.filter((t) => !dbSlugs.has(t.slug)).map(fromHardcoded),
   ];
 
-  return merged;
+  // Injecter la popularité
+  return merged.map((t) => ({ ...t, popularity: popMap.get(t.slug) ?? 0 }));
+}
+
+/**
+ * Renvoie l'ensemble des slugs de templates déjà utilisés par un user donné.
+ */
+export async function getUsedTemplateSlugs(userId: string): Promise<Set<string>> {
+  const used = await prisma.quiz.findMany({
+    where: { userId, fromTemplateSlug: { not: null } },
+    select: { fromTemplateSlug: true },
+    distinct: ["fromTemplateSlug"],
+  });
+  return new Set(used.map((q) => q.fromTemplateSlug!).filter(Boolean));
 }
 
 export async function getTemplateBySlugUnified(

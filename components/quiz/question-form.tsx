@@ -194,7 +194,7 @@ export function QuestionForm({ quizId, question }: Props) {
           rows={2}
           maxLength={500}
           defaultValue={question.text}
-          placeholder="Quelle est la couleur préférée de Marie ?"
+          placeholder="ex : Quelle est la capitale de la France ?"
           className="border-input bg-background flex w-full rounded-md border px-3 py-2 text-sm shadow-xs focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-2 resize-none"
         />
         {state.errors?.text && (
@@ -216,7 +216,7 @@ export function QuestionForm({ quizId, question }: Props) {
               type="text"
               value={options[0]?.label ?? ""}
               onChange={(e) => updateOptionLabel(0, e.target.value)}
-              placeholder="La réponse correcte"
+              placeholder="ex : Paris"
               maxLength={200}
             />
             <p className="text-xs text-muted-foreground">
@@ -266,7 +266,7 @@ export function QuestionForm({ quizId, question }: Props) {
                   type="text"
                   value={opt.label}
                   onChange={(e) => updateOptionLabel(index, e.target.value)}
-                  placeholder={`Réponse ${String.fromCharCode(65 + index)}`}
+                  placeholder={`ex : Réponse ${String.fromCharCode(65 + index)}`}
                   maxLength={200}
                   disabled={type === "TRUE_FALSE"}
                   className="flex-1"

@@ -5,6 +5,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { listMyQuizzes } from "@/lib/actions/quiz";
 import { countUnreadForUser } from "@/lib/actions/messages";
+import { PublicStats } from "@/components/stats/public-stats";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -160,6 +161,9 @@ export default async function DashboardPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Stats publiques (si activé par l'admin) */}
+      <PublicStats variant="light" />
 
       {/* Accès rapides */}
       <div className="grid gap-4 md:grid-cols-2">

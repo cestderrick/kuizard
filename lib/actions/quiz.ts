@@ -118,6 +118,7 @@ export async function createFromTemplateAction(formData: FormData) {
       mode: "LIVE_MANUAL",
       status: "PUBLISHED",
       plan: "FREE",
+      fromTemplateSlug: template.slug,
       expiresAt,
       theme: {
         primaryColor: template.themeColor,

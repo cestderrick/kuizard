@@ -57,17 +57,20 @@ export async function createQuestionAction(formData: FormData) {
   });
   const nextOrder = (last?.order ?? 0) + 1;
 
+  // On crée la question avec des slots VIDES — l'utilisateur tape sa vraie
+  // question + ses vraies réponses dans l'éditeur (les placeholders côté UI
+  // donnent l'exemple sans qu'on ait à supprimer du texte fictif).
   const question = await prisma.question.create({
     data: {
       quizId,
       order: nextOrder,
       type: "SINGLE_CHOICE",
-      text: "Nouvelle question",
+      text: "",
       options: [
-        { label: "Réponse A", isCorrect: false },
-        { label: "Réponse B", isCorrect: true },
-        { label: "Réponse C", isCorrect: false },
-        { label: "Réponse D", isCorrect: false },
+        { label: "", isCorrect: false },
+        { label: "", isCorrect: true },
+        { label: "", isCorrect: false },
+        { label: "", isCorrect: false },
       ],
       points: 1,
     },

@@ -81,6 +81,12 @@ export default async function DashboardLayout({
               >
                 Suggestions
               </Link>
+              <Link
+                href="/dashboard/profile"
+                className="text-muted-foreground hover:text-[var(--color-violet-primary)]"
+              >
+                Profil
+              </Link>
             </nav>
           </div>
 

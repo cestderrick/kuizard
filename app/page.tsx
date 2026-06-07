@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { Button } from "@/components/ui/button";
 import { VideoEmbed } from "@/components/home/video-embed";
 import { KuizardLogo } from "@/components/brand/kuizard-logo";
+import { PublicStats } from "@/components/stats/public-stats";
 
 // 👉 Pour activer une vidéo plus tard, remplace `null` par une URL (YouTube
 // embed, Vimeo, ou .mp4 direct). Exemples :
@@ -149,6 +150,15 @@ export default async function Home() {
               caption="Une vidéo de présentation arrive bientôt"
             />
           </div>
+        </div>
+      </section>
+
+      {/* ============================================ */}
+      {/* STATS PUBLIQUES (si activé par admin) */}
+      {/* ============================================ */}
+      <section className="py-12 bg-[var(--color-lavender)]">
+        <div className="max-w-5xl mx-auto px-6">
+          <PublicStats variant="light" />
         </div>
       </section>
 

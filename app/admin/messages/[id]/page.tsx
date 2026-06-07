@@ -100,6 +100,14 @@ export default async function AdminConvoPage({ params }: { params: Params }) {
                 <p className="whitespace-pre-wrap text-sm leading-relaxed">
                   {m.body}
                 </p>
+                {/* Read receipt : visible UNIQUEMENT côté admin (cette page) */}
+                {isAdmin && (
+                  <p className="text-[10px] mt-1.5 opacity-80 text-right italic">
+                    {m.readByUserAt
+                      ? `✓✓ Lu le ${fmt(m.readByUserAt)}`
+                      : "✓ Envoyé (non lu)"}
+                  </p>
+                )}
               </div>
             </div>
           );

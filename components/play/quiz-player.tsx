@@ -12,6 +12,7 @@ import {
   startParticipationAction,
   submitAnswersAction,
 } from "@/lib/actions/participation";
+import { QuestionTimer } from "@/components/play/question-timer";
 
 type Theme = {
   primaryColor: string;
@@ -24,6 +25,7 @@ type Question = {
   type: string;
   text: string;
   points: number;
+  timerSeconds: number | null;
   options: { label: string }[]; // sans isCorrect
   imageUrl: string | null;
 };
@@ -423,13 +425,21 @@ function QuestionBlock({
       ) : null}
 
       <div className="p-5 flex flex-col gap-4">
-      <div className="flex items-start justify-between gap-2">
+      <div className="flex items-start justify-between gap-2 flex-wrap">
         <p className="text-xs uppercase tracking-[3px] text-[var(--color-gold)] font-semibold">
           Question {index + 1}
         </p>
-        <p className="text-xs text-[var(--color-lavender-2)] opacity-70">
-          {question.points} pt{question.points > 1 ? "s" : ""}
-        </p>
+        <div className="flex items-center gap-3">
+          {question.timerSeconds && question.timerSeconds > 0 && (
+            <QuestionTimer
+              durationSeconds={question.timerSeconds}
+              mode="scheduled"
+            />
+          )}
+          <p className="text-xs text-[var(--color-lavender-2)] opacity-70">
+            {question.points} pt{question.points > 1 ? "s" : ""}
+          </p>
+        </div>
       </div>
 
       <h2 className="font-display text-lg leading-snug">{question.text}</h2>

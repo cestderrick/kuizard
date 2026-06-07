@@ -31,12 +31,16 @@ export async function GET(
     });
   }
   const live = parseLiveState(quiz.liveState);
+  const startedAtMs = live.questionOpenedAt
+    ? new Date(live.questionOpenedAt).getTime()
+    : null;
   return new Response(
     JSON.stringify({
       status: quiz.status,
       currentQuestionIndex: live.currentQuestionIndex,
       isPaused: live.isPaused,
       totalQuestions: quiz._count.questions,
+      questionStartedAtMs: startedAtMs,
     }),
     {
       headers: {

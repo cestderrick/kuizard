@@ -17,6 +17,8 @@ type Template = {
   title?: string;
   description?: string;
   category?: string;
+  theme?: string | null;
+  tags?: string[];
   coverImageUrl?: string | null;
   displayOrder?: number;
   isActive?: boolean;
@@ -118,15 +120,32 @@ export function TemplateForm({ template }: { template?: Template }) {
               className="kz-input"
             />
           </Field>
+          <Field label="Thème visuel">
+            <input
+              name="theme"
+              defaultValue={template?.theme ?? ""}
+              placeholder="romantique, vintage…"
+              className="kz-input"
+            />
+          </Field>
           <Field label="Image cover (URL)">
             <input
               name="coverImageUrl"
               defaultValue={template?.coverImageUrl ?? ""}
               placeholder="/uploads/templates/mariage.jpg"
-              className="kz-input md:col-span-2"
+              className="kz-input"
             />
           </Field>
         </div>
+
+        <Field label="Tags (séparés par des virgules)">
+          <input
+            name="tagsCsv"
+            defaultValue={(template?.tags ?? []).join(", ")}
+            placeholder="famille, humour, blind-test, années 90"
+            className="kz-input"
+          />
+        </Field>
 
         <Field label="Questions (JSON)">
           <textarea

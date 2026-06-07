@@ -126,6 +126,10 @@ model Quiz {
   status            QuizStatus @default(DRAFT)
   expiresAt         DateTime?
 
+  // Slug du template utilisé à la création (null si quizz vierge)
+  // Sert au tracking "templates déjà utilisés" côté browser
+  fromTemplateSlug  String?
+
   createdAt         DateTime   @default(now())
   updatedAt         DateTime   @updatedAt
 
@@ -354,6 +358,10 @@ model QuizTemplate {
   title           String
   description     String   @db.Text
   category        String   // "mariage" | "anniversaire" | "team_building" | etc.
+  // Thème visuel principal — string libre, peut référencer un slug de Theme
+  theme           String?
+  // Tags libres pour filtres user (ex: "famille", "humour", "culture g.", "blind-test")
+  tags            String[] @default([])
   coverImageUrl   String?
 
   // Définition complète des questions : array de
@@ -367,6 +375,25 @@ model QuizTemplate {
   updatedAt       DateTime @updatedAt
 
   @@index([category, isActive])
+}
+
+// ====================================================
+// PUBLIC STATS — Affichage global des chiffres clés
+// ====================================================
+// Singleton (id = "singleton") : un seul enregistrement, configurable par l'admin
+
+model PublicStatsConfig {
+  id                  String   @id @default("singleton")
+  enabled             Boolean  @default(false)
+  showUsers           Boolean  @default(true)
+  showQuizzes         Boolean  @default(true)
+  showQuestions       Boolean  @default(false)
+  showParticipations  Boolean  @default(true)
+  showAvgScore        Boolean  @default(false)
+  customTitle         String?  // ex: "Kuizard en chiffres"
+  customSubtitle      String?
+
+  updatedAt           DateTime @updatedAt
 }
 
 // ====================================================
@@ -401,7 +428,12 @@ model Message {
   senderRole     String   // "USER" | "ADMIN"
   body           String   @db.Text
 
-  createdAt      DateTime @default(now())
+  createdAt      DateTime  @default(now())
+  // Read receipts : à quelle date+heure le destinataire a-t-il vu le message.
+  // Pour un message USER → ADMIN, on remplit readByAdminAt à la première lecture.
+  // Pour un message ADMIN → USER, on remplit readByUserAt à la première lecture.
+  readByAdminAt  DateTime?
+  readByUserAt   DateTime?
 
   conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 

@@ -35,7 +35,8 @@ function broadcastState(
   status: string,
   currentQuestionIndex: number,
   isPaused: boolean,
-  totalQuestions: number
+  totalQuestions: number,
+  questionStartedAtMs: number | null = null
 ) {
   const event: LiveBroadcast = {
     type: "state",
@@ -43,6 +44,7 @@ function broadcastState(
     currentQuestionIndex,
     isPaused,
     totalQuestions,
+    questionStartedAtMs,
   };
   broadcast(quizId, event);
 }
@@ -65,9 +67,10 @@ export async function startLiveAction(formData: FormData) {
   if (quiz.mode !== "LIVE_MANUAL")
     throw new Error("Action réservée au mode live.");
 
+  const startedAt = new Date();
   const newState = {
     currentQuestionIndex: 0,
-    questionOpenedAt: new Date().toISOString(),
+    questionOpenedAt: startedAt.toISOString(),
     isPaused: false,
   };
 
@@ -79,7 +82,14 @@ export async function startLiveAction(formData: FormData) {
     },
   });
 
-  broadcastState(quizId, "RUNNING", 0, false, quiz._count.questions);
+  broadcastState(
+    quizId,
+    "RUNNING",
+    0,
+    false,
+    quiz._count.questions,
+    startedAt.getTime()
+  );
   revalidatePath(`/dashboard/quizzes/${quizId}/live`);
   revalidatePath(`/q/${quizId}`);
 }
@@ -108,9 +118,10 @@ export async function nextQuestionAction(formData: FormData) {
     return finishLiveInternal(quizId, quiz._count.questions);
   }
 
+  const startedAt = new Date();
   const newState = {
     currentQuestionIndex: nextIndex,
-    questionOpenedAt: new Date().toISOString(),
+    questionOpenedAt: startedAt.toISOString(),
     isPaused: false,
   };
 
@@ -119,7 +130,14 @@ export async function nextQuestionAction(formData: FormData) {
     data: { liveState: newState as unknown as Prisma.InputJsonValue },
   });
 
-  broadcastState(quizId, "RUNNING", nextIndex, false, quiz._count.questions);
+  broadcastState(
+    quizId,
+    "RUNNING",
+    nextIndex,
+    false,
+    quiz._count.questions,
+    startedAt.getTime()
+  );
   revalidatePath(`/dashboard/quizzes/${quizId}/live`);
 }
 
