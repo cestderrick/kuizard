@@ -16,6 +16,7 @@ type LookupState = {
     postalCode: string | null;
     city: string | null;
   };
+  computedVat?: string | null;
 };
 
 /**
@@ -57,6 +58,11 @@ export function SiretLookup({
         setResult(r);
         if (r.ok && r.company?.companyName) {
           setCompanyName(r.company.companyName);
+          // Auto-fill du N° de TVA intracom (formule déterministe depuis SIREN)
+          // SAUF si l'utilisateur a déjà saisi un autre numéro à la main
+          if (r.computedVat && !vatNumber.trim()) {
+            setVatNumber(r.computedVat);
+          }
           toast.success(`✓ ${r.company.companyName}`);
         } else if (!r.ok && r.message) {
           toast.error(r.message);
@@ -156,7 +162,9 @@ export function SiretLookup({
           className="rounded-lg px-3 py-2 border bg-white text-sm font-mono focus:outline-none focus:border-[var(--color-violet-primary)]"
         />
         <span className="text-xs text-muted-foreground">
-          Utile pour la facturation avec TVA intracommunautaire (B2B UE).
+          Calculé automatiquement à partir du SIREN après la vérif SIRET.
+          Utile pour la facturation B2B intra-UE. Si tu es en franchise de TVA
+          (micro-entreprise non assujettie), tu peux le laisser vide.
         </span>
       </label>
     </div>

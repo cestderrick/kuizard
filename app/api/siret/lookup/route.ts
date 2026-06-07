@@ -8,7 +8,7 @@
 import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
-import { checkSiret } from "@/lib/siret/validate";
+import { checkSiret, computeFrVatNumber } from "@/lib/siret/validate";
 import { lookupSiret } from "@/lib/siret/insee";
 
 export const dynamic = "force-dynamic";
@@ -39,9 +39,13 @@ export async function GET(req: Request) {
       return NextResponse.json({ ok: false, message: result.message });
     }
 
+    // Calcul du n° de TVA intracom français à partir du SIREN (déterministe)
+    const computedVat = computeFrVatNumber(result.company.siren);
+
     return NextResponse.json({
       ok: true,
       company: result.company,
+      computedVat,
       message:
         result.company.state === "ceased"
           ? `⚠️ ${result.company.companyName} apparaît comme cessée.`

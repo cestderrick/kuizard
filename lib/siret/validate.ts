@@ -77,3 +77,23 @@ function format(s: string): string {
 export function sirenFromSiret(siret: string): string {
   return normalizeSiret(siret).slice(0, 9);
 }
+
+/**
+ * Calcule le N° de TVA intracommunautaire français à partir du SIREN.
+ * Formule officielle DGFiP :
+ *   FR + (12 + 3 × (SIREN mod 97)) mod 97 + SIREN
+ *
+ * Renvoie null si le SIREN n'a pas 9 chiffres.
+ *
+ * À noter : ce numéro existe mathématiquement pour tout SIREN, mais il
+ * n'est "actif" que si l'entreprise est assujettie à la TVA. Les
+ * micro-entreprises en franchise de TVA peuvent ignorer ce numéro.
+ */
+export function computeFrVatNumber(siren: string): string | null {
+  const s = siren.replace(/\D/g, "");
+  if (s.length !== 9) return null;
+  const sirenInt = BigInt(s);
+  const key = (BigInt(12) + (BigInt(3) * (sirenInt % BigInt(97)))) % BigInt(97);
+  const keyStr = key.toString().padStart(2, "0");
+  return `FR${keyStr}${s}`;
+}
