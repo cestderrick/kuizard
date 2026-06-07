@@ -18,7 +18,46 @@ export const SUPPORTED_LOCALES: { value: Locale; label: string; flag: string }[]
     { value: "en", label: "English", flag: "🇬🇧" },
   ];
 
-const fr = {
+// Type structurel commun aux deux locales (strings classiques, pas littéraux)
+export type Messages = {
+  nav: {
+    home: string;
+    dashboard: string;
+    quizzes: string;
+    stats: string;
+    payments: string;
+    subscription: string;
+    promos: string;
+    messages: string;
+    suggestions: string;
+    profile: string;
+    admin: string;
+    logout: string;
+    login: string;
+    signup: string;
+  };
+  footer: {
+    copy: string;
+    edited_by: string;
+    legal: string;
+    cgu: string;
+    cgv: string;
+    privacy: string;
+    cookies: string;
+    faq: string;
+    suggestion: string;
+  };
+  common: {
+    save: string;
+    cancel: string;
+    delete: string;
+    confirm: string;
+    loading: string;
+    language: string;
+  };
+};
+
+const fr: Messages = {
   nav: {
     home: "Accueil",
     dashboard: "Tableau de bord",
@@ -54,9 +93,9 @@ const fr = {
     loading: "Chargement…",
     language: "Langue",
   },
-} as const;
+};
 
-const en = {
+const en: Messages = {
   nav: {
     home: "Home",
     dashboard: "Dashboard",
@@ -92,11 +131,9 @@ const en = {
     loading: "Loading…",
     language: "Language",
   },
-} as const;
+};
 
-export const LOCALES = { fr, en } as const;
-
-export type Messages = typeof fr;
+export const LOCALES: Record<Locale, Messages> = { fr, en };
 
 /**
  * Récupère une chaîne traduite avec interpolation simple ({key}).
