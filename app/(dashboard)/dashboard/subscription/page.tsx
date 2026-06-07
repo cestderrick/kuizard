@@ -54,10 +54,24 @@ export default async function SubscriptionPage({
           Mon abonnement
         </h1>
         <p className="mt-2 text-muted-foreground text-sm max-w-xl">
-          Choisis un plan mensuel pour les bars et hôtels qui veulent
-          plusieurs quizz actifs en permanence.
+          Choisis un plan mensuel — idéal si tu organises plusieurs quizz
+          dans l'année (particuliers comme bars/pros).
         </p>
       </header>
+
+      {/* Cross-link vers paiement à l'unité */}
+      <section className="rounded-2xl bg-gradient-to-br from-[var(--color-gold)]/5 to-[var(--color-violet-primary)]/5 border-2 border-dashed border-[var(--color-violet-primary)]/30 p-5 text-center">
+        <p className="text-sm">
+          💡 <strong>Tu n'as besoin que d'un seul quizz ?</strong> Tu peux
+          aussi payer à l'unité (à partir de 5 €), sans engagement.
+        </p>
+        <Link
+          href="/dashboard/quizzes"
+          className="inline-block mt-2 text-sm font-semibold text-[var(--color-violet-primary)] underline-offset-4 hover:underline"
+        >
+          Voir mes quizz et payer à l'unité →
+        </Link>
+      </section>
 
       {status === "success" && (
         <div className="rounded-lg bg-green-100 text-green-800 px-4 py-3 text-sm">

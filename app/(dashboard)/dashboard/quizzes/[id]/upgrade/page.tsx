@@ -33,6 +33,8 @@ export default async function UpgradePage({ params }: { params: Params }) {
   if (!quiz || quiz.userId !== session.user.id) notFound();
 
   const plans = await getActivePlans("one_shot");
+  const hasSubscriptionsAvailable =
+    (await getActivePlans("subscription")).length > 0;
 
   return (
     <div className="flex flex-col gap-6">
@@ -156,6 +158,22 @@ export default async function UpgradePage({ params }: { params: Params }) {
           </article>
         ))}
       </div>
+
+      {/* Cross-link vers abos */}
+      {hasSubscriptionsAvailable && (
+        <section className="rounded-2xl bg-gradient-to-br from-[var(--color-violet-primary)]/5 to-[var(--color-gold)]/5 border-2 border-dashed border-[var(--color-violet-primary)]/30 p-5 text-center">
+          <p className="text-sm">
+            💡 <strong>Tu fais plusieurs quizz par an ?</strong> Un abonnement
+            mensuel devient plus avantageux dès le 3e quizz.
+          </p>
+          <Link
+            href="/dashboard/subscription"
+            className="inline-block mt-2 text-sm font-semibold text-[var(--color-violet-primary)] underline-offset-4 hover:underline"
+          >
+            Voir les abonnements →
+          </Link>
+        </section>
+      )}
     </div>
   );
 }
