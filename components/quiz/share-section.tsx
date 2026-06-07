@@ -148,6 +148,13 @@ export async function ShareSection({
               🏆 Voir le classement public
             </a>
             <a
+              href={`/api/quiz/${code}/export`}
+              className="inline-flex items-center gap-1 text-sm font-medium underline-offset-4 hover:underline"
+              style={{ color: "var(--color-violet-primary)" }}
+            >
+              📊 Exporter en CSV
+            </a>
+            <a
               href={`/dashboard/quizzes/${quizId}/poster`}
               target="_blank"
               rel="noopener noreferrer"

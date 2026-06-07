@@ -4,11 +4,12 @@
 // Server Actions — Profil utilisateur
 // =============================================
 
+import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
 
-import { auth } from "@/auth";
+import { auth, signOut } from "@/auth";
 import { prisma } from "@/lib/db";
 
 export type ProfileState = {
@@ -147,4 +148,67 @@ export async function updatePasswordAction(
 
   revalidatePath("/dashboard/profile");
   return { ok: true, message: "Mot de passe mis à jour 🔐" };
+}
+
+// =============================================
+// Suppression de compte (droit à l'oubli RGPD)
+// =============================================
+//
+// Exige le mot de passe actuel comme garde-fou (anti-CSRF en plus de
+// l'auth déjà active). Le compte est SUPPRIMÉ DÉFINITIVEMENT — les quizz,
+// participations, messages et paiements liés tombent en cascade selon les
+// onDelete du schéma. Le compte Stripe Customer est conservé côté Stripe
+// pour préserver l'historique fiscal (obligation légale 10 ans en France).
+
+const deleteAccountSchema = z.object({
+  currentPassword: z.string().min(1, "Mot de passe requis pour confirmer."),
+  confirmation: z.literal("SUPPRIMER", {
+    message: 'Tape exactement "SUPPRIMER" pour confirmer.',
+  }),
+});
+
+export async function deleteAccountAction(
+  _prev: ProfileState,
+  formData: FormData
+): Promise<ProfileState> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { ok: false, message: "Connexion requise." };
+  }
+
+  const parsed = deleteAccountSchema.safeParse({
+    currentPassword: formData.get("currentPassword"),
+    confirmation: formData.get("confirmation"),
+  });
+  if (!parsed.success) {
+    return {
+      ok: false,
+      errors: z.flattenError(parsed.error).fieldErrors,
+      message: "Vérifie la saisie.",
+    };
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { passwordHash: true },
+  });
+  if (user?.passwordHash) {
+    const valid = await bcrypt.compare(
+      parsed.data.currentPassword,
+      user.passwordHash
+    );
+    if (!valid) {
+      return {
+        ok: false,
+        errors: { currentPassword: ["Mot de passe incorrect."] },
+        message: "Mot de passe incorrect.",
+      };
+    }
+  }
+
+  await prisma.user.delete({ where: { id: session.user.id } });
+
+  // Déconnecte la session et redirige vers la home
+  await signOut({ redirect: false });
+  redirect("/?account=deleted");
 }

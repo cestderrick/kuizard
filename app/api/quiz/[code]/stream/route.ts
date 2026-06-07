@@ -61,6 +61,9 @@ export async function GET(
         currentQuestionIndex: liveState.currentQuestionIndex,
         isPaused: liveState.isPaused,
         totalQuestions: quiz._count.questions,
+        questionStartedAtMs: liveState.questionOpenedAt
+          ? new Date(liveState.questionOpenedAt).getTime()
+          : null,
       };
       safeEnqueue(`retry: 3000\n\n`);
       safeEnqueue(`data: ${JSON.stringify(initial)}\n\n`);

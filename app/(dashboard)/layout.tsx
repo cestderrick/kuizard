@@ -5,6 +5,7 @@ import { auth } from "@/auth";
 import { LogoutButton } from "@/components/auth/logout-button";
 import { KuizardLogo } from "@/components/brand/kuizard-logo";
 import { SiteFooter } from "@/components/legal/site-footer";
+import { NotificationBell } from "@/components/notifications/notification-bell";
 
 export default async function DashboardLayout({
   children,
@@ -90,7 +91,8 @@ export default async function DashboardLayout({
             </nav>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <NotificationBell />
             <span className="text-sm text-muted-foreground hidden sm:block">
               {session.user.name ?? session.user.email}
             </span>

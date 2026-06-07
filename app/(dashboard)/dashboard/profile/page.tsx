@@ -7,6 +7,7 @@ import {
   ProfileForm,
   PasswordForm,
 } from "@/components/profile/profile-form";
+import { DeleteAccountForm } from "@/components/profile/delete-account-form";
 
 export const metadata: Metadata = {
   title: "Mon profil",
@@ -73,6 +74,13 @@ export default async function ProfilePage() {
             mot de passe se gère côté fournisseur.
           </p>
         )}
+      </section>
+
+      <section className="rounded-2xl border-2 border-red-200 bg-red-50/40 p-6">
+        <h2 className="font-display text-lg tracking-wide mb-4 text-red-900">
+          ⚠️ Zone dangereuse
+        </h2>
+        <DeleteAccountForm />
       </section>
     </div>
   );
