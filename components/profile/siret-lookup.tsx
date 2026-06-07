@@ -1,19 +1,19 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useState, useTransition } from "react";
+import { toast } from "sonner";
 
 import {
-  initialLookupState,
-  lookupSiretAction,
+  lookupSiretByValue,
+  type LookupState,
 } from "@/lib/actions/siret";
-import { useActionToast } from "@/lib/hooks/use-action-toast";
 
 /**
  * Bloc "Entreprise" — SIRET (avec lookup INSEE auto), nom société, TVA.
- * S'utilise dans le profile pro et plus tard le signup pro.
  *
- * Quand on clique "🔍 Vérifier", on appelle l'API recherche-entreprises
- * et on pré-remplit `companyName` automatiquement.
+ * Le bouton "🔍 Vérifier" est un button normal (type="button") qui appelle
+ * directement la server action via useTransition. PAS de form imbriqué :
+ * c'est interdit en HTML et ça casserait la soumission du form parent.
  */
 export function SiretLookup({
   initialSiret,
@@ -29,19 +29,25 @@ export function SiretLookup({
   const [siret, setSiret] = useState(initialSiret ?? "");
   const [companyName, setCompanyName] = useState(initialCompanyName ?? "");
   const [vatNumber, setVatNumber] = useState(initialVatNumber ?? "");
+  const [result, setResult] = useState<LookupState | null>(null);
+  const [isPending, startTransition] = useTransition();
 
-  const [state, lookup, pending] = useActionState(
-    lookupSiretAction,
-    initialLookupState
-  );
-  useActionToast(state);
-
-  // Quand le lookup réussit, on remplit le nom de société automatiquement
-  useEffect(() => {
-    if (state.ok && state.company?.companyName) {
-      setCompanyName(state.company.companyName);
+  function handleVerify() {
+    if (!siret.trim()) {
+      toast.error("Saisis d'abord un SIRET.");
+      return;
     }
-  }, [state]);
+    startTransition(async () => {
+      const r = await lookupSiretByValue(siret);
+      setResult(r);
+      if (r.ok && r.company?.companyName) {
+        setCompanyName(r.company.companyName);
+        toast.success(`✓ ${r.company.companyName}`);
+      } else if (!r.ok && r.message) {
+        toast.error(r.message);
+      }
+    });
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -54,54 +60,52 @@ export function SiretLookup({
             name="siret"
             value={siret}
             onChange={(e) => setSiret(e.target.value)}
+            onKeyDown={(e) => {
+              // Entrée dans le champ SIRET = déclenche la vérif (pas la
+              // soumission du form parent)
+              if (e.key === "Enter") {
+                e.preventDefault();
+                handleVerify();
+              }
+            }}
             required={required}
             maxLength={20}
             placeholder="123 456 789 00012"
-            disabled={pending}
+            disabled={isPending}
             className="flex-1 rounded-lg px-3 py-2 border bg-white text-sm font-mono focus:outline-none focus:border-[var(--color-violet-primary)] disabled:opacity-60"
           />
-          {/* Form imbriqué pour le lookup — ne soumet QUE le SIRET */}
-          <form
-            action={lookup}
-            className="inline-flex"
-            onSubmit={(e) => {
-              const fd = new FormData(e.currentTarget);
-              fd.set("siret", siret);
-            }}
+          <button
+            type="button"
+            onClick={handleVerify}
+            disabled={isPending || !siret}
+            className="px-3 py-2 rounded-lg bg-[var(--color-gold)] text-[var(--color-violet-deep)] text-xs font-semibold disabled:opacity-50 whitespace-nowrap"
           >
-            <input type="hidden" name="siret" value={siret} />
-            <button
-              type="submit"
-              disabled={pending || !siret}
-              className="px-3 py-2 rounded-lg bg-[var(--color-gold)] text-[var(--color-violet-deep)] text-xs font-semibold disabled:opacity-50 whitespace-nowrap"
-            >
-              {pending ? "Recherche…" : "🔍 Vérifier"}
-            </button>
-          </form>
+            {isPending ? "Recherche…" : "🔍 Vérifier"}
+          </button>
         </div>
-        {state.ok && state.company && (
+        {result?.ok && result.company && (
           <span className="text-xs text-green-700 flex flex-col gap-0.5 mt-1">
             <span>
-              ✓ <strong>{state.company.companyName}</strong>
+              ✓ <strong>{result.company.companyName}</strong>
             </span>
-            {state.company.activity && (
-              <span className="opacity-70">{state.company.activity}</span>
+            {result.company.activity && (
+              <span className="opacity-70">{result.company.activity}</span>
             )}
-            {state.company.address && (
+            {result.company.address && (
               <span className="opacity-70">
-                {state.company.address}
-                {state.company.postalCode &&
-                  ` · ${state.company.postalCode} ${state.company.city ?? ""}`}
+                {result.company.address}
+                {result.company.postalCode &&
+                  ` · ${result.company.postalCode} ${result.company.city ?? ""}`}
               </span>
             )}
           </span>
         )}
-        {!state.ok && state.message && (
-          <span className="text-xs text-amber-700 mt-1">{state.message}</span>
+        {result && !result.ok && result.message && (
+          <span className="text-xs text-amber-700 mt-1">{result.message}</span>
         )}
         <span className="text-xs text-muted-foreground">
           Format : 14 chiffres (avec ou sans espaces). On vérifie auprès de
-          l'annuaire officiel des entreprises.
+          l'annuaire officiel des entreprises (data.gouv.fr).
         </span>
       </label>
 

@@ -26,7 +26,19 @@ export async function lookupSiretAction(
   formData: FormData
 ): Promise<LookupState> {
   const raw = (formData.get("siret") as string) ?? "";
+  return doLookup(raw);
+}
 
+/**
+ * Variante appelable directement avec un string (sans FormData).
+ * Pratique depuis un client component qui veut juste valider à la volée
+ * sans soumettre tout un form parent.
+ */
+export async function lookupSiretByValue(siret: string): Promise<LookupState> {
+  return doLookup(siret);
+}
+
+async function doLookup(raw: string): Promise<LookupState> {
   // 1. Format + Luhn
   const check = checkSiret(raw);
   if (!check.ok) {
