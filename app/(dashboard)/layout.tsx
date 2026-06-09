@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
+import { getMessages } from "@/lib/i18n/get-locale";
 import { KuizardLogo } from "@/components/brand/kuizard-logo";
 import { SiteFooter } from "@/components/legal/site-footer";
 import { NotificationBell } from "@/components/notifications/notification-bell";
@@ -34,6 +35,10 @@ export default async function DashboardLayout({
   });
   const isAdmin = me?.role === "ADMIN";
 
+  // Charge les traductions selon la locale active du user
+  const messages = await getMessages();
+  const navT = messages.nav;
+
   return (
     <div className="min-h-screen flex flex-col bg-[var(--color-lavender)]">
       {/* ===========================================================
@@ -57,13 +62,19 @@ export default async function DashboardLayout({
 
             {/* Nav principale — visible md+ uniquement */}
             <nav className="hidden md:flex items-center gap-1">
-              <DashboardNavLink href="/dashboard" label="Accueil" exact />
-              <DashboardNavLink href="/dashboard/quizzes" label="Mes quizz" />
-              <DashboardNavLink href="/dashboard/stats" label="Stats" />
-              <DashboardNavLink href="/dashboard/messages" label="Messages" />
+              <DashboardNavLink href="/dashboard" label={navT.home} exact />
+              <DashboardNavLink
+                href="/dashboard/quizzes"
+                label={navT.quizzes}
+              />
+              <DashboardNavLink href="/dashboard/stats" label={navT.stats} />
+              <DashboardNavLink
+                href="/dashboard/messages"
+                label={navT.messages}
+              />
               <DashboardNavLink
                 href="/dashboard/suggestions"
-                label="Suggestions"
+                label={navT.suggestions}
               />
             </nav>
           </div>
@@ -75,6 +86,14 @@ export default async function DashboardLayout({
               name={session.user.name ?? null}
               email={session.user.email ?? ""}
               isAdmin={isAdmin}
+              labels={{
+                profile: navT.profile,
+                subscription: navT.subscription,
+                payments: navT.payments,
+                promos: navT.promos,
+                admin: navT.admin,
+                logout: navT.logout,
+              }}
             />
             <MobileNav />
           </div>

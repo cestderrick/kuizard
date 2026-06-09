@@ -2,13 +2,16 @@ import Link from "next/link";
 
 import { LocaleSwitcher } from "@/components/i18n/locale-switcher";
 import { ProjiatLogo } from "@/components/brand/projiat-logo";
+import { getMessages } from "@/lib/i18n/get-locale";
 
 /**
  * Variante "night" du footer pour les pages au thème sombre (admin,
  * payment/success, payment/cancel, joueur si besoin).
  */
-export function SiteFooterNight() {
+export async function SiteFooterNight() {
   const year = new Date().getFullYear();
+  const msgs = await getMessages();
+  const t = msgs.footer;
 
   return (
     <footer className="border-t border-[rgba(167,139,250,0.15)] bg-[var(--color-night-2)] text-[var(--color-lavender-2)]">
@@ -33,31 +36,31 @@ export function SiteFooterNight() {
 
         <nav className="flex flex-wrap gap-x-4 gap-y-1">
           <Link href="/aide" className="hover:text-[var(--color-gold)]">
-            FAQ
+            {t.faq}
           </Link>
           <Link href="/suggestion" className="hover:text-[var(--color-gold)]">
-            Suggestion
+            {t.suggestion}
           </Link>
           <Link
             href="/mentions-legales"
             className="hover:text-[var(--color-gold)]"
           >
-            Mentions légales
+            {t.legal}
           </Link>
           <Link href="/cgu" className="hover:text-[var(--color-gold)]">
-            CGU
+            {t.cgu}
           </Link>
           <Link href="/cgv" className="hover:text-[var(--color-gold)]">
-            CGV
+            {t.cgv}
           </Link>
           <Link
             href="/confidentialite"
             className="hover:text-[var(--color-gold)]"
           >
-            Confidentialité
+            {t.privacy}
           </Link>
           <Link href="/cookies" className="hover:text-[var(--color-gold)]">
-            Cookies
+            {t.cookies}
           </Link>
           <LocaleSwitcher variant="night" />
         </nav>

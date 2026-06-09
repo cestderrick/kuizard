@@ -14,10 +14,19 @@ export function UserMenu({
   name,
   email,
   isAdmin,
+  labels,
 }: {
   name: string | null;
   email: string;
   isAdmin: boolean;
+  labels: {
+    profile: string;
+    subscription: string;
+    payments: string;
+    promos: string;
+    admin: string;
+    logout: string;
+  };
 }) {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -97,25 +106,25 @@ export function UserMenu({
             <MenuLink
               href="/dashboard/profile"
               icon="👤"
-              label="Mon profil"
+              label={labels.profile}
               onClick={() => setOpen(false)}
             />
             <MenuLink
               href="/dashboard/subscription"
               icon="🔁"
-              label="Mon abonnement"
+              label={labels.subscription}
               onClick={() => setOpen(false)}
             />
             <MenuLink
               href="/dashboard/payments"
               icon="💳"
-              label="Mes paiements"
+              label={labels.payments}
               onClick={() => setOpen(false)}
             />
             <MenuLink
               href="/dashboard/promos"
               icon="🎟️"
-              label="Mes codes promos"
+              label={labels.promos}
               onClick={() => setOpen(false)}
             />
           </div>
@@ -125,7 +134,7 @@ export function UserMenu({
               <MenuLink
                 href="/admin"
                 icon="🛡️"
-                label="Espace admin"
+                label={labels.admin}
                 accent
                 onClick={() => setOpen(false)}
               />
@@ -139,7 +148,7 @@ export function UserMenu({
                 className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-700 hover:bg-red-50 transition"
               >
                 <span aria-hidden>🚪</span>
-                <span>Se déconnecter</span>
+                <span>{labels.logout}</span>
               </button>
             </form>
           </div>

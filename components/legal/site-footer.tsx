@@ -2,14 +2,17 @@ import Link from "next/link";
 
 import { LocaleSwitcher } from "@/components/i18n/locale-switcher";
 import { ProjiatLogo } from "@/components/brand/projiat-logo";
+import { getMessages } from "@/lib/i18n/get-locale";
 
 /**
  * Footer global présent sur toutes les pages "normales" (dashboard, admin,
  * auth, payments, etc.). Les pages joueur (/q/[code]) et l'home gardent
  * leur propre footer custom pour ne pas casser leur layout edge-to-edge.
  */
-export function SiteFooter() {
+export async function SiteFooter() {
   const year = new Date().getFullYear();
+  const msgs = await getMessages();
+  const t = msgs.footer;
 
   return (
     <footer className="border-t border-violet-100 bg-white/60 backdrop-blur-sm">
@@ -33,47 +36,38 @@ export function SiteFooter() {
         </div>
 
         <nav className="flex flex-wrap gap-x-4 gap-y-1">
-          <Link
-            href="/aide"
-            className="hover:text-[var(--color-violet-primary)]"
-          >
-            FAQ
+          <Link href="/aide" className="hover:text-[var(--color-violet-primary)]">
+            {t.faq}
           </Link>
           <Link
             href="/suggestion"
             className="hover:text-[var(--color-violet-primary)]"
           >
-            Suggestion
+            {t.suggestion}
           </Link>
           <Link
             href="/mentions-legales"
             className="hover:text-[var(--color-violet-primary)]"
           >
-            Mentions légales
+            {t.legal}
           </Link>
-          <Link
-            href="/cgu"
-            className="hover:text-[var(--color-violet-primary)]"
-          >
-            CGU
+          <Link href="/cgu" className="hover:text-[var(--color-violet-primary)]">
+            {t.cgu}
           </Link>
-          <Link
-            href="/cgv"
-            className="hover:text-[var(--color-violet-primary)]"
-          >
-            CGV
+          <Link href="/cgv" className="hover:text-[var(--color-violet-primary)]">
+            {t.cgv}
           </Link>
           <Link
             href="/confidentialite"
             className="hover:text-[var(--color-violet-primary)]"
           >
-            Confidentialité
+            {t.privacy}
           </Link>
           <Link
             href="/cookies"
             className="hover:text-[var(--color-violet-primary)]"
           >
-            Cookies
+            {t.cookies}
           </Link>
           <LocaleSwitcher variant="light" />
         </nav>
