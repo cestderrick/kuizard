@@ -8,14 +8,16 @@ import { LOCALES, type Locale, type Messages } from "@/lib/i18n/messages";
 
 const COOKIE_NAME = "kz_locale";
 
+const SUPPORTED: Locale[] = ["fr", "en", "es", "it", "de", "pt", "ru", "zh"];
+
 function isLocale(v: string | undefined): v is Locale {
-  return v === "fr" || v === "en";
+  return typeof v === "string" && SUPPORTED.includes(v as Locale);
 }
 
 /**
  * Détermine la locale active dans cet ordre :
  * 1. Cookie kz_locale (choix explicite du user)
- * 2. Accept-Language du navigateur
+ * 2. Accept-Language du navigateur (premier match parmi les supportées)
  * 3. Fallback "fr"
  */
 export async function getLocale(): Promise<Locale> {
@@ -23,11 +25,17 @@ export async function getLocale(): Promise<Locale> {
   const fromCookie = cookieStore.get(COOKIE_NAME)?.value;
   if (isLocale(fromCookie)) return fromCookie;
 
-  // Détection navigateur
+  // Détection navigateur — on parse l'Accept-Language et on prend la
+  // première préférence qui matche une locale supportée
   try {
     const h = await headers();
     const accept = h.get("accept-language") ?? "";
-    if (accept.toLowerCase().startsWith("en")) return "en";
+    const candidates = accept
+      .split(",")
+      .map((s) => s.trim().split(";")[0].toLowerCase().slice(0, 2));
+    for (const c of candidates) {
+      if (isLocale(c)) return c;
+    }
   } catch {
     // ignore
   }

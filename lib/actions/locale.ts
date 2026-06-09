@@ -5,9 +5,20 @@ import { revalidatePath } from "next/cache";
 
 const COOKIE_NAME = "kz_locale";
 
+const VALID_LOCALES = new Set([
+  "fr",
+  "en",
+  "es",
+  "it",
+  "de",
+  "pt",
+  "ru",
+  "zh",
+]);
+
 export async function setLocaleAction(formData: FormData): Promise<void> {
   const locale = String(formData.get("locale") ?? "fr");
-  if (locale !== "fr" && locale !== "en") return;
+  if (!VALID_LOCALES.has(locale)) return;
 
   const cookieStore = await cookies();
   cookieStore.set(COOKIE_NAME, locale, {
