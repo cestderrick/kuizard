@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { KuizardLogo } from "@/components/brand/kuizard-logo";
+import { TopLocaleBar } from "@/components/i18n/top-locale-bar";
 
 export default function AuthLayout({
   children,
@@ -8,6 +9,8 @@ export default function AuthLayout({
 }) {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-4 py-12 relative overflow-hidden bg-[var(--color-night)]">
+      <TopLocaleBar variant="night" />
+
       {/* Halos décoratifs (subtils, comme dans la charte) */}
       <div
         aria-hidden

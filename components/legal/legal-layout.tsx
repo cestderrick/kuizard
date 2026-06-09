@@ -1,6 +1,8 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 
+import { TopLocaleBar } from "@/components/i18n/top-locale-bar";
+
 type Props = {
   title: string;
   lastUpdate: string;
@@ -9,7 +11,9 @@ type Props = {
 
 export function LegalLayout({ title, lastUpdate, children }: Props) {
   return (
-    <main className="min-h-screen bg-[var(--color-lavender)] py-12 px-4">
+    <main className="min-h-screen bg-[var(--color-lavender)] py-12 px-4 relative">
+      <TopLocaleBar variant="light" />
+
       <div className="max-w-3xl mx-auto">
         <header className="mb-8">
           <Link

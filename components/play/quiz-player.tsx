@@ -13,6 +13,7 @@ import {
   submitAnswersAction,
 } from "@/lib/actions/participation";
 import { QuestionTimer } from "@/components/play/question-timer";
+import { TopLocaleBar } from "@/components/i18n/top-locale-bar";
 
 type Theme = {
   primaryColor: string;
@@ -231,7 +232,7 @@ export function QuizPlayer({
 
   return (
     <main
-      className="min-h-screen flex flex-col items-center px-4 py-10"
+      className="min-h-screen flex flex-col items-center px-4 py-10 relative"
       style={{
         backgroundColor: isLight
           ? "var(--color-lavender)"
@@ -241,6 +242,8 @@ export function QuizPlayer({
         ["--quiz-primary" as string]: theme.primaryColor,
       }}
     >
+      <TopLocaleBar variant={isLight ? "light" : "night"} />
+
       <div className="w-full max-w-2xl flex flex-col gap-6">
         {phase === "intro" && (
           <IntroCard

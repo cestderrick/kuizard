@@ -6,6 +6,7 @@ import { VideoEmbed } from "@/components/home/video-embed";
 import { KuizardLogo } from "@/components/brand/kuizard-logo";
 import { PublicStats } from "@/components/stats/public-stats";
 import { getMessages } from "@/lib/i18n/get-locale";
+import { TopLocaleBar } from "@/components/i18n/top-locale-bar";
 
 // 👉 Pour activer une vidéo plus tard, remplace `null` par une URL (YouTube
 // embed, Vimeo, ou .mp4 direct). Exemples :
@@ -74,7 +75,9 @@ export default async function Home() {
   const navT = messages.nav;
 
   return (
-    <div className="flex-1 flex flex-col">
+    <div className="flex-1 flex flex-col relative">
+      <TopLocaleBar variant="light" />
+
       {/* ============================================ */}
       {/* HERO */}
       {/* ============================================ */}
