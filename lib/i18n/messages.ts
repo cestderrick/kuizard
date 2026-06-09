@@ -68,6 +68,35 @@ export type Messages = {
     cta_create: string;
     cta_play: string;
     cta_play_input_placeholder: string;
+    // Section "Comment ça marche"
+    how_eyebrow?: string;
+    how_title?: string;
+    step1_title?: string;
+    step1_desc?: string;
+    step2_title?: string;
+    step2_desc?: string;
+    step3_title?: string;
+    step3_desc?: string;
+    // Section "Pour qui"
+    forwho_eyebrow?: string;
+    forwho_title?: string;
+    forwho_subtitle?: string;
+    usecase_wedding_title?: string;
+    usecase_wedding_desc?: string;
+    usecase_birthday_title?: string;
+    usecase_birthday_desc?: string;
+    usecase_bachelor_title?: string;
+    usecase_bachelor_desc?: string;
+    usecase_bar_title?: string;
+    usecase_bar_desc?: string;
+    usecase_baby_title?: string;
+    usecase_baby_desc?: string;
+    usecase_corp_title?: string;
+    usecase_corp_desc?: string;
+    // Section "Vu côté joueur"
+    player_eyebrow?: string;
+    player_title?: string;
+    player_subtitle?: string;
   };
   auth?: {
     login_title: string;
@@ -203,6 +232,46 @@ const fr: Messages = {
     cta_create: "Créer mon quizz ✨",
     cta_play: "Rejoindre un quizz",
     cta_play_input_placeholder: "Code à 6 chiffres",
+    // Comment ça marche
+    how_eyebrow: "✨ Comment ça marche",
+    how_title: "Trois étapes pour un moment magique",
+    step1_title: "Crée ton quizz",
+    step1_desc:
+      "Titre, questions, photos, lots, couleurs… Tout est personnalisable en quelques minutes.",
+    step2_title: "Partage le lien et le QR code",
+    step2_desc:
+      "Tes invités scannent le QR code et arrivent direct sur ton quizz. Pas d'app à installer.",
+    step3_title: "Découvrez le classement",
+    step3_desc:
+      "À la fin, podium des 3 premiers et classement complet avec les lots que tu as configurés.",
+    // Pour qui
+    forwho_eyebrow: "✨ Pour qui",
+    forwho_title: "Tous les moments à partager",
+    forwho_subtitle:
+      "Particuliers ou pros, chaque occasion devient une animation magique avec son quizz dédié.",
+    usecase_wedding_title: "Mariages",
+    usecase_wedding_desc:
+      "Quiz sur les mariés pendant le repas. Photos d'enfance, anecdotes, défi des témoins.",
+    usecase_birthday_title: "Anniversaires",
+    usecase_birthday_desc:
+      "Animation pour fêter une étape (30, 40, 50 ans…). Souvenirs partagés entre amis et famille.",
+    usecase_bachelor_title: "EVJF / EVG",
+    usecase_bachelor_desc:
+      "« À quel point connais-tu la mariée ? » Photos, goûts, manies. Fous rires garantis.",
+    usecase_bar_title: "Bars & restos",
+    usecase_bar_desc:
+      "Soirées quizz hebdomadaires, blind-tests, animations d'équipe. Mode live pour piloter en direct.",
+    usecase_baby_title: "Baby-shower / naissance",
+    usecase_baby_desc:
+      "Tout savoir sur les futurs parents. Devine le prénom, le poids, les premières aventures.",
+    usecase_corp_title: "Séminaires & teams",
+    usecase_corp_desc:
+      "Brise-glace, animations d'événements pros, formations ludiques. Idéal pour les groupes.",
+    // Vu côté joueur
+    player_eyebrow: "✨ Vu côté joueur",
+    player_title: "L'expérience participants",
+    player_subtitle:
+      "Mobile-first, pas d'app à installer. Scan, pseudo, jeu, score — c'est tout.",
   },
   auth: {
     login_title: "Content de te revoir !",

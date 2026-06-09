@@ -16,56 +16,11 @@ const VIDEO_INTRO: string | null = null;
 const VIDEO_CREATION: string | null = null;
 const VIDEO_JOUEUR: string | null = null;
 
-const STEPS = [
-  {
-    icon: "🪄",
-    title: "Crée ton quizz",
-    desc: "Titre, questions, photos, lots, couleurs… Tout est personnalisable en quelques minutes.",
-  },
-  {
-    icon: "📲",
-    title: "Partage le lien et le QR code",
-    desc: "Tes invités scannent le QR code et arrivent direct sur ton quizz. Pas d'app à installer.",
-  },
-  {
-    icon: "🏆",
-    title: "Découvrez le classement",
-    desc: "À la fin, podium des 3 premiers et classement complet avec les lots que tu as configurés.",
-  },
-];
+// STEPS et USE_CASES sont maintenant construits dynamiquement depuis les
+// traductions (voir le composant Home()). Les emojis restent en dur.
 
-const USE_CASES = [
-  {
-    emoji: "💍",
-    title: "Mariages",
-    desc: "Quiz sur les mariés pendant le repas. Photos d'enfance, anecdotes, défi des témoins.",
-  },
-  {
-    emoji: "🎉",
-    title: "Anniversaires",
-    desc: "Animation pour fêter une étape (30, 40, 50 ans…). Souvenirs partagés entre amis et famille.",
-  },
-  {
-    emoji: "👰",
-    title: "EVJF / EVG",
-    desc: "« À quel point connais-tu la mariée ? » Photos, goûts, manies. Fous rires garantis.",
-  },
-  {
-    emoji: "🍻",
-    title: "Bars & restos",
-    desc: "Soirées quizz hebdomadaires, blind-tests, animations d'équipe. Mode live pour piloter en direct.",
-  },
-  {
-    emoji: "👶",
-    title: "Baby-shower / naissance",
-    desc: "Tout savoir sur les futurs parents. Devine le prénom, le poids, les premières aventures.",
-  },
-  {
-    emoji: "🎓",
-    title: "Séminaires & teams",
-    desc: "Brise-glace, animations d'événements pros, formations ludiques. Idéal pour les groupes.",
-  },
-];
+const STEP_ICONS = ["🪄", "📲", "🏆"];
+const USECASE_EMOJIS = ["💍", "🎉", "👰", "🍻", "👶", "🎓"];
 
 export default async function Home() {
   const session = await auth();
@@ -73,6 +28,58 @@ export default async function Home() {
   const messages = await getMessages();
   const t = messages.home;
   const navT = messages.nav;
+
+  // Sections dynamiques construites depuis les traductions
+  const STEPS = [
+    {
+      icon: STEP_ICONS[0],
+      title: t.step1_title ?? "Crée ton quizz",
+      desc: t.step1_desc ?? "",
+    },
+    {
+      icon: STEP_ICONS[1],
+      title: t.step2_title ?? "Partage le QR code",
+      desc: t.step2_desc ?? "",
+    },
+    {
+      icon: STEP_ICONS[2],
+      title: t.step3_title ?? "Découvrez le classement",
+      desc: t.step3_desc ?? "",
+    },
+  ];
+
+  const USE_CASES = [
+    {
+      emoji: USECASE_EMOJIS[0],
+      title: t.usecase_wedding_title ?? "Mariages",
+      desc: t.usecase_wedding_desc ?? "",
+    },
+    {
+      emoji: USECASE_EMOJIS[1],
+      title: t.usecase_birthday_title ?? "Anniversaires",
+      desc: t.usecase_birthday_desc ?? "",
+    },
+    {
+      emoji: USECASE_EMOJIS[2],
+      title: t.usecase_bachelor_title ?? "EVJF / EVG",
+      desc: t.usecase_bachelor_desc ?? "",
+    },
+    {
+      emoji: USECASE_EMOJIS[3],
+      title: t.usecase_bar_title ?? "Bars & restos",
+      desc: t.usecase_bar_desc ?? "",
+    },
+    {
+      emoji: USECASE_EMOJIS[4],
+      title: t.usecase_baby_title ?? "Baby-shower",
+      desc: t.usecase_baby_desc ?? "",
+    },
+    {
+      emoji: USECASE_EMOJIS[5],
+      title: t.usecase_corp_title ?? "Séminaires & teams",
+      desc: t.usecase_corp_desc ?? "",
+    },
+  ];
 
   return (
     <div className="flex-1 flex flex-col relative">
@@ -174,13 +181,13 @@ export default async function Home() {
         <div className="max-w-5xl mx-auto px-6">
           <div className="text-center mb-12">
             <p className="text-xs uppercase tracking-[3px] text-[var(--color-violet-primary)] font-semibold mb-2">
-              ✨ Comment ça marche
+              {t.how_eyebrow ?? "✨ Comment ça marche"}
             </p>
             <h2
               className="font-display text-3xl md:text-4xl font-bold tracking-wide"
               style={{ color: "var(--color-violet-deep)" }}
             >
-              Trois étapes pour un moment magique
+              {t.how_title ?? "Trois étapes pour un moment magique"}
             </h2>
           </div>
 
@@ -229,17 +236,16 @@ export default async function Home() {
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-center mb-12">
             <p className="text-xs uppercase tracking-[3px] text-[var(--color-violet-primary)] font-semibold mb-2">
-              ✨ Pour qui
+              {t.forwho_eyebrow ?? "✨ Pour qui"}
             </p>
             <h2
               className="font-display text-3xl md:text-4xl font-bold tracking-wide"
               style={{ color: "var(--color-violet-deep)" }}
             >
-              Tous les moments à partager
+              {t.forwho_title ?? "Tous les moments à partager"}
             </h2>
             <p className="text-muted-foreground mt-3 max-w-2xl mx-auto">
-              Particuliers ou pros, chaque occasion devient une animation
-              magique avec son quizz dédié.
+              {t.forwho_subtitle ?? ""}
             </p>
           </div>
 
@@ -272,14 +278,13 @@ export default async function Home() {
         <div className="max-w-4xl mx-auto px-6">
           <div className="text-center mb-10">
             <p className="text-xs uppercase tracking-[3px] text-[var(--color-gold)] font-semibold mb-2">
-              ✨ Vu côté joueur
+              {t.player_eyebrow ?? "✨ Vu côté joueur"}
             </p>
             <h2 className="font-display text-3xl md:text-4xl font-bold tracking-wide text-[var(--color-lavender)]">
-              L'expérience participants
+              {t.player_title ?? "L'expérience participants"}
             </h2>
             <p className="text-[var(--color-lavender-2)] opacity-80 mt-3 max-w-2xl mx-auto">
-              Mobile-first, pas d'app à installer. Scan, pseudo, jeu, score —
-              c'est tout.
+              {t.player_subtitle ?? ""}
             </p>
           </div>
           <VideoEmbed
