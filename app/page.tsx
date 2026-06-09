@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { VideoEmbed } from "@/components/home/video-embed";
 import { KuizardLogo } from "@/components/brand/kuizard-logo";
 import { PublicStats } from "@/components/stats/public-stats";
+import { getMessages } from "@/lib/i18n/get-locale";
 
 // 👉 Pour activer une vidéo plus tard, remplace `null` par une URL (YouTube
 // embed, Vimeo, ou .mp4 direct). Exemples :
@@ -68,6 +69,9 @@ const USE_CASES = [
 export default async function Home() {
   const session = await auth();
   const isLoggedIn = !!session?.user;
+  const messages = await getMessages();
+  const t = messages.home;
+  const navT = messages.nav;
 
   return (
     <div className="flex-1 flex flex-col">
@@ -88,18 +92,16 @@ export default async function Home() {
             <KuizardLogo size={84} />
           </div>
           <p className="text-sm tracking-[0.3em] uppercase text-[var(--color-violet-primary)] font-semibold mb-6">
-            ✨ Bienvenue ✨
+            {t.eyebrow}
           </p>
           <h1 className="font-display text-6xl md:text-7xl font-bold text-[var(--color-violet-deep)] mb-4 tracking-wide">
             Kuizard
           </h1>
           <p className="text-lg md:text-xl italic text-[var(--color-violet-primary)] mb-8">
-            pour un moment magique
+            {t.hero_title_2}
           </p>
           <p className="text-base md:text-lg text-[var(--color-foreground)] max-w-2xl mx-auto leading-relaxed mb-10">
-            Crée des quizz personnalisés pour tes événements (mariage,
-            anniversaire, EVJF…) ou ton bar. Partage en un QR code, ajoute des
-            lots, vois le classement en direct.
+            {t.hero_subtitle}
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center mb-12">
@@ -113,7 +115,7 @@ export default async function Home() {
                 }}
               >
                 <Link href="/dashboard">
-                  Aller à mon tableau de bord ✨
+                  {navT.dashboard} ✨
                 </Link>
               </Button>
             ) : (
@@ -126,7 +128,7 @@ export default async function Home() {
                     color: "white",
                   }}
                 >
-                  <Link href="/signup">Créer un compte gratuit ✨</Link>
+                  <Link href="/signup">{navT.signup} ✨</Link>
                 </Button>
                 <Button
                   asChild
@@ -137,7 +139,7 @@ export default async function Home() {
                     color: "var(--color-violet-primary)",
                   }}
                 >
-                  <Link href="/login">Se connecter</Link>
+                  <Link href="/login">{navT.login}</Link>
                 </Button>
               </>
             )}
