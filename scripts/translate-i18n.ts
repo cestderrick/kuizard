@@ -18,13 +18,33 @@
 // langue/clé et le script la respectera au prochain run (via le système de
 // hash, à venir si tu veux).
 
-import { writeFile } from "node:fs/promises";
+import { writeFile, readFile } from "node:fs/promises";
 import path from "node:path";
 
 import { LOCALES, SUPPORTED_LOCALES } from "../lib/i18n/messages";
 
-const DEEPL_KEY = process.env.DEEPL_API_KEY;
+// Fallback : lire DEEPL_API_KEY depuis .env si Node ne l'a pas chargée
+async function loadEnvFallback(): Promise<void> {
+  if (process.env.DEEPL_API_KEY) return;
+  try {
+    const envFile = await readFile(
+      path.join(process.cwd(), ".env"),
+      "utf-8"
+    );
+    for (const line of envFile.split("\n")) {
+      const match = line.match(/^\s*([A-Z_][A-Z0-9_]*)\s*=\s*"?([^"\n\r]*)"?/i);
+      if (match && !process.env[match[1]]) {
+        process.env[match[1]] = match[2];
+      }
+    }
+  } catch {
+    // pas de .env trouvé, on tentera quand même
+  }
+}
+
 const DEEPL_FREE_URL = "https://api-free.deepl.com/v2/translate";
+// DEEPL_KEY lu dans main() après chargement éventuel du .env
+let DEEPL_KEY: string | undefined;
 
 // Mapping des locales Kuizard → codes DeepL
 const DEEPL_LANG: Record<string, string> = {
@@ -113,6 +133,16 @@ function unflatten(pairs: Array<[string, string]>): Dict {
 
 async function main() {
   console.log("🌍 Traduction i18n via DeepL");
+
+  // Charge .env si Node ne l'a pas fait
+  await loadEnvFallback();
+  DEEPL_KEY = process.env.DEEPL_API_KEY;
+  if (!DEEPL_KEY) {
+    console.error("❌ DEEPL_API_KEY manquant dans le .env");
+    console.error("   Ajoute une ligne :  DEEPL_API_KEY=\"ta-cle-ici:fx\"");
+    process.exit(1);
+  }
+  console.log(`  → clé DeepL OK (finit par "${DEEPL_KEY.slice(-3)}")`);
 
   // Source = fr (vérité)
   const sourcePairs = flatten(LOCALES.fr as unknown as Dict);

@@ -16,7 +16,7 @@
     "db:reset": "prisma migrate reset",
     "db:generate": "prisma generate",
     "db:seed:plans": "tsx prisma/seed-plans.ts",
-    "i18n:translate": "tsx scripts/translate-i18n.ts"
+    "i18n:translate": "node --env-file=.env --import tsx scripts/translate-i18n.ts"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.2",
