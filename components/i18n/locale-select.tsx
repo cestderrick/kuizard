@@ -1,11 +1,17 @@
 "use client";
 
+import { useTransition } from "react";
+import { useRouter } from "next/navigation";
+
 import { SUPPORTED_LOCALES } from "@/lib/i18n/messages";
+import { setLocaleAction } from "@/lib/actions/locale";
 
 /**
- * Select natif qui soumet automatiquement son form parent au changement.
- * Utilisé dans LocaleSwitcher (server component) qui contient déjà le form
- * + l'action.
+ * Sélecteur de langue — appelle directement la server action puis force un
+ * `router.refresh()` pour que les composants serveur relisent le cookie.
+ *
+ * Sans le refresh, Next 16 ne re-render pas l'arbre après une action invoquée
+ * via `form.requestSubmit()` programmatique.
  */
 export function LocaleSelect({
   current,
@@ -14,14 +20,27 @@ export function LocaleSelect({
   current: string;
   variant: "light" | "night";
 }) {
+  const router = useRouter();
+  const [pending, startTransition] = useTransition();
   const isLight = variant === "light";
+
+  function handleChange(e: React.ChangeEvent<HTMLSelectElement>) {
+    const value = e.target.value;
+    const formData = new FormData();
+    formData.set("locale", value);
+    startTransition(async () => {
+      await setLocaleAction(formData);
+      router.refresh();
+    });
+  }
+
   return (
     <select
-      name="locale"
       defaultValue={current}
-      onChange={(e) => e.currentTarget.form?.requestSubmit()}
+      onChange={handleChange}
+      disabled={pending}
       aria-label="Choisir la langue"
-      className={`text-xs px-2 py-1 rounded-md cursor-pointer transition ${
+      className={`text-xs px-2 py-1 rounded-md cursor-pointer transition disabled:opacity-60 ${
         isLight
           ? "bg-white border border-violet-100 text-foreground hover:border-[var(--color-violet-primary)]"
           : "bg-[rgba(0,0,0,0.25)] border border-[rgba(167,139,250,0.2)] text-[var(--color-lavender)] hover:border-[var(--color-gold)]"
