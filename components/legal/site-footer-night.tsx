@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { LocaleSwitcher } from "@/components/i18n/locale-switcher";
+import { ProjiatLogo } from "@/components/brand/projiat-logo";
 
 /**
  * Variante "night" du footer pour les pages au thème sombre (admin,
@@ -20,8 +21,13 @@ export function SiteFooterNight() {
             </span>{" "}
             — Quizz personnalisés
           </p>
-          <p className="opacity-70">
-            Édité par <strong>Projiat</strong> · Tous droits réservés
+          <p className="opacity-70 inline-flex items-center gap-1.5 flex-wrap">
+            Site développé par{" "}
+            <span className="inline-flex items-center gap-1">
+              <ProjiatLogo size={14} color="currentColor" />
+              <strong>Projiat</strong>
+            </span>
+            <span>· Tous droits réservés</span>
           </p>
         </div>
 

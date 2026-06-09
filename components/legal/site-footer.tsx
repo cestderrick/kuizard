@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { LocaleSwitcher } from "@/components/i18n/locale-switcher";
+import { ProjiatLogo } from "@/components/brand/projiat-logo";
 
 /**
  * Footer global présent sur toutes les pages "normales" (dashboard, admin,
@@ -21,8 +22,13 @@ export function SiteFooter() {
             </span>{" "}
             — Quizz personnalisés pour tes évènements
           </p>
-          <p className="opacity-70">
-            Édité par <strong>Projiat</strong> · Tous droits réservés
+          <p className="opacity-70 inline-flex items-center gap-1.5">
+            Site développé par{" "}
+            <span className="inline-flex items-center gap-1">
+              <ProjiatLogo size={14} color="currentColor" />
+              <strong>Projiat</strong>
+            </span>
+            <span>· Tous droits réservés</span>
           </p>
         </div>
 

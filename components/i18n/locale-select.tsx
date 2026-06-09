@@ -1,15 +1,13 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState } from "react";
 
 import { SUPPORTED_LOCALES } from "@/lib/i18n/messages";
-import { setLocaleAction } from "@/lib/actions/locale";
 
 /**
- * Sélecteur de langue — appelle la server action puis force un reload complet.
- * `router.refresh()` ne suffit pas car les RSC sont fortement cachés et ne
- * re-lisent pas getLocale() après la mise à jour du cookie. Un location.reload
- * garantit que toute l'arbre est re-fetché avec le nouveau cookie.
+ * Sélecteur de langue — appelle un endpoint REST classique (plus fiable que
+ * les server actions pour ce cas), puis force un reload complet. Le serveur
+ * pose le cookie kz_locale via Set-Cookie dans la réponse.
  */
 export function LocaleSelect({
   current,
@@ -18,19 +16,32 @@ export function LocaleSelect({
   current: string;
   variant: "light" | "night";
 }) {
-  const [pending, startTransition] = useTransition();
+  const [pending, setPending] = useState(false);
   const isLight = variant === "light";
 
-  function handleChange(e: React.ChangeEvent<HTMLSelectElement>) {
+  async function handleChange(e: React.ChangeEvent<HTMLSelectElement>) {
     const value = e.target.value;
-    const formData = new FormData();
-    formData.set("locale", value);
-    startTransition(async () => {
-      await setLocaleAction(formData);
-      // Reload complet — le navigateur renvoie le cookie kz_locale mis à jour
+    if (value === current) return;
+    setPending(true);
+    try {
+      const res = await fetch("/api/locale", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ locale: value }),
+        cache: "no-store",
+      });
+      if (!res.ok) {
+        setPending(false);
+        console.error("[locale] failed", await res.text());
+        return;
+      }
+      // Reload complet — le navigateur renvoie le nouveau cookie kz_locale
       // et tous les server components ré-exécutent getLocale().
       window.location.reload();
-    });
+    } catch (err) {
+      setPending(false);
+      console.error("[locale] error", err);
+    }
   }
 
   return (
