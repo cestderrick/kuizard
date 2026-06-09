@@ -19,6 +19,12 @@ export type PlanLimits = {
   liveMode?: boolean;
   ranking?: boolean;
   tvDisplay?: boolean;
+  // Pour les abos : nombre max d'utilisations de la banque de templates par mois
+  // calendaire (du 1er au dernier jour du mois). 0 = aucun accès, undefined =
+  // illimité (rétrocompat). Non-abonnés : illimité (pas de quota mensuel).
+  maxTemplatesPerMonth?: number;
+  // Nombre max de quizz actifs simultanément (abos)
+  maxActiveQuizzes?: number;
 };
 
 export type PlanConfigDTO = {

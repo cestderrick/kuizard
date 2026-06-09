@@ -43,6 +43,9 @@ const templateSchema = z.object({
   title: z.string().min(2).max(140),
   description: z.string().min(5).max(2000),
   category: z.string().min(2).max(40),
+  language: z
+    .enum(["fr", "en", "es", "it", "de", "pt", "ru", "zh"])
+    .default("fr"),
   theme: z.string().max(40).optional().or(z.literal("")),
   tagsCsv: z.string().max(500).optional().or(z.literal("")),
   coverImageUrl: z.string().max(500).optional().or(z.literal("")),
@@ -67,6 +70,7 @@ export async function upsertTemplateAction(
     title: formData.get("title"),
     description: formData.get("description"),
     category: formData.get("category"),
+    language: formData.get("language") || "fr",
     theme: formData.get("theme") || "",
     tagsCsv: formData.get("tagsCsv") || "",
     coverImageUrl: formData.get("coverImageUrl") || "",
@@ -114,6 +118,7 @@ export async function upsertTemplateAction(
     title: v.title,
     description: v.description,
     category: v.category,
+    language: v.language,
     theme: v.theme || null,
     tags,
     coverImageUrl: v.coverImageUrl || null,

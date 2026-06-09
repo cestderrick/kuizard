@@ -47,6 +47,7 @@ const planSchema = z.object({
   ranking: z.boolean().optional().default(true),
   tvDisplay: z.boolean().optional().default(false),
   maxActiveQuizzes: z.coerce.number().int().min(0).optional(),
+  maxTemplatesPerMonth: z.coerce.number().int().min(0).optional(),
 });
 
 function checkbox(v: FormDataEntryValue | null): boolean {
@@ -84,6 +85,7 @@ export async function upsertPlanAction(
     ranking: checkbox(formData.get("ranking")),
     tvDisplay: checkbox(formData.get("tvDisplay")),
     maxActiveQuizzes: formData.get("maxActiveQuizzes") || undefined,
+    maxTemplatesPerMonth: formData.get("maxTemplatesPerMonth") || undefined,
   });
 
   if (!parsed.success) {
@@ -110,6 +112,8 @@ export async function upsertPlanAction(
   if (v.maxParticipants !== undefined) limits.maxParticipants = v.maxParticipants;
   if (v.maxActiveQuizzes !== undefined)
     limits.maxActiveQuizzes = v.maxActiveQuizzes;
+  if (v.maxTemplatesPerMonth !== undefined)
+    limits.maxTemplatesPerMonth = v.maxTemplatesPerMonth;
 
   const baseData = {
     slug: v.slug,

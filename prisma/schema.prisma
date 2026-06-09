@@ -372,6 +372,10 @@ model QuizTemplate {
   title           String
   description     String   @db.Text
   category        String   // "mariage" | "anniversaire" | "team_building" | etc.
+  // Langue du template : "fr" | "en" | "es" | "it" | "de" | "pt" | "ru" | "zh"
+  // Si un même template existe en plusieurs langues, on duplique avec
+  // slug différent (ex: "mariage-fr", "mariage-en")
+  language        String   @default("fr")
   // Thème visuel principal — string libre, peut référencer un slug de Theme
   theme           String?
   // Tags libres pour filtres user (ex: "famille", "humour", "culture g.", "blind-test")

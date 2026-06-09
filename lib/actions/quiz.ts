@@ -103,6 +103,13 @@ export async function createFromTemplateAction(formData: FormData) {
   const slug = formData.get("slug");
   if (typeof slug !== "string" || !slug) throw new Error("Template manquant.");
 
+  // Check quota mensuel (uniquement si user abonné avec quota défini)
+  const { canUseTemplateNow } = await import("@/lib/plans/template-quota");
+  const quotaCheck = await canUseTemplateNow(session.user.id);
+  if (!quotaCheck.ok) {
+    throw new Error(quotaCheck.message ?? "Quota atteint.");
+  }
+
   const template = await getTemplateBySlugUnified(slug);
   if (!template) throw new Error("Template introuvable.");
 

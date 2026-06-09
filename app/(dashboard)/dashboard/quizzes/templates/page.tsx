@@ -6,6 +6,8 @@ import {
   listAllTemplates,
   getUsedTemplateSlugs,
 } from "@/lib/quiz/templates-source";
+import { getLocale } from "@/lib/i18n/get-locale";
+import { getTemplateQuota } from "@/lib/plans/template-quota";
 import { createFromTemplateAction } from "@/lib/actions/quiz";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,6 +25,7 @@ export const metadata: Metadata = {
 type SearchParams = Promise<{
   tag?: string;
   category?: string;
+  language?: string;
   sort?: "popular" | "questions_asc" | "questions_desc";
   status?: "all" | "todo" | "done";
 }>;
@@ -35,9 +38,14 @@ export default async function TemplatesPage({
   const sp = await searchParams;
   const session = await auth();
   const userId = session?.user?.id;
+  const userLocale = await getLocale();
 
   const allTemplates = await listAllTemplates();
   const usedSlugs = userId ? await getUsedTemplateSlugs(userId) : new Set();
+  const quota = userId ? await getTemplateQuota(userId) : null;
+
+  // Filtre langue par défaut = locale du user (sauf si "all" ou autre choix)
+  const langFilter = sp.language ?? userLocale;
 
   // Collecte tous les tags et catégories pour les filtres
   const allTags = Array.from(
@@ -49,6 +57,10 @@ export default async function TemplatesPage({
 
   // Application des filtres
   let filtered = allTemplates;
+  // Filtre langue : par défaut = locale du user, sauf si "all" explicite
+  if (langFilter && langFilter !== "all") {
+    filtered = filtered.filter((t) => t.language === langFilter);
+  }
   if (sp.tag) filtered = filtered.filter((t) => t.tags.includes(sp.tag!));
   if (sp.category)
     filtered = filtered.filter((t) => t.category === sp.category);
@@ -95,6 +107,23 @@ export default async function TemplatesPage({
       {/* Barre de filtres */}
       <div className="rounded-2xl bg-white border p-4 flex flex-col gap-3">
         <FilterRow
+          label="🌍 Langue"
+          options={[
+            { value: "all", label: "Toutes" },
+            { value: "fr", label: "🇫🇷 FR" },
+            { value: "en", label: "🇬🇧 EN" },
+            { value: "es", label: "🇪🇸 ES" },
+            { value: "it", label: "🇮🇹 IT" },
+            { value: "de", label: "🇩🇪 DE" },
+            { value: "pt", label: "🇵🇹 PT" },
+            { value: "ru", label: "🇷🇺 RU" },
+            { value: "zh", label: "🇨🇳 ZH" },
+          ]}
+          current={langFilter}
+          paramName="language"
+          searchParams={sp}
+        />
+        <FilterRow
           label="🎨 Catégorie"
           options={allCategories.map((c) => ({ value: c, label: c }))}
           current={sp.category ?? null}
@@ -135,9 +164,25 @@ export default async function TemplatesPage({
         />
       </div>
 
-      <p className="text-sm text-muted-foreground">
-        {filtered.length} template{filtered.length > 1 ? "s" : ""}
-      </p>
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <p className="text-sm text-muted-foreground">
+          {filtered.length} template{filtered.length > 1 ? "s" : ""}
+        </p>
+        {quota?.isQuota && quota.max !== null && (
+          <div
+            className={`text-xs px-3 py-1.5 rounded-full font-semibold ${
+              quota.used >= quota.max
+                ? "bg-red-100 text-red-800"
+                : quota.used >= quota.max * 0.8
+                ? "bg-amber-100 text-amber-800"
+                : "bg-green-100 text-green-800"
+            }`}
+          >
+            🎯 Quota mensuel : {quota.used} / {quota.max} (plan{" "}
+            {quota.planSlug})
+          </div>
+        )}
+      </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {filtered.map((tpl) => {

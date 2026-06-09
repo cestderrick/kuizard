@@ -17,6 +17,7 @@ type Template = {
   title?: string;
   description?: string;
   category?: string;
+  language?: string;
   theme?: string | null;
   tags?: string[];
   coverImageUrl?: string | null;
@@ -110,7 +111,7 @@ export function TemplateForm({ template }: { template?: Template }) {
           />
         </Field>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <Field label="Catégorie">
             <input
               name="category"
@@ -119,6 +120,23 @@ export function TemplateForm({ template }: { template?: Template }) {
               placeholder="mariage"
               className="kz-input"
             />
+          </Field>
+          <Field label="🌍 Langue">
+            <select
+              name="language"
+              defaultValue={template?.language ?? "fr"}
+              required
+              className="kz-input"
+            >
+              <option value="fr">🇫🇷 Français</option>
+              <option value="en">🇬🇧 English</option>
+              <option value="es">🇪🇸 Español</option>
+              <option value="it">🇮🇹 Italiano</option>
+              <option value="de">🇩🇪 Deutsch</option>
+              <option value="pt">🇵🇹 Português</option>
+              <option value="ru">🇷🇺 Русский</option>
+              <option value="zh">🇨🇳 中文</option>
+            </select>
           </Field>
           <Field label="Thème visuel">
             <input
@@ -132,7 +150,7 @@ export function TemplateForm({ template }: { template?: Template }) {
             <input
               name="coverImageUrl"
               defaultValue={template?.coverImageUrl ?? ""}
-              placeholder="/uploads/templates/mariage.jpg"
+              placeholder="/uploads/…"
               className="kz-input"
             />
           </Field>

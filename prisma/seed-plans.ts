@@ -150,6 +150,7 @@ const PLANS: PlanSeed[] = [
       ranking: true,
       tvDisplay: false,
       maxActiveQuizzes: 10,
+      maxTemplatesPerMonth: 5,
     },
   },
   {
@@ -176,6 +177,7 @@ const PLANS: PlanSeed[] = [
       ranking: true,
       tvDisplay: true,
       maxActiveQuizzes: 3,
+      maxTemplatesPerMonth: 10,
     },
   },
   {
@@ -202,6 +204,7 @@ const PLANS: PlanSeed[] = [
       ranking: true,
       tvDisplay: true,
       maxActiveQuizzes: 999,
+      maxTemplatesPerMonth: 999,
       whiteLabel: true,
       prioritySupport: true,
     },

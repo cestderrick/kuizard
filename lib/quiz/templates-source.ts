@@ -39,6 +39,7 @@ export type UnifiedTemplate = {
   themeColor: string;
   theme: string | null;
   category: string;
+  language: string;
   tags: string[];
   questionsCount: number;
   popularity: number; // nombre de quizz créés à partir de ce template
@@ -54,6 +55,7 @@ function fromDB(t: {
   title: string;
   description: string;
   category: string;
+  language: string;
   theme: string | null;
   tags: string[];
   coverImageUrl: string | null;
@@ -71,6 +73,7 @@ function fromDB(t: {
     themeColor,
     theme: t.theme,
     category: t.category,
+    language: t.language,
     tags: t.tags ?? [],
     questionsCount: qList.length,
     popularity: 0,
@@ -93,6 +96,7 @@ function fromHardcoded(t: QuizTemplate): UnifiedTemplate {
     themeColor: t.themeColor,
     theme: null,
     category,
+    language: "fr", // les hardcoded étaient tous en français
     tags: [],
     questionsCount: t.questions.length,
     popularity: 0,

@@ -156,6 +156,11 @@ export function PlanForm({ plan }: { plan?: Plan }) {
           label="Max quizz actifs (abo)"
           value={limits.maxActiveQuizzes as number | undefined}
         />
+        <NumberLimit
+          name="maxTemplatesPerMonth"
+          label="🎯 Templates/mois (abo)"
+          value={limits.maxTemplatesPerMonth as number | undefined}
+        />
         <Toggle name="customColors" label="Couleurs personnalisées" value={limits.customColors} />
         <Toggle name="customPrizes" label="Lots personnalisés" value={limits.customPrizes} />
         <Toggle name="finalMessage" label="Message de fin" value={limits.finalMessage} />

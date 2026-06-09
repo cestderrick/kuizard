@@ -60,6 +60,15 @@ export type Messages = {
     loading: string;
     language: string;
   };
+  home: {
+    eyebrow: string;
+    hero_title_1: string;
+    hero_title_2: string;
+    hero_subtitle: string;
+    cta_create: string;
+    cta_play: string;
+    cta_play_input_placeholder: string;
+  };
   player: {
     badge: string;
     nickname_label: string;
@@ -130,6 +139,16 @@ const fr: Messages = {
     confirm: "Confirmer",
     loading: "Chargement…",
     language: "Langue",
+  },
+  home: {
+    eyebrow: "✨ Quizz personnalisés pour tes évènements",
+    hero_title_1: "Crée un quizz magique",
+    hero_title_2: "pour ton évènement",
+    hero_subtitle:
+      "Mariage, anniversaire, EVJF, bar… Personnalise ton quizz en quelques minutes et partage-le par QR code.",
+    cta_create: "Créer mon quizz ✨",
+    cta_play: "Rejoindre un quizz",
+    cta_play_input_placeholder: "Code à 6 chiffres",
   },
   player: {
     badge: "✨ Quizz Kuizard ✨",
@@ -202,6 +221,16 @@ const en: Messages = {
     loading: "Loading…",
     language: "Language",
   },
+  home: {
+    eyebrow: "✨ Personalized quizzes for your events",
+    hero_title_1: "Create a magical quiz",
+    hero_title_2: "for your event",
+    hero_subtitle:
+      "Wedding, birthday, bachelor(ette) party, bar… Personalize your quiz in minutes and share it with a QR code.",
+    cta_create: "Create my quiz ✨",
+    cta_play: "Join a quiz",
+    cta_play_input_placeholder: "6-digit code",
+  },
   player: {
     badge: "✨ Kuizard Quiz ✨",
     nickname_label: "Your nickname",
@@ -272,6 +301,16 @@ const es: Messages = {
     confirm: "Confirmar",
     loading: "Cargando…",
     language: "Idioma",
+  },
+  home: {
+    eyebrow: "✨ Cuestionarios personalizados para tus eventos",
+    hero_title_1: "Crea un cuestionario mágico",
+    hero_title_2: "para tu evento",
+    hero_subtitle:
+      "Boda, cumpleaños, despedida, bar… Personaliza tu cuestionario en minutos y compártelo por QR.",
+    cta_create: "Crear mi cuestionario ✨",
+    cta_play: "Unirme a un cuestionario",
+    cta_play_input_placeholder: "Código de 6 dígitos",
   },
   player: {
     badge: "✨ Cuestionario Kuizard ✨",
@@ -344,6 +383,16 @@ const it: Messages = {
     loading: "Caricamento…",
     language: "Lingua",
   },
+  home: {
+    eyebrow: "✨ Quiz personalizzati per i tuoi eventi",
+    hero_title_1: "Crea un quiz magico",
+    hero_title_2: "per il tuo evento",
+    hero_subtitle:
+      "Matrimonio, compleanno, addio al nubilato, bar… Personalizza il tuo quiz in pochi minuti e condividilo via QR.",
+    cta_create: "Crea il mio quiz ✨",
+    cta_play: "Partecipa a un quiz",
+    cta_play_input_placeholder: "Codice di 6 cifre",
+  },
   player: {
     badge: "✨ Quiz Kuizard ✨",
     nickname_label: "Il tuo nickname",
@@ -414,6 +463,16 @@ const de: Messages = {
     confirm: "Bestätigen",
     loading: "Lädt…",
     language: "Sprache",
+  },
+  home: {
+    eyebrow: "✨ Personalisierte Quizze für deine Events",
+    hero_title_1: "Erstelle ein magisches Quiz",
+    hero_title_2: "für dein Event",
+    hero_subtitle:
+      "Hochzeit, Geburtstag, Junggesell·innenabschied, Bar… Personalisiere dein Quiz in Minuten und teile es per QR-Code.",
+    cta_create: "Mein Quiz erstellen ✨",
+    cta_play: "Einem Quiz beitreten",
+    cta_play_input_placeholder: "6-stelliger Code",
   },
   player: {
     badge: "✨ Kuizard-Quiz ✨",
@@ -486,6 +545,16 @@ const pt: Messages = {
     loading: "A carregar…",
     language: "Idioma",
   },
+  home: {
+    eyebrow: "✨ Quizzes personalizados para os teus eventos",
+    hero_title_1: "Cria um quiz mágico",
+    hero_title_2: "para o teu evento",
+    hero_subtitle:
+      "Casamento, aniversário, despedida, bar… Personaliza o teu quiz em minutos e partilha-o por QR.",
+    cta_create: "Criar o meu quiz ✨",
+    cta_play: "Entrar num quiz",
+    cta_play_input_placeholder: "Código de 6 dígitos",
+  },
   player: {
     badge: "✨ Quiz Kuizard ✨",
     nickname_label: "O teu pseudónimo",
@@ -557,6 +626,16 @@ const ru: Messages = {
     loading: "Загрузка…",
     language: "Язык",
   },
+  home: {
+    eyebrow: "✨ Персонализированные викторины для ваших мероприятий",
+    hero_title_1: "Создай волшебную викторину",
+    hero_title_2: "для своего события",
+    hero_subtitle:
+      "Свадьба, день рождения, девичник, бар… Настрой викторину за пару минут и поделись ею через QR-код.",
+    cta_create: "Создать викторину ✨",
+    cta_play: "Присоединиться",
+    cta_play_input_placeholder: "Код из 6 цифр",
+  },
   player: {
     badge: "✨ Викторина Kuizard ✨",
     nickname_label: "Твой ник",
@@ -627,6 +706,16 @@ const zh: Messages = {
     confirm: "确认",
     loading: "加载中…",
     language: "语言",
+  },
+  home: {
+    eyebrow: "✨ 为你的活动量身定制的问答",
+    hero_title_1: "为你的活动",
+    hero_title_2: "创建一个神奇问答",
+    hero_subtitle:
+      "婚礼、生日、单身派对、酒吧……几分钟内即可定制你的问答，并通过二维码分享。",
+    cta_create: "创建我的问答 ✨",
+    cta_play: "加入问答",
+    cta_play_input_placeholder: "6 位数字代码",
   },
   player: {
     badge: "✨ Kuizard 问答 ✨",
