@@ -1187,9 +1187,20 @@ function mergeDeep<T extends Record<string, unknown>>(
   return out;
 }
 
-// Charge le JSON auto-généré via import statique (résolu au build par Turbopack)
-import autoJson from "./messages-auto.json";
-const AUTO = autoJson as Partial<Record<Locale, Messages>>;
+// Charge le JSON auto-généré via lecture filesystem au boot du process
+// (plus fiable que import statique avec Turbopack qui parfois "perd" les JSON volumineux)
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+
+let AUTO: Partial<Record<Locale, Messages>> = {};
+try {
+  const filePath = join(process.cwd(), "lib", "i18n", "messages-auto.json");
+  const raw = readFileSync(filePath, "utf-8");
+  AUTO = JSON.parse(raw);
+} catch (err) {
+  console.warn("[i18n] could not load messages-auto.json:", err);
+  AUTO = {};
+}
 
 export const LOCALES: Record<Locale, Messages> = {
   fr: MANUAL_LOCALES.fr, // FR = source manuelle uniquement, jamais traduite
