@@ -752,7 +752,8 @@ const zh: Messages = {
   },
 };
 
-export const LOCALES: Record<Locale, Messages> = {
+// Locales manuelles (source de vérité quand renseignées)
+const MANUAL_LOCALES: Record<Locale, Messages> = {
   fr,
   en,
   es,
@@ -761,6 +762,50 @@ export const LOCALES: Record<Locale, Messages> = {
   pt,
   ru,
   zh,
+};
+
+// Fusion deep avec les traductions auto-générées par DeepL (si présentes).
+// Manuel a toujours priorité ; auto sert de fallback pour les nouvelles clés.
+function mergeDeep<T extends Record<string, unknown>>(
+  manual: T,
+  auto: Partial<T> | undefined
+): T {
+  if (!auto) return manual;
+  const out = { ...manual };
+  for (const k of Object.keys(out) as Array<keyof T>) {
+    const m = out[k];
+    const a = auto[k];
+    if (
+      m &&
+      typeof m === "object" &&
+      a &&
+      typeof a === "object" &&
+      !Array.isArray(m)
+    ) {
+      out[k] = mergeDeep(m as never, a as never);
+    }
+  }
+  return out;
+}
+
+// Charge le JSON auto-généré (silencieux si absent — pas généré encore)
+let AUTO: Partial<Record<Locale, Messages>> = {};
+try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  AUTO = require("./messages-auto.json");
+} catch {
+  AUTO = {};
+}
+
+export const LOCALES: Record<Locale, Messages> = {
+  fr: MANUAL_LOCALES.fr, // FR = source manuelle uniquement, jamais traduite
+  en: mergeDeep(MANUAL_LOCALES.en, AUTO.en),
+  es: mergeDeep(MANUAL_LOCALES.es, AUTO.es),
+  it: mergeDeep(MANUAL_LOCALES.it, AUTO.it),
+  de: mergeDeep(MANUAL_LOCALES.de, AUTO.de),
+  pt: mergeDeep(MANUAL_LOCALES.pt, AUTO.pt),
+  ru: mergeDeep(MANUAL_LOCALES.ru, AUTO.ru),
+  zh: mergeDeep(MANUAL_LOCALES.zh, AUTO.zh),
 };
 
 /**

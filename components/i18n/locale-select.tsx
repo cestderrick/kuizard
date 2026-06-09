@@ -24,7 +24,8 @@ export function LocaleSelect({
     if (value === current) return;
     setPending(true);
     try {
-      const res = await fetch("/api/locale", {
+      // ?t=Date.now() pour bypasser tout cache HTTP intermédiaire
+      const res = await fetch(`/api/locale?t=${Date.now()}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ locale: value }),
@@ -35,9 +36,12 @@ export function LocaleSelect({
         console.error("[locale] failed", await res.text());
         return;
       }
-      // Reload complet — le navigateur renvoie le nouveau cookie kz_locale
-      // et tous les server components ré-exécutent getLocale().
-      window.location.reload();
+      // Cache busting : on force un reload via une nouvelle URL (timestamp
+      // en query). Sinon certains navigateurs renvoient la version HTML cachée
+      // sans refaire la requête, malgré `reload()`.
+      const url = new URL(window.location.href);
+      url.searchParams.set("_l", Date.now().toString());
+      window.location.replace(url.toString());
     } catch (err) {
       setPending(false);
       console.error("[locale] error", err);

@@ -12,16 +12,26 @@ export async function GET(req: Request) {
   const acceptLang = req.headers.get("accept-language") ?? "(no accept-lang)";
   const detectedLocale = await getLocale();
 
+  // Random pour vérifier qu'il n'y a aucun cache à aucun niveau
+  const random = Math.random().toString(36).slice(2, 10);
+
   return NextResponse.json(
     {
       detectedLocale,
       rawCookieHeader: cookieHeader,
       acceptLanguage: acceptLang,
       timestamp: new Date().toISOString(),
+      randomNonce: random,
     },
     {
       headers: {
-        "Cache-Control": "no-store, no-cache, must-revalidate",
+        "Cache-Control":
+          "private, no-store, no-cache, must-revalidate, max-age=0",
+        Pragma: "no-cache",
+        Expires: "0",
+        "CDN-Cache-Control": "no-store",
+        "Cloudflare-CDN-Cache-Control": "no-store",
+        Vary: "Cookie",
         "X-Robots-Tag": "noindex",
       },
     }
