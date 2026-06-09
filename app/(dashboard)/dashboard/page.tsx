@@ -6,6 +6,29 @@ import { prisma } from "@/lib/db";
 import { listMyQuizzes } from "@/lib/actions/quiz";
 import { countUnreadForUser } from "@/lib/actions/messages";
 import { PublicStats } from "@/components/stats/public-stats";
+import { getMessages } from "@/lib/i18n/get-locale";
+
+const FB = {
+  welcome_eyebrow: "✨ Bienvenue",
+  welcome_title: "Salut {name} !",
+  welcome_subtitle:
+    "Ton espace pour créer, gérer et partager des quizz personnalisés.",
+  recent_quizzes_title: "Mes quizz récents",
+  recent_quizzes_empty: "Tu n'as pas encore créé de quizz. Lance-toi !",
+  recent_quizzes_summary: "{count} quizz au total — derniers en haut.",
+  see_all: "Voir tous mes quizz",
+  create_first: "Créer mon premier quizz ✨",
+  create_new: "+ Créer un nouveau quizz",
+  questions_count: "{count} questions",
+  players_count: "{count} joueurs",
+  edit_button: "Éditer",
+  payments_card: "Mes paiements",
+  payments_card_desc:
+    "Historique des achats de quizz et abonnements, accès aux factures.",
+  stats_card: "Statistiques",
+  stats_card_desc:
+    "Vue globale de l'activité : participations, top quizz, performances.",
+};
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -25,6 +48,33 @@ export default async function DashboardPage() {
   const userName = session?.user?.name ?? "magicien(ne)";
   const quizzes = await listMyQuizzes();
   const recent = quizzes.slice(0, 3);
+  const messages = await getMessages();
+  const t = messages.dashboard;
+  const dt = {
+    welcome_eyebrow: t?.welcome_eyebrow ?? FB.welcome_eyebrow,
+    welcome_title: (t?.welcome_title ?? FB.welcome_title).replace(
+      "{name}",
+      userName
+    ),
+    welcome_subtitle: t?.welcome_subtitle ?? FB.welcome_subtitle,
+    recent_quizzes_title:
+      t?.recent_quizzes_title ?? FB.recent_quizzes_title,
+    recent_quizzes_empty:
+      t?.recent_quizzes_empty ?? FB.recent_quizzes_empty,
+    recent_quizzes_summary: (
+      t?.recent_quizzes_summary ?? FB.recent_quizzes_summary
+    ).replace("{count}", String(quizzes.length)),
+    see_all: t?.see_all ?? FB.see_all,
+    create_first: t?.create_first ?? FB.create_first,
+    create_new: t?.create_new ?? FB.create_new,
+    edit_button: t?.edit_button ?? FB.edit_button,
+    payments_card: t?.payments_card ?? FB.payments_card,
+    payments_card_desc: t?.payments_card_desc ?? FB.payments_card_desc,
+    stats_card: t?.stats_card ?? FB.stats_card,
+    stats_card_desc: t?.stats_card_desc ?? FB.stats_card_desc,
+    questions_template: t?.questions_count ?? FB.questions_count,
+    players_template: t?.players_count ?? FB.players_count,
+  };
 
   // Lien admin discret, visible uniquement si rôle ADMIN
   const me = session?.user?.id
@@ -47,16 +97,16 @@ export default async function DashboardPage() {
         <div className="flex items-start justify-between gap-3 flex-wrap">
           <div>
             <p className="text-sm uppercase tracking-[3px] text-[var(--color-violet-primary)] mb-2 font-semibold">
-              ✨ Bienvenue
+              {dt.welcome_eyebrow}
             </p>
             <h1
               className="font-display text-4xl md:text-5xl font-bold tracking-wide"
               style={{ color: "var(--color-violet-deep)" }}
             >
-              Salut {userName} !
+              {dt.welcome_title}
             </h1>
             <p className="mt-2 text-muted-foreground max-w-xl">
-              Ton espace pour créer, gérer et partager des quizz personnalisés.
+              {dt.welcome_subtitle}
             </p>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
@@ -88,17 +138,17 @@ export default async function DashboardPage() {
         <CardHeader className="flex flex-row items-start justify-between gap-3">
           <div>
             <CardTitle className="font-display tracking-wide">
-              Mes quizz récents
+              {dt.recent_quizzes_title}
             </CardTitle>
             <CardDescription>
               {quizzes.length === 0
-                ? "Tu n'as pas encore créé de quizz. Lance-toi !"
-                : `${quizzes.length} quizz au total — derniers en haut.`}
+                ? dt.recent_quizzes_empty
+                : dt.recent_quizzes_summary}
             </CardDescription>
           </div>
           {quizzes.length > 0 && (
             <Button asChild variant="outline" size="sm">
-              <Link href="/dashboard/quizzes">Voir tous mes quizz</Link>
+              <Link href="/dashboard/quizzes">{dt.see_all}</Link>
             </Button>
           )}
         </CardHeader>
@@ -120,7 +170,7 @@ export default async function DashboardPage() {
                 }}
               >
                 <Link href="/dashboard/quizzes/new">
-                  Créer mon premier quizz ✨
+                  {dt.create_first}
                 </Link>
               </Button>
             </div>
@@ -135,13 +185,20 @@ export default async function DashboardPage() {
                     <p className="font-medium truncate">{quiz.title}</p>
                     <p className="text-xs text-muted-foreground">
                       <span className="font-mono">{quiz.code}</span> ·{" "}
-                      {quiz._count.questions} questions ·{" "}
-                      {quiz._count.participations} joueurs
+                      {dt.questions_template.replace(
+                        "{count}",
+                        String(quiz._count.questions)
+                      )}{" "}
+                      ·{" "}
+                      {dt.players_template.replace(
+                        "{count}",
+                        String(quiz._count.participations)
+                      )}
                     </p>
                   </div>
                   <Button asChild variant="ghost" size="sm">
                     <Link href={`/dashboard/quizzes/${quiz.id}/edit`}>
-                      Éditer
+                      {dt.edit_button}
                     </Link>
                   </Button>
                 </div>
@@ -155,7 +212,7 @@ export default async function DashboardPage() {
                 }}
                 className="mt-2"
               >
-                <Link href="/dashboard/quizzes/new">+ Créer un nouveau quizz</Link>
+                <Link href="/dashboard/quizzes/new">{dt.create_new}</Link>
               </Button>
             </div>
           )}
@@ -173,14 +230,14 @@ export default async function DashboardPage() {
         >
           <div className="flex items-center justify-between mb-2">
             <p className="font-display text-base tracking-wide group-hover:text-[var(--color-violet-primary)]">
-              💳 Mes paiements
+              💳 {dt.payments_card}
             </p>
             <span className="text-muted-foreground group-hover:translate-x-0.5 transition-transform">
               →
             </span>
           </div>
           <p className="text-sm text-muted-foreground">
-            Historique des achats de quizz et abonnements, accès aux factures.
+            {dt.payments_card_desc}
           </p>
         </Link>
         <Link
@@ -189,14 +246,14 @@ export default async function DashboardPage() {
         >
           <div className="flex items-center justify-between mb-2">
             <p className="font-display text-base tracking-wide group-hover:text-[var(--color-violet-primary)]">
-              📊 Statistiques
+              📊 {dt.stats_card}
             </p>
             <span className="text-muted-foreground group-hover:translate-x-0.5 transition-transform">
               →
             </span>
           </div>
           <p className="text-sm text-muted-foreground">
-            Vue globale de l'activité : participations, top quizz, performances.
+            {dt.stats_card_desc}
           </p>
         </Link>
       </div>

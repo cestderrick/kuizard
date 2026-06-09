@@ -86,6 +86,42 @@ export type Messages = {
     account_type_label: string;
     account_type_individual: string;
     account_type_business: string;
+    creating: string;
+  };
+  dashboard?: {
+    welcome_eyebrow: string;
+    welcome_title: string;
+    welcome_subtitle: string;
+    recent_quizzes_title: string;
+    recent_quizzes_empty: string;
+    recent_quizzes_summary: string;
+    see_all: string;
+    create_first: string;
+    create_new: string;
+    questions_count: string;
+    players_count: string;
+    edit_button: string;
+    payments_card: string;
+    payments_card_desc: string;
+    stats_card: string;
+    stats_card_desc: string;
+  };
+  quizzes?: {
+    page_title: string;
+    page_subtitle: string;
+    new_quiz: string;
+    from_template: string;
+    blank_quiz: string;
+    empty_title: string;
+    empty_subtitle: string;
+    status_draft: string;
+    status_published: string;
+    status_running: string;
+    status_finished: string;
+    status_archived: string;
+    code_label: string;
+    questions_label: string;
+    players_label: string;
   };
   player: {
     badge: string;
@@ -185,6 +221,46 @@ const fr: Messages = {
     account_type_label: "Type de compte",
     account_type_individual: "👤 Particulier",
     account_type_business: "🏢 Professionnel",
+    creating: "Création…",
+  },
+  dashboard: {
+    welcome_eyebrow: "✨ Bienvenue",
+    welcome_title: "Salut {name} !",
+    welcome_subtitle:
+      "Ton espace pour créer, gérer et partager des quizz personnalisés.",
+    recent_quizzes_title: "Mes quizz récents",
+    recent_quizzes_empty: "Tu n'as pas encore créé de quizz. Lance-toi !",
+    recent_quizzes_summary: "{count} quizz au total — derniers en haut.",
+    see_all: "Voir tous mes quizz",
+    create_first: "Créer mon premier quizz ✨",
+    create_new: "+ Créer un nouveau quizz",
+    questions_count: "{count} questions",
+    players_count: "{count} joueurs",
+    edit_button: "Éditer",
+    payments_card: "Mes paiements",
+    payments_card_desc:
+      "Historique des achats de quizz et abonnements, accès aux factures.",
+    stats_card: "Statistiques",
+    stats_card_desc:
+      "Vue globale de l'activité : participations, top quizz, performances.",
+  },
+  quizzes: {
+    page_title: "Mes quizz",
+    page_subtitle: "Crée, édite et publie tes quizz personnalisés.",
+    new_quiz: "Nouveau quizz",
+    from_template: "Choisir un template ✨",
+    blank_quiz: "Quizz vierge",
+    empty_title: "Aucun quizz pour l'instant",
+    empty_subtitle:
+      "Crée ton premier quizz à partir d'un template ou en partant de zéro.",
+    status_draft: "Brouillon",
+    status_published: "Publié",
+    status_running: "En direct",
+    status_finished: "Terminé",
+    status_archived: "Archivé",
+    code_label: "Code",
+    questions_label: "questions",
+    players_label: "joueurs",
   },
   player: {
     badge: "✨ Quizz Kuizard ✨",

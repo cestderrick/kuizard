@@ -19,7 +19,22 @@ import { signupAction, type SignupState } from "@/lib/actions/auth";
 
 const initialState: SignupState = { ok: false };
 
-export function SignupForm() {
+type Texts = {
+  title: string;
+  subtitle: string;
+  name_label: string;
+  email_label: string;
+  password_label: string;
+  account_type_label: string;
+  account_type_individual: string;
+  account_type_business: string;
+  submit: string;
+  creating: string;
+  have_account: string;
+  login_link: string;
+};
+
+export function SignupForm({ texts }: { texts: Texts }) {
   const [state, formAction, isPending] = useActionState(
     signupAction,
     initialState
@@ -29,11 +44,9 @@ export function SignupForm() {
     <Card className="border-0 shadow-2xl shadow-violet-900/40">
       <CardHeader className="text-center">
         <CardTitle className="font-display text-2xl tracking-wide">
-          Créer un compte
+          {texts.title}
         </CardTitle>
-        <CardDescription>
-          Pour créer tes quizz personnalisés ✨
-        </CardDescription>
+        <CardDescription>{texts.subtitle}</CardDescription>
       </CardHeader>
 
       <CardContent>
@@ -45,14 +58,14 @@ export function SignupForm() {
           )}
 
           <div className="flex flex-col gap-2">
-            <Label htmlFor="name">Ton nom (ou pseudo)</Label>
+            <Label htmlFor="name">{texts.name_label}</Label>
             <Input
               id="name"
               name="name"
               type="text"
               autoComplete="name"
               required
-              placeholder="Célia Magieduquiz"
+              placeholder="Marie, Léa, Le mage…"
             />
             {state.errors?.name && (
               <p className="text-sm text-destructive">
@@ -62,14 +75,14 @@ export function SignupForm() {
           </div>
 
           <div className="flex flex-col gap-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{texts.email_label}</Label>
             <Input
               id="email"
               name="email"
               type="email"
               autoComplete="email"
               required
-              placeholder="tonmailbg@exemple.fr"
+              placeholder="ton@email.com"
             />
             {state.errors?.email && (
               <p className="text-sm text-destructive">
@@ -79,7 +92,7 @@ export function SignupForm() {
           </div>
 
           <div className="flex flex-col gap-2">
-            <Label htmlFor="password">Mot de passe</Label>
+            <Label htmlFor="password">{texts.password_label}</Label>
             <Input
               id="password"
               name="password"
@@ -87,7 +100,7 @@ export function SignupForm() {
               autoComplete="new-password"
               required
               minLength={8}
-              placeholder="8 caractères minimum"
+              placeholder="8+"
             />
             {state.errors?.password && (
               <p className="text-sm text-destructive">
@@ -97,17 +110,15 @@ export function SignupForm() {
           </div>
 
           <div className="flex flex-col gap-2">
-            <Label htmlFor="accountType">Type de compte</Label>
+            <Label htmlFor="accountType">{texts.account_type_label}</Label>
             <select
               id="accountType"
               name="accountType"
               defaultValue="INDIVIDUAL"
               className="border-input bg-background flex h-9 w-full rounded-md border px-3 py-1 text-sm shadow-xs focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-2"
             >
-              <option value="INDIVIDUAL">
-                Particulier (mariage, anniv, EVJF…)
-              </option>
-              <option value="BUSINESS">Pro (bar, hôtel, restaurant)</option>
+              <option value="INDIVIDUAL">{texts.account_type_individual}</option>
+              <option value="BUSINESS">{texts.account_type_business}</option>
             </select>
           </div>
 
@@ -120,18 +131,18 @@ export function SignupForm() {
               color: "white",
             }}
           >
-            {isPending ? "Création…" : "Créer mon compte ✨"}
+            {isPending ? texts.creating : texts.submit}
           </Button>
         </form>
 
         <p className="mt-6 text-center text-sm text-muted-foreground">
-          Tu as déjà un compte ?{" "}
+          {texts.have_account}{" "}
           <Link
             href="/login"
             className="font-medium underline-offset-4 hover:underline"
             style={{ color: "var(--color-violet-primary)" }}
           >
-            Se connecter
+            {texts.login_link}
           </Link>
         </p>
       </CardContent>
