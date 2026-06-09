@@ -3,6 +3,10 @@ import { notFound } from "next/navigation";
 
 import { prisma } from "@/lib/db";
 import { getMessages } from "@/lib/i18n/get-locale";
+
+// Force le rendu dynamique pour que getLocale() (qui lit le cookie) soit
+// ré-évalué à chaque requête, sinon le HTML est cached et la langue ne change pas.
+export const dynamic = "force-dynamic";
 import { QuizPlayer } from "@/components/play/quiz-player";
 import { LivePlayer } from "@/components/play/live-player";
 import { parseTheme } from "@/lib/quiz/theme";

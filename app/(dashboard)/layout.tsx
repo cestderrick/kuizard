@@ -10,6 +10,10 @@ import { DashboardNavLink } from "@/components/nav/dashboard-nav-link";
 import { UserMenu } from "@/components/nav/user-menu";
 import { MobileNav } from "@/components/nav/mobile-nav";
 
+// Force le rendu dynamique pour que getLocale() soit ré-évalué à chaque
+// requête au lieu de servir une version cachée.
+export const dynamic = "force-dynamic";
+
 export default async function DashboardLayout({
   children,
 }: {
