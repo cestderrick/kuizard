@@ -43,7 +43,36 @@ export async function getLocale(): Promise<Locale> {
   return "fr";
 }
 
+/**
+ * Merge profond : prend `base` (FR fallback) et override avec les valeurs
+ * non-undefined de `over` (locale active). Une chaîne vide dans `over` est
+ * traitée comme "manquante" et fallback sur FR.
+ */
+function mergeWithFallback<T>(base: T, over: T): T {
+  if (typeof base !== "object" || base === null) return over ?? base;
+  if (typeof over !== "object" || over === null) return base;
+  const out: Record<string, unknown> = { ...(base as Record<string, unknown>) };
+  for (const k of Object.keys(over as Record<string, unknown>)) {
+    const a = (over as Record<string, unknown>)[k];
+    const b = out[k];
+    if (a === undefined || a === null) continue;
+    if (typeof a === "string") {
+      // Chaîne vide ou identique au FR ? On garde le FR
+      if (a === "") continue;
+      out[k] = a;
+    } else if (typeof a === "object" && typeof b === "object" && b !== null) {
+      out[k] = mergeWithFallback(b, a);
+    } else {
+      out[k] = a;
+    }
+  }
+  return out as T;
+}
+
 export async function getMessages(): Promise<Messages> {
   const locale = await getLocale();
-  return LOCALES[locale];
+  if (locale === "fr") return LOCALES.fr;
+  // Pour toutes les autres locales : on prend FR comme base, puis on override
+  // avec les clés réellement traduites. Ça garantit qu'aucune chaîne n'est vide.
+  return mergeWithFallback(LOCALES.fr, LOCALES[locale]);
 }

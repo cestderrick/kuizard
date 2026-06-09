@@ -1187,14 +1187,9 @@ function mergeDeep<T extends Record<string, unknown>>(
   return out;
 }
 
-// Charge le JSON auto-généré (silencieux si absent — pas généré encore)
-let AUTO: Partial<Record<Locale, Messages>> = {};
-try {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  AUTO = require("./messages-auto.json");
-} catch {
-  AUTO = {};
-}
+// Charge le JSON auto-généré via import statique (résolu au build par Turbopack)
+import autoJson from "./messages-auto.json";
+const AUTO = autoJson as Partial<Record<Locale, Messages>>;
 
 export const LOCALES: Record<Locale, Messages> = {
   fr: MANUAL_LOCALES.fr, // FR = source manuelle uniquement, jamais traduite
