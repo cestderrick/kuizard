@@ -1,17 +1,15 @@
 "use client";
 
 import { useTransition } from "react";
-import { useRouter } from "next/navigation";
 
 import { SUPPORTED_LOCALES } from "@/lib/i18n/messages";
 import { setLocaleAction } from "@/lib/actions/locale";
 
 /**
- * Sélecteur de langue — appelle directement la server action puis force un
- * `router.refresh()` pour que les composants serveur relisent le cookie.
- *
- * Sans le refresh, Next 16 ne re-render pas l'arbre après une action invoquée
- * via `form.requestSubmit()` programmatique.
+ * Sélecteur de langue — appelle la server action puis force un reload complet.
+ * `router.refresh()` ne suffit pas car les RSC sont fortement cachés et ne
+ * re-lisent pas getLocale() après la mise à jour du cookie. Un location.reload
+ * garantit que toute l'arbre est re-fetché avec le nouveau cookie.
  */
 export function LocaleSelect({
   current,
@@ -20,7 +18,6 @@ export function LocaleSelect({
   current: string;
   variant: "light" | "night";
 }) {
-  const router = useRouter();
   const [pending, startTransition] = useTransition();
   const isLight = variant === "light";
 
@@ -30,7 +27,9 @@ export function LocaleSelect({
     formData.set("locale", value);
     startTransition(async () => {
       await setLocaleAction(formData);
-      router.refresh();
+      // Reload complet — le navigateur renvoie le cookie kz_locale mis à jour
+      // et tous les server components ré-exécutent getLocale().
+      window.location.reload();
     });
   }
 
