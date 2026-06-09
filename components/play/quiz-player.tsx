@@ -44,6 +44,36 @@ type ResumeData = {
   canModify: boolean;
 };
 
+type PlayerTexts = {
+  badge: string;
+  nickname_label: string;
+  nickname_placeholder: string;
+  nickname_hint: string;
+  questions_count: string;
+  start_button: string;
+  connecting: string;
+  instructions: string;
+  can_modify_hint: string;
+  saving: string;
+  saved: string;
+  question_number: string;
+  points_label: string;
+  text_answer_placeholder: string;
+  multi_choice_hint: string;
+  submit_button: string;
+  submit_button_modify: string;
+  calculating: string;
+  bravo: string;
+  score_correct: string;
+  msg_excellent: string;
+  msg_good: string;
+  msg_ok: string;
+  msg_low: string;
+  modify_button: string;
+  leaderboard_button: string;
+  powered_by: string;
+};
+
 type Props = {
   code: string;
   title: string;
@@ -53,7 +83,21 @@ type Props = {
   theme: Theme;
   /** Données pour reprendre une session existante (cookie kz_play_<quizId>) */
   resume?: ResumeData | null;
+  /** Textes traduits — passés depuis le server component parent. */
+  texts: PlayerTexts;
 };
+
+// Helper pluriel basique : "s" si count > 1 sinon "". Le placeholder {s} dans
+// les chaînes traduites le devient via cette fonction.
+function pluralize(text: string, count: number): string {
+  return text
+    .replace(/\{count\}/g, String(count))
+    .replace(/\{n\}/g, String(count))
+    .replace(/\{s\}/g, count > 1 ? "s" : "")
+    .replace(/\{e\}/g, count > 1 ? "e" : "")
+    .replace(/\{n\}/g, count > 1 ? "n" : "")
+    .replace(/\{ов\}/g, count === 1 ? "" : count >= 2 && count <= 4 ? "а" : "ов");
+}
 
 export function QuizPlayer({
   code,
@@ -63,6 +107,7 @@ export function QuizPlayer({
   questions,
   theme,
   resume,
+  texts,
 }: Props) {
   // Si on a une session reprise terminée et modifiable (SCHEDULED), on
   // l'amène directement en phase "playing" en pré-remplissant tout.
@@ -208,6 +253,7 @@ export function QuizPlayer({
             isPending={isPending}
             error={error}
             questionCount={questions.length}
+            texts={texts}
           />
         )}
 
@@ -218,17 +264,17 @@ export function QuizPlayer({
                 {title}
               </h1>
               <p className="text-sm text-[var(--color-lavender-2)] opacity-80 mt-1">
-                {questions.length} question{questions.length > 1 ? "s" : ""} ·{" "}
-                Réponds à toutes puis valide en bas de page
+                {pluralize(texts.questions_count, questions.length)} ·{" "}
+                {texts.instructions}
               </p>
               {resume?.completedAt && resume.canModify && (
                 <p className="mt-3 inline-block text-xs px-3 py-1.5 rounded-full bg-[rgba(245,158,11,0.15)] border border-[var(--color-gold)] text-[var(--color-gold)]">
-                  📝 Tu peux modifier tes réponses tant que le créneau est ouvert
+                  {texts.can_modify_hint}
                 </p>
               )}
               {participationId && autosaveStatus !== "idle" && (
                 <p className="mt-2 text-[10px] uppercase tracking-wider opacity-50">
-                  {autosaveStatus === "saving" ? "💾 sauvegarde…" : "✓ sauvegardé"}
+                  {autosaveStatus === "saving" ? texts.saving : texts.saved}
                 </p>
               )}
             </header>
@@ -241,6 +287,7 @@ export function QuizPlayer({
                 answer={answers[q.id]}
                 onToggleChoice={(i, multi) => toggleChoice(q.id, i, multi)}
                 onSetText={(v) => setTextAnswer(q.id, v)}
+                texts={texts}
               />
             ))}
 
@@ -262,10 +309,10 @@ export function QuizPlayer({
                 className="font-bold"
               >
                 {isPending
-                  ? "Calcul…"
+                  ? texts.calculating
                   : resume?.completedAt && resume.canModify
-                  ? "Mettre à jour mes réponses 📝"
-                  : "Voir mon score ✨"}
+                  ? texts.submit_button_modify
+                  : texts.submit_button}
               </Button>
             </div>
           </form>
@@ -280,12 +327,13 @@ export function QuizPlayer({
             total={total}
             canModify={resume?.canModify ?? false}
             onModify={() => setPhase("playing")}
+            texts={texts}
           />
         )}
       </div>
 
       <footer className="mt-12 text-center text-xs text-[var(--color-lavender-2)] opacity-50">
-        Propulsé par <span className="font-display tracking-wide">Kuizard</span>
+        {texts.powered_by}
       </footer>
     </main>
   );
@@ -305,6 +353,7 @@ function IntroCard({
   isPending,
   error,
   questionCount,
+  texts,
 }: {
   title: string;
   description: string | null;
@@ -315,6 +364,7 @@ function IntroCard({
   isPending: boolean;
   error: string | null;
   questionCount: number;
+  texts: PlayerTexts;
 }) {
   return (
     <form
@@ -338,7 +388,7 @@ function IntroCard({
       </div>
       <div>
         <p className="text-xs uppercase tracking-[3px] text-[var(--color-violet-primary)] font-semibold mb-1">
-          ✨ Quizz Kuizard ✨
+          {texts.badge}
         </p>
         <h1
           className="font-display text-3xl tracking-wide"
@@ -351,11 +401,11 @@ function IntroCard({
         <p className="text-sm text-muted-foreground">{description}</p>
       )}
       <div className="text-xs text-muted-foreground">
-        {questionCount} question{questionCount > 1 ? "s" : ""} à venir
+        {pluralize(texts.questions_count, questionCount)}
       </div>
 
       <div className="flex flex-col gap-2 text-left">
-        <Label htmlFor="nickname">Ton pseudo</Label>
+        <Label htmlFor="nickname">{texts.nickname_label}</Label>
         <Input
           id="nickname"
           name="nickname"
@@ -365,10 +415,10 @@ function IntroCard({
           maxLength={40}
           value={nickname}
           onChange={(e) => setNickname(e.target.value)}
-          placeholder="ex : Marie, La sorcière, Le mage..."
+          placeholder={texts.nickname_placeholder}
         />
         <p className="text-xs text-muted-foreground">
-          Il apparaîtra sur le classement.
+          {texts.nickname_hint}
         </p>
       </div>
 
@@ -387,7 +437,7 @@ function IntroCard({
           color: "white",
         }}
       >
-        {isPending ? "Connexion…" : "Commencer le quizz ✨"}
+        {isPending ? texts.connecting : texts.start_button}
       </Button>
       </div>
     </form>
@@ -400,12 +450,14 @@ function QuestionBlock({
   answer,
   onToggleChoice,
   onSetText,
+  texts,
 }: {
   index: number;
   question: Question;
   answer: Answer | undefined;
   onToggleChoice: (i: number, multi: boolean) => void;
   onSetText: (v: string) => void;
+  texts: PlayerTexts;
 }) {
   const selectedSet =
     answer?.type === "choice" ? new Set(answer.selectedIndices) : new Set();
@@ -427,7 +479,7 @@ function QuestionBlock({
       <div className="p-5 flex flex-col gap-4">
       <div className="flex items-start justify-between gap-2 flex-wrap">
         <p className="text-xs uppercase tracking-[3px] text-[var(--color-gold)] font-semibold">
-          Question {index + 1}
+          {texts.question_number.replace("{n}", String(index + 1))}
         </p>
         <div className="flex items-center gap-3">
           {question.timerSeconds && question.timerSeconds > 0 && (
@@ -437,7 +489,7 @@ function QuestionBlock({
             />
           )}
           <p className="text-xs text-[var(--color-lavender-2)] opacity-70">
-            {question.points} pt{question.points > 1 ? "s" : ""}
+            {pluralize(texts.points_label, question.points)}
           </p>
         </div>
       </div>
@@ -449,7 +501,7 @@ function QuestionBlock({
           type="text"
           value={answer?.type === "text" ? answer.value : ""}
           onChange={(e) => onSetText(e.target.value)}
-          placeholder="Tape ta réponse…"
+          placeholder={texts.text_answer_placeholder}
           className="bg-white text-[var(--color-foreground)]"
         />
       ) : (
@@ -481,7 +533,7 @@ function QuestionBlock({
           })}
           {isMulti && (
             <p className="text-xs text-[var(--color-lavender-2)] opacity-70 italic">
-              Plusieurs réponses possibles
+              {texts.multi_choice_hint}
             </p>
           )}
         </div>
@@ -499,6 +551,7 @@ function ResultCard({
   total,
   canModify,
   onModify,
+  texts,
 }: {
   code: string;
   title: string;
@@ -507,16 +560,17 @@ function ResultCard({
   total: number;
   canModify: boolean;
   onModify: () => void;
+  texts: PlayerTexts;
 }) {
   const ratio = total > 0 ? Math.round((score / total) * 100) : 0;
   const message =
     ratio >= 80
-      ? "Un vrai magicien 🪄"
+      ? texts.msg_excellent
       : ratio >= 50
-      ? "Pas mal du tout ✨"
+      ? texts.msg_good
       : ratio >= 25
-      ? "Tu as quelques tours dans ta manche 🎩"
-      : "C'est pas grave, l'essentiel est de participer 💜";
+      ? texts.msg_ok
+      : texts.msg_low;
 
   return (
     <div className="bg-white text-[var(--color-foreground)] rounded-2xl shadow-2xl p-8 flex flex-col gap-5 text-center">
@@ -524,7 +578,7 @@ function ResultCard({
         ✨
       </div>
       <p className="text-sm uppercase tracking-[3px] font-semibold" style={{ color: "var(--quiz-primary, var(--color-violet-primary))" }}>
-        Bravo {nickname} !
+        {texts.bravo.replace("{nickname}", nickname)}
       </p>
       <h1
         className="font-display text-2xl tracking-wide"
@@ -542,7 +596,7 @@ function ResultCard({
           <span className="text-2xl text-muted-foreground"> / {total}</span>
         </p>
         <p className="text-sm text-muted-foreground mt-1">
-          {ratio}% de bonnes réponses
+          {texts.score_correct.replace("{ratio}", String(ratio))}
         </p>
       </div>
 
@@ -560,7 +614,7 @@ function ResultCard({
               backgroundColor: "transparent",
             }}
           >
-            📝 Modifier mes réponses
+            {texts.modify_button}
           </button>
         )}
         <a
@@ -571,7 +625,7 @@ function ResultCard({
             color: "var(--color-violet-deep)",
           }}
         >
-          🏆 Voir le classement
+          {texts.leaderboard_button}
         </a>
       </div>
     </div>

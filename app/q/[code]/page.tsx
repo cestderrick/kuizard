@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { prisma } from "@/lib/db";
+import { getMessages } from "@/lib/i18n/get-locale";
 import { QuizPlayer } from "@/components/play/quiz-player";
 import { LivePlayer } from "@/components/play/live-player";
 import { parseTheme } from "@/lib/quiz/theme";
@@ -71,6 +72,7 @@ export default async function PlayPage({
   // Pas de question encore → affichage "en préparation" pour éviter de laisser
   // un joueur taper un pseudo dans le vide.
   if (quiz.questions.length === 0) {
+    const msgs = await getMessages();
     return (
       <main className="min-h-screen flex items-center justify-center px-4 py-12 bg-[var(--color-night)] text-[var(--color-lavender)]">
         <div className="max-w-md text-center">
@@ -81,8 +83,7 @@ export default async function PlayPage({
             {quiz.title}
           </h1>
           <p className="text-[var(--color-lavender-2)] opacity-80">
-            Le créateur est en train de finaliser ce quizz. Reviens dans
-            quelques instants ✨
+            {msgs.player.empty_title}. {msgs.player.empty_subtitle}
           </p>
         </div>
       </main>
@@ -101,6 +102,7 @@ export default async function PlayPage({
     quiz.status === "PUBLISHED" || quiz.status === "RUNNING";
 
   if (!isPlayable) {
+    const msgs = await getMessages();
     return (
       <main className="min-h-screen flex items-center justify-center px-4 py-12 bg-[var(--color-night)] text-[var(--color-lavender)]">
         <div className="max-w-md text-center">
@@ -108,11 +110,10 @@ export default async function PlayPage({
             🎩
           </div>
           <h1 className="font-display text-2xl mb-2 tracking-wide">
-            Ce quizz n'est pas encore actif
+            {msgs.player.inactive_title}
           </h1>
           <p className="text-[var(--color-lavender-2)] opacity-80">
-            Reviens plus tard, ou demande au créateur du quizz s'il l'a bien
-            publié.
+            {msgs.player.inactive_subtitle}
           </p>
         </div>
       </main>
@@ -243,6 +244,8 @@ export default async function PlayPage({
     );
   }
 
+  const messages = await getMessages();
+
   return (
     <QuizPlayer
       code={quiz.code}
@@ -263,6 +266,7 @@ export default async function PlayPage({
             }
           : null
       }
+      texts={messages.player}
     />
   );
 }
