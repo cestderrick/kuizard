@@ -43,9 +43,15 @@ export function CookieBanner() {
             On utilise des cookies
           </p>
           <p className="text-sm text-muted-foreground leading-relaxed">
-            Uniquement les cookies techniques nécessaires (session, login,
-            participation). <strong>Aucun tracker publicitaire</strong>, aucune
-            analytics.
+            Uniquement les cookies techniques essentiels au service :
+            <strong>session de connexion</strong> (NextAuth),{" "}
+            <strong>participation aux quizz</strong> (kz_play_*),{" "}
+            <strong>préférence de langue</strong> (kz_locale).
+            Lors d'un paiement, Stripe pose ses propres cookies de sécurité.
+          </p>
+          <p className="text-xs text-muted-foreground mt-2">
+            <strong>Aucun tracker publicitaire</strong> · aucun analytics ·
+            pas de cookies tiers en dehors du paiement.
           </p>
         </div>
       </div>

@@ -49,6 +49,18 @@ export default function CookiesPage() {
             <td>30 jours</td>
             <td>Strictement nécessaire</td>
           </tr>
+          <tr>
+            <td><code>kz_locale</code></td>
+            <td>Mémoriser ta langue préférée (FR, EN, ES, IT, DE, PT, RU, ZH)</td>
+            <td>1 an</td>
+            <td>Préférence</td>
+          </tr>
+          <tr>
+            <td><code>kuizard:cookies-ack:v1</code></td>
+            <td>Mémoriser que tu as vu ce bandeau (localStorage)</td>
+            <td>Permanent</td>
+            <td>Préférence</td>
+          </tr>
         </tbody>
       </table>
 
