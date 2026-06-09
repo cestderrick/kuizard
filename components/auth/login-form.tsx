@@ -19,7 +19,18 @@ import { signinAction, type SigninState } from "@/lib/actions/auth";
 
 const initialState: SigninState = { ok: false };
 
-export function LoginForm() {
+type Texts = {
+  title: string;
+  subtitle: string;
+  email_label: string;
+  password_label: string;
+  submit: string;
+  connecting: string;
+  no_account: string;
+  signup_link: string;
+};
+
+export function LoginForm({ texts }: { texts: Texts }) {
   const [state, formAction, isPending] = useActionState(
     signinAction,
     initialState
@@ -29,11 +40,9 @@ export function LoginForm() {
     <Card className="border-0 shadow-2xl shadow-violet-900/40">
       <CardHeader className="text-center">
         <CardTitle className="font-display text-2xl tracking-wide">
-          Connexion
+          {texts.title}
         </CardTitle>
-        <CardDescription>
-          Retrouve ton espace pour gérer tes quizz 🎩
-        </CardDescription>
+        <CardDescription>{texts.subtitle}</CardDescription>
       </CardHeader>
 
       <CardContent>
@@ -45,7 +54,7 @@ export function LoginForm() {
           )}
 
           <div className="flex flex-col gap-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{texts.email_label}</Label>
             <Input
               id="email"
               name="email"
@@ -62,7 +71,7 @@ export function LoginForm() {
           </div>
 
           <div className="flex flex-col gap-2">
-            <Label htmlFor="password">Mot de passe</Label>
+            <Label htmlFor="password">{texts.password_label}</Label>
             <Input
               id="password"
               name="password"
@@ -86,18 +95,18 @@ export function LoginForm() {
               color: "white",
             }}
           >
-            {isPending ? "Connexion…" : "Se connecter ✨"}
+            {isPending ? texts.connecting : texts.submit}
           </Button>
         </form>
 
         <p className="mt-6 text-center text-sm text-muted-foreground">
-          Pas encore de compte ?{" "}
+          {texts.no_account}{" "}
           <Link
             href="/signup"
             className="font-medium underline-offset-4 hover:underline"
             style={{ color: "var(--color-violet-primary)" }}
           >
-            Créer un compte
+            {texts.signup_link}
           </Link>
         </p>
       </CardContent>

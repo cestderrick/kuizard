@@ -7,11 +7,12 @@ import { usePathname } from "next/navigation";
 type Item = { href: string; label: string; icon: string; exact?: boolean };
 
 const ITEMS: Item[] = [
-  { href: "/dashboard", label: "Accueil", icon: "🏠", exact: true },
+  { href: "/dashboard", label: "Tableau de bord", icon: "📊", exact: true },
   { href: "/dashboard/quizzes", label: "Mes quizz", icon: "🎩" },
-  { href: "/dashboard/stats", label: "Stats", icon: "📊" },
+  { href: "/dashboard/stats", label: "Stats", icon: "📈" },
   { href: "/dashboard/messages", label: "Messages", icon: "✉️" },
   { href: "/dashboard/suggestions", label: "Suggestions", icon: "💬" },
+  { href: "/", label: "Page d'accueil", icon: "🏠" },
 ];
 
 /**

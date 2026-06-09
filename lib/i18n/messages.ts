@@ -69,6 +69,24 @@ export type Messages = {
     cta_play: string;
     cta_play_input_placeholder: string;
   };
+  auth?: {
+    login_title: string;
+    login_subtitle: string;
+    signup_title: string;
+    signup_subtitle: string;
+    email_label: string;
+    password_label: string;
+    confirm_password_label: string;
+    name_label: string;
+    submit_login: string;
+    submit_signup: string;
+    no_account: string;
+    have_account: string;
+    forgot_password: string;
+    account_type_label: string;
+    account_type_individual: string;
+    account_type_business: string;
+  };
   player: {
     badge: string;
     nickname_label: string;
@@ -149,6 +167,24 @@ const fr: Messages = {
     cta_create: "Créer mon quizz ✨",
     cta_play: "Rejoindre un quizz",
     cta_play_input_placeholder: "Code à 6 chiffres",
+  },
+  auth: {
+    login_title: "Content de te revoir !",
+    login_subtitle: "Connecte-toi pour gérer tes quizz.",
+    signup_title: "Bienvenue chez Kuizard ✨",
+    signup_subtitle: "Crée ton compte gratuit en 30 secondes.",
+    email_label: "Email",
+    password_label: "Mot de passe",
+    confirm_password_label: "Confirmer le mot de passe",
+    name_label: "Ton prénom",
+    submit_login: "Se connecter ✨",
+    submit_signup: "Créer mon compte ✨",
+    no_account: "Pas encore de compte ?",
+    have_account: "Tu as déjà un compte ?",
+    forgot_password: "Mot de passe oublié ?",
+    account_type_label: "Type de compte",
+    account_type_individual: "👤 Particulier",
+    account_type_business: "🏢 Professionnel",
   },
   player: {
     badge: "✨ Quizz Kuizard ✨",

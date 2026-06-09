@@ -104,6 +104,12 @@ export function UserMenu({
 
           <div className="py-1.5">
             <MenuLink
+              href="/"
+              icon="🏠"
+              label="Page d'accueil"
+              onClick={() => setOpen(false)}
+            />
+            <MenuLink
               href="/dashboard/profile"
               icon="👤"
               label={labels.profile}

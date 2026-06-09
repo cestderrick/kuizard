@@ -62,7 +62,7 @@ export default async function DashboardLayout({
 
             {/* Nav principale — visible md+ uniquement */}
             <nav className="hidden md:flex items-center gap-1">
-              <DashboardNavLink href="/dashboard" label={navT.home} exact />
+              <DashboardNavLink href="/dashboard" label={navT.dashboard} exact />
               <DashboardNavLink
                 href="/dashboard/quizzes"
                 label={navT.quizzes}
@@ -76,6 +76,7 @@ export default async function DashboardLayout({
                 href="/dashboard/suggestions"
                 label={navT.suggestions}
               />
+              <DashboardNavLink href="/" label={navT.home} />
             </nav>
           </div>
 
