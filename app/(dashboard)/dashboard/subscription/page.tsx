@@ -8,6 +8,7 @@ import { getActivePlans } from "@/lib/plans/config";
 import { formatStripeAmount } from "@/lib/stripe/client";
 import { SubscribeButton } from "@/components/payment/subscribe-button";
 import { CustomerPortalButton } from "@/components/payment/customer-portal-button";
+import { getMessages } from "@/lib/i18n/get-locale";
 
 export const metadata: Metadata = {
   title: "Mon abonnement",

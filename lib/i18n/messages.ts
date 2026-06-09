@@ -152,6 +152,109 @@ export type Messages = {
     questions_label: string;
     players_label: string;
   };
+  payments?: {
+    page_eyebrow: string;
+    page_title: string;
+    page_subtitle: string;
+    total_spent: string;
+    succeeded_count: string;
+    all_count: string;
+    history_title: string;
+    empty_message: string;
+    th_date: string;
+    th_quiz: string;
+    th_plan: string;
+    th_code: string;
+    th_amount: string;
+    th_status: string;
+    free: string;
+    status_succeeded: string;
+    status_pending: string;
+    status_failed: string;
+    status_refunded: string;
+    invoices_hint: string;
+  };
+  subscription?: {
+    page_eyebrow: string;
+    page_title: string;
+    page_subtitle: string;
+    active_plan: string;
+    next_renewal: string;
+    will_cancel: string;
+    stripe_status: string;
+    no_subscription: string;
+    plans_title: string;
+    no_plans: string;
+    recommended: string;
+    per_month: string;
+    per_year: string;
+    subscribe_button: string;
+    cross_sell: string;
+    cross_sell_link: string;
+    cancel_anytime: string;
+    cgv_link: string;
+  };
+  profile?: {
+    page_eyebrow: string;
+    page_title: string;
+    member_since: string;
+    info_title: string;
+    name_label: string;
+    email_label: string;
+    account_type_label: string;
+    type_individual: string;
+    type_business: string;
+    update_button: string;
+    updating: string;
+    password_title: string;
+    password_oauth_hint: string;
+    current_password_label: string;
+    new_password_label: string;
+    confirm_password_label: string;
+    change_password_button: string;
+    danger_zone: string;
+    delete_warning: string;
+    delete_confirm_label: string;
+    delete_confirm_value: string;
+    delete_button: string;
+    company_section_title: string;
+  };
+  stats?: {
+    page_eyebrow: string;
+    page_title: string;
+    page_subtitle: string;
+    my_quizzes: string;
+    questions_created: string;
+    participations: string;
+    completed_suffix: string;
+    spent: string;
+    purchases_count: string;
+    days_7_title: string;
+    days_30_title: string;
+    participations_started: string;
+    top5_title: string;
+    no_quiz_yet: string;
+    th_quiz: string;
+    th_status: string;
+    th_questions: string;
+    th_players: string;
+    th_completion: string;
+    th_avg_score: string;
+  };
+  home_pro?: {
+    eyebrow: string;
+    title: string;
+    subtitle: string;
+    feature_unlimited: string;
+    feature_unlimited_desc: string;
+    feature_live: string;
+    feature_live_desc: string;
+    feature_tv: string;
+    feature_tv_desc: string;
+    feature_brand: string;
+    feature_brand_desc: string;
+    cta_button: string;
+  };
   player: {
     badge: string;
     nickname_label: string;
@@ -330,6 +433,121 @@ const fr: Messages = {
     code_label: "Code",
     questions_label: "questions",
     players_label: "joueurs",
+  },
+  payments: {
+    page_eyebrow: "💳 Paiements",
+    page_title: "Mes paiements",
+    page_subtitle: "Historique des achats de quizz et abonnements.",
+    total_spent: "Total dépensé",
+    succeeded_count: "Achats réussis",
+    all_count: "Toutes transactions",
+    history_title: "Historique",
+    empty_message: "Tu n'as encore fait aucun achat.",
+    th_date: "Date",
+    th_quiz: "Quizz",
+    th_plan: "Plan",
+    th_code: "Code",
+    th_amount: "Montant",
+    th_status: "Statut",
+    free: "Offert",
+    status_succeeded: "Réussi",
+    status_pending: "En attente",
+    status_failed: "Échec",
+    status_refunded: "Remboursé",
+    invoices_hint:
+      "Pour télécharger tes factures, utilise le portail Stripe (bouton ci-dessus).",
+  },
+  subscription: {
+    page_eyebrow: "🔁 Abonnement",
+    page_title: "Mon abonnement",
+    page_subtitle:
+      "Choisis un plan mensuel — idéal si tu organises plusieurs quizz dans l'année.",
+    active_plan: "Plan actif",
+    next_renewal: "Prochain renouvellement",
+    will_cancel: "(sera annulé à cette date)",
+    stripe_status: "Statut Stripe",
+    no_subscription:
+      "Tu n'as pas encore d'abonnement actif. Choisis un plan ci-dessous.",
+    plans_title: "Plans disponibles",
+    no_plans: "Aucun plan d'abonnement configuré.",
+    recommended: "⭐ Recommandé",
+    per_month: "/ mois",
+    per_year: "/ an",
+    subscribe_button: "Souscrire à",
+    cross_sell:
+      "💡 Tu n'as besoin que d'un seul quizz ? Tu peux aussi payer à l'unité (à partir de 5 €), sans engagement.",
+    cross_sell_link: "Voir mes quizz et payer à l'unité →",
+    cancel_anytime:
+      "Tu peux annuler à tout moment depuis le portail Stripe.",
+    cgv_link: "Conditions Générales de Vente",
+  },
+  profile: {
+    page_eyebrow: "👤 Profil",
+    page_title: "Mon profil",
+    member_since: "Membre depuis le",
+    info_title: "Informations",
+    name_label: "Nom affiché",
+    email_label: "Email",
+    account_type_label: "Type de compte",
+    type_individual: "👤 Particulier",
+    type_business: "🏢 Professionnel",
+    update_button: "Mettre à jour",
+    updating: "Enregistrement…",
+    password_title: "🔐 Mot de passe",
+    password_oauth_hint:
+      "Tu t'es connecté via un fournisseur externe (Google, etc.). Le mot de passe se gère côté fournisseur.",
+    current_password_label: "Mot de passe actuel",
+    new_password_label: "Nouveau mot de passe",
+    confirm_password_label: "Confirmer le nouveau",
+    change_password_button: "🔐 Changer le mot de passe",
+    danger_zone: "⚠️ Zone dangereuse",
+    delete_warning:
+      "Cette action est définitive et irréversible. Tous tes quizz, participations, messages et données personnelles seront supprimés conformément au droit à l'oubli (RGPD art. 17).",
+    delete_confirm_label: 'Tape "SUPPRIMER" pour confirmer',
+    delete_confirm_value: "SUPPRIMER",
+    delete_button: "🗑 Supprimer définitivement mon compte",
+    company_section_title: "🏢 Informations entreprise",
+  },
+  stats: {
+    page_eyebrow: "📊 Statistiques",
+    page_title: "Mes stats",
+    page_subtitle: "Vue détaillée par quizz, puis vue globale en bas.",
+    my_quizzes: "Mes quizz",
+    questions_created: "Questions créées",
+    participations: "Participations",
+    completed_suffix: "terminées",
+    spent: "Dépensé",
+    purchases_count: "achat(s)",
+    days_7_title: "🌟 7 derniers jours",
+    days_30_title: "📅 30 derniers jours",
+    participations_started: "participation(s) démarrée(s)",
+    top5_title: "🏆 Top 5 quizz par participation",
+    no_quiz_yet: "Aucun quizz pour l'instant.",
+    th_quiz: "Quizz",
+    th_status: "Statut",
+    th_questions: "Q",
+    th_players: "👥",
+    th_completion: "✓",
+    th_avg_score: "⭐ Moy.",
+  },
+  home_pro: {
+    eyebrow: "✨ Pour les pros",
+    title: "Abonnements pour bars, restaurants et événementiel",
+    subtitle:
+      "Quizz illimités, mode live, affichage TV, classements hebdo. Tout pour animer ton lieu sans souci.",
+    feature_unlimited: "🎩 Quizz illimités",
+    feature_unlimited_desc:
+      "Crée et diffuse autant de quizz que tu veux, sans surprise.",
+    feature_live: "📡 Mode live + classement direct",
+    feature_live_desc:
+      "Pilote tes soirées en temps réel, vois les réponses arriver.",
+    feature_tv: "📺 Affichage TV",
+    feature_tv_desc:
+      "Branche un écran sur ton bar, le classement défile pour tes clients.",
+    feature_brand: "🎨 Personnalisation totale",
+    feature_brand_desc:
+      "Couleurs, logo, ambiance — ton quizz à ton image.",
+    cta_button: "Voir les abonnements ✨",
   },
   player: {
     badge: "✨ Quizz Kuizard ✨",
