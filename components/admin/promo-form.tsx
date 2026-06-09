@@ -68,9 +68,9 @@ export function PromoForm({
               name="code"
               defaultValue={promo?.code ?? ""}
               required
-              disabled={!!promo?.id}
+              readOnly={!!promo?.id}
               placeholder="WELCOME10"
-              className="kz-input uppercase"
+              className={`kz-input uppercase ${promo?.id ? "opacity-60 cursor-not-allowed" : ""}`}
             />
           </Field>
           <Field label="Description">

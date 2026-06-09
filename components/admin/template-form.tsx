@@ -84,9 +84,9 @@ export function TemplateForm({ template }: { template?: Template }) {
               name="slug"
               defaultValue={template?.slug ?? ""}
               required
-              disabled={!!template?.id}
+              readOnly={!!template?.id}
               placeholder="mariage"
-              className="kz-input"
+              className={`kz-input ${template?.id ? "opacity-60 cursor-not-allowed" : ""}`}
             />
           </Field>
           <Field label="Titre">

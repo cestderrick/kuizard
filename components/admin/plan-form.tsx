@@ -52,9 +52,9 @@ export function PlanForm({ plan }: { plan?: Plan }) {
             name="slug"
             defaultValue={plan?.slug ?? ""}
             required
-            disabled={!!plan?.id}
+            readOnly={!!plan?.id}
             placeholder="essentiel"
-            className="kz-input"
+            className={`kz-input ${plan?.id ? "opacity-60 cursor-not-allowed" : ""}`}
           />
         </Field>
         <Field label="Nom affiché">
