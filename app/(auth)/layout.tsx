@@ -1,12 +1,16 @@
 import Link from "next/link";
 import { KuizardLogo } from "@/components/brand/kuizard-logo";
 import { TopLocaleBar } from "@/components/i18n/top-locale-bar";
+import { getMessages } from "@/lib/i18n/get-locale";
 
-export default function AuthLayout({
+export default async function AuthLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const messages = await getMessages();
+  const t = messages.home;
+  const f = messages.footer;
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-4 py-12 relative overflow-hidden bg-[var(--color-night)]">
       <TopLocaleBar variant="night" />
@@ -51,7 +55,7 @@ export default function AuthLayout({
         className="relative z-10 mt-6 text-sm italic"
         style={{ color: "var(--color-lavender-2)", opacity: 0.85 }}
       >
-        ✨ pour un moment magique
+        {t.tagline_short ?? "✨ pour un moment magique"}
       </p>
 
       {/* Liens légaux compacts */}
@@ -60,19 +64,19 @@ export default function AuthLayout({
         style={{ color: "var(--color-lavender-2)", opacity: 0.7 }}
       >
         <Link href="/mentions-legales" className="hover:opacity-100">
-          Mentions légales
+          {f.legal}
         </Link>
         <Link href="/cgu" className="hover:opacity-100">
-          CGU
+          {f.cgu}
         </Link>
         <Link href="/cgv" className="hover:opacity-100">
-          CGV
+          {f.cgv}
         </Link>
         <Link href="/confidentialite" className="hover:opacity-100">
-          Confidentialité
+          {f.privacy}
         </Link>
         <Link href="/cookies" className="hover:opacity-100">
-          Cookies
+          {f.cookies}
         </Link>
       </nav>
     </div>

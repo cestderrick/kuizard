@@ -109,7 +109,16 @@
       "pro_bar_pro_f7_strong": "Stats avancées + export CSV",
       "pro_bar_pro_f8": "Support prioritaire (< 24h)",
       "pro_footer_note": "✓ Sans engagement  ·  ✓ Résiliation libre  ·  ✓ Pas de reconduction tacite",
-      "pro_cta_create": "Créer un compte pro"
+      "pro_cta_create": "Créer un compte pro",
+      "cta_final_title": "Lance ton premier quizz maintenant",
+      "cta_final_subtitle": "Gratuit, sans CB, en 5 minutes chrono. Crée ton compte et offre à tes invités un moment dont ils se souviendront.",
+      "cta_final_button_logged_in": "+ Créer mon quizz",
+      "cta_final_button_signup": "Créer mon compte gratuit ✨",
+      "footer_tagline": "Kuizard · pour un moment magique · édité par Projiat",
+      "footer_copyright": "© {year} Projiat — Tous droits réservés.",
+      "footer_help": "💬 Aide",
+      "footer_suggestion": "✨ Suggestion",
+      "tagline_short": "✨ pour un moment magique"
     },
     "auth": {
       "login_title": "Content de te revoir !",
@@ -437,7 +446,16 @@
       "pro_bar_pro_f7_strong": "Advanced stats + CSV export",
       "pro_bar_pro_f8": "Priority support (< 24 hours)",
       "pro_footer_note": "✓ No commitment  ·  ✓ Cancel at any time  ·  ✓ No automatic renewal",
-      "pro_cta_create": "Create a business account"
+      "pro_cta_create": "Create a business account",
+      "cta_final_title": "Take your first quiz now",
+      "cta_final_subtitle": "Free, no credit card required, and ready in just 5 minutes. Create your account and give your guests an experience they’ll never forget.",
+      "cta_final_button_logged_in": "+ Create my quiz",
+      "cta_final_button_signup": "Create my free account ✨",
+      "footer_tagline": "Kuizard · for a magical moment · published by Projiat",
+      "footer_copyright": "© {year} Projiat — All rights reserved.",
+      "footer_help": "💬 Help",
+      "footer_suggestion": "✨ Suggestion",
+      "tagline_short": "✨ for a magical moment"
     },
     "auth": {
       "login_title": "Good to see you again!",
@@ -765,7 +783,16 @@
       "pro_bar_pro_f7_strong": "Estadísticas avanzadas + exportación a CSV",
       "pro_bar_pro_f8": "Asistencia prioritaria (< 24 h)",
       "pro_footer_note": "✓ Sin compromiso  ·  ✓ Rescisión libre  ·  ✓ Sin renovación tácita",
-      "pro_cta_create": "Crear una cuenta profesional"
+      "pro_cta_create": "Crear una cuenta profesional",
+      "cta_final_title": "Lanza tu primer cuestionario ahora mismo",
+      "cta_final_subtitle": "Gratis, sin tarjeta de crédito, en solo 5 minutos. Crea tu cuenta y regálales a tus invitados un momento que nunca olvidarán.",
+      "cta_final_button_logged_in": "+ Crear mi cuestionario",
+      "cta_final_button_signup": "Crear mi cuenta gratuita ✨",
+      "footer_tagline": "Kuizard · para un momento mágico · editado por Projiat",
+      "footer_copyright": "© {año} Projiat — Todos los derechos reservados.",
+      "footer_help": "💬 Ayuda",
+      "footer_suggestion": "✨ Sugerencia",
+      "tagline_short": "✨ para un momento mágico"
     },
     "auth": {
       "login_title": "¡Me alegro de volver a verte!",
@@ -1093,7 +1120,16 @@
       "pro_bar_pro_f7_strong": "Statistiche avanzate + esportazione CSV",
       "pro_bar_pro_f8": "Assistenza prioritaria (< 24 ore)",
       "pro_footer_note": "✓ Senza impegno  ·  ✓ Recesso libero  ·  ✓ Nessun rinnovo automatico",
-      "pro_cta_create": "Crea un account aziendale"
+      "pro_cta_create": "Crea un account aziendale",
+      "cta_final_title": "Lancia subito il tuo primo quiz",
+      "cta_final_subtitle": "Gratis, senza carta di credito, in soli 5 minuti. Crea il tuo account e regala ai tuoi ospiti un momento che ricorderanno per sempre.",
+      "cta_final_button_logged_in": "+ Crea il mio quiz",
+      "cta_final_button_signup": "Crea il mio account gratuito ✨",
+      "footer_tagline": "Kuizard · per un momento magico · edito da Projiat",
+      "footer_copyright": "© {anno} Projiat — Tutti i diritti riservati.",
+      "footer_help": "💬 Aiuto",
+      "footer_suggestion": "✨ Suggerimento",
+      "tagline_short": "✨ per un momento magico"
     },
     "auth": {
       "login_title": "Sono felice di rivederti!",
@@ -1421,7 +1457,16 @@
       "pro_bar_pro_f7_strong": "Erweiterte Statistiken + CSV-Export",
       "pro_bar_pro_f8": "Vorrangiger Support (< 24 Std.)",
       "pro_footer_note": "✓ Unverbindlich  ·  ✓ Jederzeit kündbar  ·  ✓ Keine stillschweigende Verlängerung",
-      "pro_cta_create": "Ein Geschäftskonto erstellen"
+      "pro_cta_create": "Ein Geschäftskonto erstellen",
+      "cta_final_title": "Starte jetzt dein erstes Quiz",
+      "cta_final_subtitle": "Kostenlos, ohne Kreditkarte, in nur 5 Minuten. Erstelle dein Konto und bereite deinen Gästen einen unvergesslichen Moment.",
+      "cta_final_button_logged_in": "+ Mein Quiz erstellen",
+      "cta_final_button_signup": "Mein kostenloses Konto erstellen ✨",
+      "footer_tagline": "Kuizard · für einen zauberhaften Moment · herausgegeben von Projiat",
+      "footer_copyright": "© {Jahr} Projiat – Alle Rechte vorbehalten.",
+      "footer_help": "💬 Hilfe",
+      "footer_suggestion": "✨ Vorschlag",
+      "tagline_short": "✨ für einen zauberhaften Moment"
     },
     "auth": {
       "login_title": "Schön, dich wiederzusehen!",
@@ -1749,7 +1794,16 @@
       "pro_bar_pro_f7_strong": "Estatísticas avançadas + exportação para CSV",
       "pro_bar_pro_f8": "Suporte prioritário (< 24 horas)",
       "pro_footer_note": "✓ Sem compromisso  ·  ✓ Rescisão livre  ·  ✓ Sem renovação tácita",
-      "pro_cta_create": "Criar uma conta profissional"
+      "pro_cta_create": "Criar uma conta profissional",
+      "cta_final_title": "Lança já o teu primeiro questionário",
+      "cta_final_subtitle": "É gratuito, sem cartão de crédito e demora apenas 5 minutos. Cria a tua conta e oferece aos teus convidados um momento inesquecível.",
+      "cta_final_button_logged_in": "+ Criar o meu questionário",
+      "cta_final_button_signup": "Criar a minha conta gratuita ✨",
+      "footer_tagline": "Kuizard · para um momento mágico · publicado pela Projiat",
+      "footer_copyright": "© {ano} Projiat — Todos os direitos reservados.",
+      "footer_help": "💬 Ajuda",
+      "footer_suggestion": "✨ Sugestão",
+      "tagline_short": "✨ para um momento mágico"
     },
     "auth": {
       "login_title": "Que bom ver-te de novo!",
@@ -2077,7 +2131,16 @@
       "pro_bar_pro_f7_strong": "高级统计数据 + CSV导出",
       "pro_bar_pro_f8": "优先支持（< 24小时）",
       "pro_footer_note": "✓ 无绑定  ·  ✓ 可随时解约  ·  ✓ 无自动续约",
-      "pro_cta_create": "创建企业账户"
+      "pro_cta_create": "创建企业账户",
+      "cta_final_title": "现在就发布你的第一个测验吧",
+      "cta_final_subtitle": "免费、无需信用卡，5分钟搞定。立即注册账号，为你的宾客打造难忘的时刻。",
+      "cta_final_button_logged_in": "+ 创建我的测验",
+      "cta_final_button_signup": "注册我的免费账户 ✨",
+      "footer_tagline": "Kuizard · 共度魔幻时刻 · Projiat 出品",
+      "footer_copyright": "© {year} Projiat — 保留所有权利。",
+      "footer_help": "💬 帮助",
+      "footer_suggestion": "✨ 建议",
+      "tagline_short": "✨ 共度魔幻时刻"
     },
     "auth": {
       "login_title": "很高兴再见到你！",
@@ -2405,7 +2468,16 @@
       "pro_bar_pro_f7_strong": "Расширенная статистика + экспорт в CSV",
       "pro_bar_pro_f8": "Приоритетная поддержка (< 24 ч)",
       "pro_footer_note": "✓ Без обязательств  ·  ✓ Возможность расторжения в любое время  ·  ✓ Без автоматического продления",
-      "pro_cta_create": "Создать бизнес-аккаунт"
+      "pro_cta_create": "Создать бизнес-аккаунт",
+      "cta_final_title": "Создай свой первый викторину прямо сейчас",
+      "cta_final_subtitle": "Бесплатно, без кредитной карты, всего за 5 минут. Создай аккаунт и подари своим гостям незабываемые моменты.",
+      "cta_final_button_logged_in": "+ Создать викторину",
+      "cta_final_button_signup": "Создать бесплатную учетную запись ✨",
+      "footer_tagline": "Kuizard · для волшебного момента · издано Projiat",
+      "footer_copyright": "© {year} Projiat — Все права защищены.",
+      "footer_help": "💬 Помощь",
+      "footer_suggestion": "✨ Предложение",
+      "tagline_short": "✨ для волшебного момента"
     },
     "auth": {
       "login_title": "Рад тебя снова видеть!",

@@ -130,6 +130,16 @@ export type Messages = {
     pro_bar_pro_f8?: string;
     pro_footer_note?: string;
     pro_cta_create?: string;
+    // CTA finale + footer inline (page d'accueil)
+    cta_final_title?: string;
+    cta_final_subtitle?: string;
+    cta_final_button_logged_in?: string;
+    cta_final_button_signup?: string;
+    footer_tagline?: string;
+    footer_copyright?: string;
+    footer_help?: string;
+    footer_suggestion?: string;
+    tagline_short?: string;
   };
   auth?: {
     login_title: string;
@@ -480,6 +490,17 @@ const fr: Messages = {
     pro_footer_note:
       "✓ Sans engagement  ·  ✓ Résiliation libre  ·  ✓ Pas de reconduction tacite",
     pro_cta_create: "Créer un compte pro",
+    // CTA finale + footer inline (page d'accueil)
+    cta_final_title: "Lance ton premier quizz maintenant",
+    cta_final_subtitle:
+      "Gratuit, sans CB, en 5 minutes chrono. Crée ton compte et offre à tes invités un moment dont ils se souviendront.",
+    cta_final_button_logged_in: "+ Créer mon quizz",
+    cta_final_button_signup: "Créer mon compte gratuit ✨",
+    footer_tagline: "Kuizard · pour un moment magique · édité par Projiat",
+    footer_copyright: "© {year} Projiat — Tous droits réservés.",
+    footer_help: "💬 Aide",
+    footer_suggestion: "✨ Suggestion",
+    tagline_short: "✨ pour un moment magique",
   },
   auth: {
     login_title: "Content de te revoir !",

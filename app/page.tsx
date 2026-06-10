@@ -28,6 +28,8 @@ export default async function Home() {
   const messages = await getMessages();
   const t = messages.home;
   const navT = messages.nav;
+  const footerT = messages.footer;
+  const year = new Date().getFullYear();
 
   // Sections dynamiques construites depuis les traductions
   const STEPS = [
@@ -505,11 +507,11 @@ export default async function Home() {
       <section className="bg-gradient-to-br from-[var(--color-violet-deep)] via-[var(--color-night-2)] to-[var(--color-night)] text-[var(--color-lavender)] py-20">
         <div className="max-w-3xl mx-auto px-6 text-center">
           <h2 className="font-display text-3xl md:text-4xl font-bold tracking-wide mb-3">
-            Lance ton premier quizz maintenant
+            {t.cta_final_title ?? "Lance ton premier quizz maintenant"}
           </h2>
           <p className="text-[var(--color-lavender-2)] opacity-90 mb-8 max-w-xl mx-auto">
-            Gratuit, sans CB, en 5 minutes chrono. Crée ton compte et offre à
-            tes invités un moment dont ils se souviendront.
+            {t.cta_final_subtitle ??
+              "Gratuit, sans CB, en 5 minutes chrono. Crée ton compte et offre à tes invités un moment dont ils se souviendront."}
           </p>
 
           {isLoggedIn ? (
@@ -522,7 +524,9 @@ export default async function Home() {
               }}
               className="font-bold"
             >
-              <Link href="/dashboard/quizzes/new">+ Créer mon quizz</Link>
+              <Link href="/dashboard/quizzes/new">
+                {t.cta_final_button_logged_in ?? "+ Créer mon quizz"}
+              </Link>
             </Button>
           ) : (
             <Button
@@ -534,7 +538,9 @@ export default async function Home() {
               }}
               className="font-bold"
             >
-              <Link href="/signup">Créer mon compte gratuit ✨</Link>
+              <Link href="/signup">
+                {t.cta_final_button_signup ?? "Créer mon compte gratuit ✨"}
+              </Link>
             </Button>
           )}
         </div>
@@ -545,40 +551,43 @@ export default async function Home() {
       {/* ============================================ */}
       <footer className="bg-[var(--color-night)] text-[var(--color-lavender-2)] py-8 px-6 text-center text-xs">
         <p className="mb-3">
-          <span className="font-display tracking-wide text-base">Kuizard</span>{" "}
-          · pour un moment magique · édité par Projiat
+          {t.footer_tagline ??
+            "Kuizard · pour un moment magique · édité par Projiat"}
         </p>
         <nav className="flex flex-wrap gap-x-4 gap-y-2 justify-center mb-3">
           <Link href="/mentions-legales" className="hover:underline">
-            Mentions légales
+            {footerT.legal}
           </Link>
           <span>·</span>
           <Link href="/cgu" className="hover:underline">
-            CGU
+            {footerT.cgu}
           </Link>
           <span>·</span>
           <Link href="/cgv" className="hover:underline">
-            CGV
+            {footerT.cgv}
           </Link>
           <span>·</span>
           <Link href="/confidentialite" className="hover:underline">
-            Confidentialité
+            {footerT.privacy}
           </Link>
           <span>·</span>
           <Link href="/cookies" className="hover:underline">
-            Cookies
+            {footerT.cookies}
           </Link>
           <span>·</span>
           <Link href="/aide" className="hover:underline">
-            💬 Aide
+            {t.footer_help ?? "💬 Aide"}
           </Link>
           <span>·</span>
           <Link href="/suggestion" className="hover:underline">
-            ✨ Suggestion
+            {t.footer_suggestion ?? "✨ Suggestion"}
           </Link>
         </nav>
         <p className="opacity-60">
-          © 2026 Projiat — Tous droits réservés.
+          {(t.footer_copyright ?? "© {year} Projiat — Tous droits réservés.").replace(
+            "{year}",
+            String(year)
+          )}
         </p>
       </footer>
     </div>
