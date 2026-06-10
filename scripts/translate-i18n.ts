@@ -144,9 +144,53 @@ async function main() {
   }
   console.log(`  → clé DeepL OK (finit par "${DEEPL_KEY.slice(-3)}")`);
 
+  // CLI flag : --force pour retraduire TOUT, sinon diff intelligent
+  const forceAll = process.argv.includes("--force");
+  if (forceAll) {
+    console.log("  ⚠ --force : retraduction complète (consomme la quota DeepL)");
+  }
+
   // Source = fr (vérité)
   const sourcePairs = flatten(LOCALES.fr as unknown as Dict);
   console.log(`  → ${sourcePairs.length} clés source (fr)`);
+
+  // Charge l'existant pour faire un diff (économie de quota DeepL)
+  const filePath = path.join(
+    process.cwd(),
+    "lib",
+    "i18n",
+    "messages-auto.json"
+  );
+  let existing: Record<string, Dict> = {};
+  try {
+    const raw = await readFile(filePath, "utf-8");
+    existing = JSON.parse(raw);
+  } catch {
+    console.log("  → pas de messages-auto.json existant — première run");
+  }
+
+  // Map des FR existants pour comparer aux FR actuels
+  const existingFrMap = new Map<string, string>(
+    existing.fr ? flatten(existing.fr as Dict) : []
+  );
+  const sourceMap = new Map(sourcePairs);
+
+  // Clés à retraduire = clés nouvelles OU clés dont la valeur FR a changé
+  const changedKeys = forceAll
+    ? new Set(sourcePairs.map(([k]) => k))
+    : new Set(
+        sourcePairs
+          .filter(([k, v]) => existingFrMap.get(k) !== v)
+          .map(([k]) => k)
+      );
+  console.log(
+    `  → ${changedKeys.size} clé(s) ${forceAll ? "à (re)traduire" : "nouvelle(s) ou modifiée(s)"}`
+  );
+  if (changedKeys.size === 0 && !forceAll) {
+    console.log("  ✅ Aucun changement détecté côté FR — rien à traduire.");
+    console.log("     (pour forcer une retraduction complète : npm run i18n:translate -- --force)");
+    return;
+  }
 
   const targetLocales = SUPPORTED_LOCALES
     .map((l) => l.value)
@@ -159,37 +203,48 @@ async function main() {
     const deeplCode = DEEPL_LANG[lang];
     if (!deeplCode) {
       console.warn(`  ⚠ Pas de mapping DeepL pour ${lang}, skipped`);
-      result[lang] = LOCALES[lang] as unknown as Dict;
+      result[lang] = (existing[lang] as Dict) ?? {};
       continue;
     }
-    console.log(`  → ${lang} (${deeplCode})…`);
 
-    const texts = sourcePairs.map(([, v]) => v);
-    // Batches de 50 pour éviter de dépasser les limites par requête
-    const translated: string[] = [];
-    for (let i = 0; i < texts.length; i += 50) {
-      const batch = texts.slice(i, i + 50);
-      const out = await translateBatch(batch, deeplCode);
-      translated.push(...out);
+    // Pairs existants pour cette langue (toutes les clés déjà traduites)
+    const existingLangMap = new Map<string, string>(
+      existing[lang] ? flatten(existing[lang] as Dict) : []
+    );
+
+    // On ne traduit que les clés à retraduire ET on garde les autres telles quelles
+    const toTranslatePairs = sourcePairs.filter(([k]) =>
+      changedKeys.has(k)
+    );
+    console.log(
+      `  → ${lang} (${deeplCode}) : ${toTranslatePairs.length} clé(s) à traduire`
+    );
+
+    let translated: string[] = [];
+    if (toTranslatePairs.length > 0) {
+      const texts = toTranslatePairs.map(([, v]) => v);
+      for (let i = 0; i < texts.length; i += 50) {
+        const batch = texts.slice(i, i + 50);
+        const out = await translateBatch(batch, deeplCode);
+        translated.push(...out);
+      }
     }
 
-    const translatedPairs: Array<[string, string]> = sourcePairs.map(
-      ([k], idx) => [k, translated[idx]]
+    // Fusionne : pour chaque clé source FR, on prend la nouvelle trad si on
+    // vient de la calculer, sinon on garde l'ancienne trad existante.
+    const newTransMap = new Map<string, string>(
+      toTranslatePairs.map(([k], idx) => [k, translated[idx]])
     );
-    result[lang] = unflatten(translatedPairs);
+    const finalPairs: Array<[string, string]> = sourcePairs.map(([k]) => [
+      k,
+      newTransMap.get(k) ?? existingLangMap.get(k) ?? sourceMap.get(k) ?? "",
+    ]);
+    result[lang] = unflatten(finalPairs);
   }
 
-  // Génère le fichier JSON
-  const filePath = path.join(
-    process.cwd(),
-    "lib",
-    "i18n",
-    "messages-auto.json"
-  );
   await writeFile(filePath, JSON.stringify(result, null, 2), "utf-8");
   console.log(`✅ Écrit dans ${filePath}`);
-  console.log(`\n💡 Prochaine étape : importer ce JSON dans messages.ts`);
-  console.log(`   (déjà fait — chaque locale fallback sur messages-auto.json)`);
+  console.log(`\n💡 Pense à committer messages-auto.json et déployer.`);
 }
 
 main().catch((err) => {

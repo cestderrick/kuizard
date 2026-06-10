@@ -87,6 +87,49 @@ export type Messages = {
     player_eyebrow?: string;
     player_title?: string;
     player_subtitle?: string;
+    // Tarifs teaser
+    pricing_eyebrow?: string;
+    pricing_title?: string;
+    pricing_subtitle?: string;
+    plan_discovery_name?: string;
+    plan_discovery_desc?: string;
+    plan_essential_name?: string;
+    plan_essential_desc?: string;
+    plan_festive_name?: string;
+    plan_festive_desc?: string;
+    plan_magic_name?: string;
+    plan_magic_desc?: string;
+    pricing_footer_pros?: string;
+    // Abonnements pros
+    pro_eyebrow?: string;
+    pro_title?: string;
+    pro_subtitle?: string;
+    pro_bar_essentiel_name?: string;
+    pro_bar_essentiel_price?: string;
+    pro_bar_essentiel_period?: string;
+    pro_bar_essentiel_yearly?: string;
+    pro_bar_essentiel_f1?: string;
+    pro_bar_essentiel_f2?: string;
+    pro_bar_essentiel_f3?: string;
+    pro_bar_essentiel_f4?: string;
+    pro_bar_essentiel_f5?: string;
+    pro_bar_essentiel_f6?: string;
+    pro_bar_essentiel_f7?: string;
+    pro_bar_pro_badge?: string;
+    pro_bar_pro_name?: string;
+    pro_bar_pro_price?: string;
+    pro_bar_pro_period?: string;
+    pro_bar_pro_yearly?: string;
+    pro_bar_pro_f1?: string;
+    pro_bar_pro_f2?: string;
+    pro_bar_pro_f3?: string;
+    pro_bar_pro_f4?: string;
+    pro_bar_pro_f5?: string;
+    pro_bar_pro_f6?: string;
+    pro_bar_pro_f7_strong?: string;
+    pro_bar_pro_f8?: string;
+    pro_footer_note?: string;
+    pro_cta_create?: string;
   };
   auth?: {
     login_title: string;
@@ -190,6 +233,7 @@ export type Messages = {
     member_since: string;
     info_title: string;
     name_label: string;
+    name_placeholder: string;
     email_label: string;
     account_type_label: string;
     type_individual: string;
@@ -202,11 +246,15 @@ export type Messages = {
     new_password_label: string;
     confirm_password_label: string;
     change_password_button: string;
+    password_updating: string;
     danger_zone: string;
+    delete_warning_strong: string;
     delete_warning: string;
     delete_confirm_label: string;
     delete_confirm_value: string;
     delete_button: string;
+    delete_deleting: string;
+    delete_confirm_dialog: string;
     company_section_title: string;
   };
   stats?: {
@@ -230,6 +278,21 @@ export type Messages = {
     th_players: string;
     th_completion: string;
     th_avg_score: string;
+    per_quiz_stats_title: string;
+    quizzes_count_suffix: string;
+    no_quizzes_yet: string;
+    start_from_template: string;
+    global_stats_title: string;
+    global_stats_subtitle: string;
+    published_suffix: string;
+    players_suffix: string;
+    code_label: string;
+    questions_label: string;
+    status_draft: string;
+    status_published: string;
+    status_running: string;
+    status_finished: string;
+    status_archived: string;
   };
   home_pro?: {
     eyebrow: string;
@@ -365,6 +428,53 @@ const fr: Messages = {
     player_title: "L'expérience participants",
     player_subtitle:
       "Mobile-first, pas d'app à installer. Scan, pseudo, jeu, score — c'est tout.",
+    // Tarifs teaser
+    pricing_eyebrow: "✨ Tarifs",
+    pricing_title: "Simple et transparent",
+    pricing_subtitle:
+      "Gratuit pour essayer, à l'unité pour les événements, en abonnement pour les pros. Sans engagement.",
+    plan_discovery_name: "Découverte",
+    plan_discovery_desc: "5 questions, 15 joueurs",
+    plan_essential_name: "Essentiel",
+    plan_essential_desc: "20 questions, 30 joueurs",
+    plan_festive_name: "Festif ⭐",
+    plan_festive_desc: "50 questions, 100 joueurs",
+    plan_magic_name: "Magique",
+    plan_magic_desc: "Illimité, vidéos",
+    pricing_footer_pros:
+      "Pour les pros (bars, hôtels, restos, séminaires) : abonnement mensuel ci-dessous.",
+    // Abonnements pros
+    pro_eyebrow: "✨ Abonnements pros",
+    pro_title: "Quizz illimités pour ton lieu",
+    pro_subtitle:
+      "Idéal pour bars, hôtels, restaurants, escape rooms ou tout organisateur d'événements récurrents. Sans engagement, résiliable à tout moment.",
+    pro_bar_essentiel_name: "Bar Essentiel",
+    pro_bar_essentiel_price: "25 €",
+    pro_bar_essentiel_period: "/ mois",
+    pro_bar_essentiel_yearly: "ou 250 €/an (10 mois facturés)",
+    pro_bar_essentiel_f1: "1 lieu",
+    pro_bar_essentiel_f2: "Quizz illimités",
+    pro_bar_essentiel_f3: "100 joueurs par session",
+    pro_bar_essentiel_f4: "Mode pilotage live + afficheur",
+    pro_bar_essentiel_f5: "Logo personnalisé",
+    pro_bar_essentiel_f6: "Classement avec lots",
+    pro_bar_essentiel_f7: "Conservation 6 mois",
+    pro_bar_pro_badge: "MULTI-LIEUX",
+    pro_bar_pro_name: "Bar Pro",
+    pro_bar_pro_price: "50 €",
+    pro_bar_pro_period: "/ mois",
+    pro_bar_pro_yearly: "ou 500 €/an (10 mois facturés)",
+    pro_bar_pro_f1: "Lieux illimités",
+    pro_bar_pro_f2: "Quizz illimités",
+    pro_bar_pro_f3: "500 joueurs par session",
+    pro_bar_pro_f4: "Mode pilotage live + afficheur",
+    pro_bar_pro_f5: "Logo + sous-domaine + thème custom",
+    pro_bar_pro_f6: "Templates premium",
+    pro_bar_pro_f7_strong: "Stats avancées + export CSV",
+    pro_bar_pro_f8: "Support prioritaire (< 24h)",
+    pro_footer_note:
+      "✓ Sans engagement  ·  ✓ Résiliation libre  ·  ✓ Pas de reconduction tacite",
+    pro_cta_create: "Créer un compte pro",
   },
   auth: {
     login_title: "Content de te revoir !",
@@ -451,21 +561,26 @@ const fr: Messages = {
     page_eyebrow: "🔁 Abonnement",
     page_title: "Mon abonnement",
     page_subtitle:
-      "Choisis un plan mensuel — idéal si tu organises plusieurs quizz dans l'année.",
+      "Choisis un plan mensuel — idéal si tu organises plusieurs quizz dans l'année (particuliers comme bars/pros).",
     active_plan: "Plan actif",
-    next_renewal: "Prochain renouvellement",
+    active_plan_prefix: "✓ Plan {plan} actif",
+    next_renewal: "Prochain renouvellement : {date}",
     will_cancel: "(sera annulé à cette date)",
-    stripe_status: "Statut Stripe",
+    stripe_status: "Statut Stripe : {status}",
+    status_success: "✓ Souscription réussie ! Ton abo est actif.",
+    status_cancel: "🪄 Souscription annulée, rien n'a été débité.",
+    error_no_customer: "Tu n'as pas encore de compte Stripe. Souscris d'abord à un abo.",
     no_subscription:
       "Tu n'as pas encore d'abonnement actif. Choisis un plan ci-dessous.",
     plans_title: "Plans disponibles",
     no_plans: "Aucun plan d'abonnement configuré.",
     recommended: "⭐ Recommandé",
-    per_month: "/ mois",
-    per_year: "/ an",
-    subscribe_button: "Souscrire à",
+    per_month: "mois",
+    per_year: "an",
+    subscribe_button: "Souscrire à {plan}",
+    cross_sell_strong: "Tu n'as besoin que d'un seul quizz ?",
     cross_sell:
-      "💡 Tu n'as besoin que d'un seul quizz ? Tu peux aussi payer à l'unité (à partir de 5 €), sans engagement.",
+      "Tu peux aussi payer à l'unité (à partir de 5 €), sans engagement.",
     cross_sell_link: "Voir mes quizz et payer à l'unité →",
     cancel_anytime:
       "Tu peux annuler à tout moment depuis le portail Stripe.",
@@ -474,9 +589,10 @@ const fr: Messages = {
   profile: {
     page_eyebrow: "👤 Profil",
     page_title: "Mon profil",
-    member_since: "Membre depuis le",
+    member_since: "Membre depuis le {date}",
     info_title: "Informations",
     name_label: "Nom affiché",
+    name_placeholder: "Comment veux-tu apparaître ?",
     email_label: "Email",
     account_type_label: "Type de compte",
     type_individual: "👤 Particulier",
@@ -490,12 +606,17 @@ const fr: Messages = {
     new_password_label: "Nouveau mot de passe",
     confirm_password_label: "Confirmer le nouveau",
     change_password_button: "🔐 Changer le mot de passe",
+    password_updating: "Mise à jour…",
     danger_zone: "⚠️ Zone dangereuse",
+    delete_warning_strong: "définitive et irréversible",
     delete_warning:
-      "Cette action est définitive et irréversible. Tous tes quizz, participations, messages et données personnelles seront supprimés conformément au droit à l'oubli (RGPD art. 17).",
+      "Cette action est {strong}. Tous tes quizz, participations, messages et données personnelles seront supprimés conformément au droit à l'oubli (RGPD art. 17).",
     delete_confirm_label: 'Tape "SUPPRIMER" pour confirmer',
     delete_confirm_value: "SUPPRIMER",
     delete_button: "🗑 Supprimer définitivement mon compte",
+    delete_deleting: "Suppression…",
+    delete_confirm_dialog:
+      "Es-tu absolument sûr ? Cette suppression est définitive : quizz, participations, messages, tout sera effacé.",
     company_section_title: "🏢 Informations entreprise",
   },
   stats: {
@@ -505,9 +626,9 @@ const fr: Messages = {
     my_quizzes: "Mes quizz",
     questions_created: "Questions créées",
     participations: "Participations",
-    completed_suffix: "terminées",
+    completed_suffix: "{count} terminées ({rate}%)",
     spent: "Dépensé",
-    purchases_count: "achat(s)",
+    purchases_count: "{count} achat(s)",
     days_7_title: "🌟 7 derniers jours",
     days_30_title: "📅 30 derniers jours",
     participations_started: "participation(s) démarrée(s)",
@@ -519,6 +640,21 @@ const fr: Messages = {
     th_players: "👥",
     th_completion: "✓",
     th_avg_score: "⭐ Moy.",
+    per_quiz_stats_title: "🎩 Mes statistiques par quizz",
+    quizzes_count_suffix: "{count} quizz",
+    no_quizzes_yet: "Tu n'as pas encore créé de quizz.",
+    start_from_template: "Démarrer à partir d'un template →",
+    global_stats_title: "🌍 Stats globales (tout cumulé)",
+    global_stats_subtitle: "Récap de l'ensemble de ton activité.",
+    published_suffix: "{count} publiés",
+    players_suffix: "joueur(s)",
+    code_label: "Code",
+    questions_label: "{count} questions",
+    status_draft: "Brouillon",
+    status_published: "Publié",
+    status_running: "En direct",
+    status_finished: "Terminé",
+    status_archived: "Archivé",
   },
   home_pro: {
     eyebrow: "✨ Pour les pros",
@@ -1228,6 +1364,20 @@ export function t(
   }
   if (typeof cursor !== "string") return key;
   return cursor.replace(/\{(\w+)\}/g, (_, name) =>
+    String(vars[name] ?? `{${name}}`)
+  );
+}
+
+/**
+ * Interpole les placeholders {key} dans une chaîne déjà résolue.
+ * Usage: interp(messages.subscription.subscribe_button, { plan: "Pro" })
+ */
+export function interp(
+  str: string,
+  vars: Record<string, string | number> = {}
+): string {
+  if (typeof str !== "string") return String(str);
+  return str.replace(/\{(\w+)\}/g, (_, name) =>
     String(vars[name] ?? `{${name}}`)
   );
 }

@@ -21,7 +21,25 @@ type User = {
   vatNumber?: string | null;
 };
 
-export function ProfileForm({ user }: { user: User }) {
+type ProfileFormTexts = {
+  name_label: string;
+  name_placeholder: string;
+  email_label: string;
+  account_type_label: string;
+  type_individual: string;
+  type_business: string;
+  update_button: string;
+  updating: string;
+  company_section_title: string;
+};
+
+export function ProfileForm({
+  user,
+  texts,
+}: {
+  user: User;
+  texts: ProfileFormTexts;
+}) {
   const [state, action, pending] = useActionState(updateProfileAction, INITIAL);
   useActionToast(state);
   const [accountType, setAccountType] = useState(user.accountType);
@@ -30,14 +48,14 @@ export function ProfileForm({ user }: { user: User }) {
     <form action={action} className="flex flex-col gap-4">
       <label className="flex flex-col gap-1.5">
         <span className="text-xs uppercase tracking-[2px] text-[var(--color-violet-primary)] font-semibold">
-          Nom affiché
+          {texts.name_label}
         </span>
         <input
           name="name"
           defaultValue={user.name ?? ""}
           minLength={2}
           maxLength={80}
-          placeholder="Comment veux-tu apparaître ?"
+          placeholder={texts.name_placeholder}
           disabled={pending}
           className="rounded-lg px-3 py-2 border bg-white text-sm focus:outline-none focus:border-[var(--color-violet-primary)]"
         />
@@ -48,7 +66,7 @@ export function ProfileForm({ user }: { user: User }) {
 
       <label className="flex flex-col gap-1.5">
         <span className="text-xs uppercase tracking-[2px] text-[var(--color-violet-primary)] font-semibold">
-          Email
+          {texts.email_label}
         </span>
         <input
           name="email"
@@ -65,7 +83,7 @@ export function ProfileForm({ user }: { user: User }) {
 
       <label className="flex flex-col gap-1.5">
         <span className="text-xs uppercase tracking-[2px] text-[var(--color-violet-primary)] font-semibold">
-          Type de compte
+          {texts.account_type_label}
         </span>
         <select
           name="accountType"
@@ -76,8 +94,8 @@ export function ProfileForm({ user }: { user: User }) {
           disabled={pending}
           className="rounded-lg px-3 py-2 border bg-white text-sm focus:outline-none focus:border-[var(--color-violet-primary)]"
         >
-          <option value="INDIVIDUAL">👤 Particulier</option>
-          <option value="BUSINESS">🏢 Professionnel</option>
+          <option value="INDIVIDUAL">{texts.type_individual}</option>
+          <option value="BUSINESS">{texts.type_business}</option>
         </select>
       </label>
 
@@ -85,7 +103,7 @@ export function ProfileForm({ user }: { user: User }) {
       {accountType === "BUSINESS" && (
         <fieldset className="rounded-xl border-2 border-[var(--color-violet-primary)]/20 bg-violet-50/40 p-4 flex flex-col gap-3">
           <legend className="text-xs uppercase tracking-[2px] text-[var(--color-violet-primary)] font-semibold px-2">
-            🏢 Informations entreprise
+            {texts.company_section_title}
           </legend>
           <SiretLookup
             initialSiret={user.siret}
@@ -105,14 +123,22 @@ export function ProfileForm({ user }: { user: User }) {
           }}
           className="px-5 py-2.5 rounded-lg font-semibold text-sm disabled:opacity-50"
         >
-          {pending ? "Enregistrement…" : "Mettre à jour"}
+          {pending ? texts.updating : texts.update_button}
         </button>
       </div>
     </form>
   );
 }
 
-export function PasswordForm() {
+type PasswordFormTexts = {
+  current_password_label: string;
+  new_password_label: string;
+  confirm_password_label: string;
+  change_password_button: string;
+  password_updating: string;
+};
+
+export function PasswordForm({ texts }: { texts: PasswordFormTexts }) {
   const [state, action, pending] = useActionState(
     updatePasswordAction,
     INITIAL
@@ -123,7 +149,7 @@ export function PasswordForm() {
     <form action={action} className="flex flex-col gap-4">
       <label className="flex flex-col gap-1.5">
         <span className="text-xs uppercase tracking-[2px] text-[var(--color-violet-primary)] font-semibold">
-          Mot de passe actuel
+          {texts.current_password_label}
         </span>
         <input
           name="currentPassword"
@@ -140,7 +166,7 @@ export function PasswordForm() {
       </label>
       <label className="flex flex-col gap-1.5">
         <span className="text-xs uppercase tracking-[2px] text-[var(--color-violet-primary)] font-semibold">
-          Nouveau mot de passe
+          {texts.new_password_label}
         </span>
         <input
           name="newPassword"
@@ -158,7 +184,7 @@ export function PasswordForm() {
       </label>
       <label className="flex flex-col gap-1.5">
         <span className="text-xs uppercase tracking-[2px] text-[var(--color-violet-primary)] font-semibold">
-          Confirmer le nouveau
+          {texts.confirm_password_label}
         </span>
         <input
           name="confirmPassword"
@@ -179,7 +205,7 @@ export function PasswordForm() {
           disabled={pending}
           className="px-5 py-2.5 rounded-lg font-semibold text-sm border-2 border-[var(--color-violet-primary)] text-[var(--color-violet-primary)] hover:bg-[var(--color-violet-primary)] hover:text-white disabled:opacity-50"
         >
-          {pending ? "Mise à jour…" : "🔐 Changer le mot de passe"}
+          {pending ? texts.password_updating : texts.change_password_button}
         </button>
       </div>
     </form>

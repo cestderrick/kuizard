@@ -5,9 +5,22 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { formatStripeAmount } from "@/lib/stripe/client";
+import { getLocale, getMessages } from "@/lib/i18n/get-locale";
+import { interp } from "@/lib/i18n/messages";
 
 export const metadata: Metadata = {
   title: "Mes stats",
+};
+
+const LOCALE_TAGS: Record<string, string> = {
+  fr: "fr-FR",
+  en: "en-GB",
+  es: "es-ES",
+  it: "it-IT",
+  de: "de-DE",
+  pt: "pt-PT",
+  ru: "ru-RU",
+  zh: "zh-CN",
 };
 
 export default async function MyStatsPage() {
@@ -30,6 +43,8 @@ export default async function MyStatsPage() {
     totalPaymentsSucceeded,
     topQuizzes,
     quizzesWithStats,
+    locale,
+    m,
   ] = await Promise.all([
     prisma.quiz.count({ where: { userId } }),
     prisma.quiz.count({ where: { userId, status: "PUBLISHED" } }),
@@ -81,6 +96,8 @@ export default async function MyStatsPage() {
         _count: { select: { questions: true, participations: true } },
       },
     }),
+    getLocale(),
+    getMessages(),
   ]);
 
   const completionRate =
@@ -88,7 +105,6 @@ export default async function MyStatsPage() {
       ? Math.round((completedParticipations / totalParticipations) * 100)
       : 0;
 
-  // Pré-calcul des stats par quizz (score moyen, % complétion)
   const perQuizStats = quizzesWithStats.map((q) => {
     const totalP = q.participations.length;
     const completedP = q.participations.filter((p) => p.completedAt).length;
@@ -115,23 +131,38 @@ export default async function MyStatsPage() {
     };
   });
 
+  const tag = LOCALE_TAGS[locale] ?? "fr-FR";
   const fmtDate = (d: Date) =>
-    new Intl.DateTimeFormat("fr-FR", { dateStyle: "short" }).format(d);
+    new Intl.DateTimeFormat(tag, { dateStyle: "short" }).format(d);
+
+  const ms = m.stats!;
+
+  function statusLabel(s: string): string {
+    return (
+      {
+        DRAFT: ms.status_draft,
+        PUBLISHED: ms.status_published,
+        RUNNING: ms.status_running,
+        FINISHED: ms.status_finished,
+        ARCHIVED: ms.status_archived,
+      }[s] ?? s
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6 max-w-5xl">
       <header>
         <p className="text-sm uppercase tracking-[3px] text-[var(--color-violet-primary)] mb-2 font-semibold">
-          📊 Statistiques
+          {ms.page_eyebrow}
         </p>
         <h1
           className="font-display text-3xl md:text-4xl font-bold tracking-wide"
           style={{ color: "var(--color-violet-deep)" }}
         >
-          Mes stats
+          {ms.page_title}
         </h1>
         <p className="mt-2 text-muted-foreground text-sm max-w-xl">
-          Vue détaillée par quizz, puis vue globale en bas.
+          {ms.page_subtitle}
         </p>
       </header>
 
@@ -140,21 +171,19 @@ export default async function MyStatsPage() {
           ============================================ */}
       <section>
         <h2 className="font-display text-xl tracking-wide mb-3 flex items-center gap-2">
-          🎩 Mes statistiques par quizz
+          {ms.per_quiz_stats_title}
           <span className="text-xs font-normal text-muted-foreground">
-            ({perQuizStats.length} quizz)
+            ({interp(ms.quizzes_count_suffix, { count: perQuizStats.length })})
           </span>
         </h2>
         {perQuizStats.length === 0 ? (
           <div className="rounded-2xl border bg-white p-8 text-center">
-            <p className="text-muted-foreground">
-              Tu n'as pas encore créé de quizz.
-            </p>
+            <p className="text-muted-foreground">{ms.no_quizzes_yet}</p>
             <Link
               href="/dashboard/quizzes/templates"
               className="inline-block mt-3 text-sm font-semibold text-[var(--color-violet-primary)] hover:underline"
             >
-              Démarrer à partir d'un template →
+              {ms.start_from_template}
             </Link>
           </div>
         ) : (
@@ -163,20 +192,12 @@ export default async function MyStatsPage() {
               <table className="w-full text-sm">
                 <thead className="bg-zinc-50 text-xs uppercase tracking-wide text-muted-foreground">
                   <tr>
-                    <th className="text-left px-3 py-3">Quizz</th>
-                    <th className="text-left px-3 py-3">Statut</th>
-                    <th className="text-right px-3 py-3" title="Nombre de questions">
-                      Q
-                    </th>
-                    <th className="text-right px-3 py-3" title="Participants">
-                      👥
-                    </th>
-                    <th className="text-right px-3 py-3" title="Complétion">
-                      ✓
-                    </th>
-                    <th className="text-right px-3 py-3" title="Score moyen">
-                      ⭐ Moy.
-                    </th>
+                    <th className="text-left px-3 py-3">{ms.th_quiz}</th>
+                    <th className="text-left px-3 py-3">{ms.th_status}</th>
+                    <th className="text-right px-3 py-3">{ms.th_questions}</th>
+                    <th className="text-right px-3 py-3">{ms.th_players}</th>
+                    <th className="text-right px-3 py-3">{ms.th_completion}</th>
+                    <th className="text-right px-3 py-3">{ms.th_avg_score}</th>
                     <th className="text-left px-3 py-3"></th>
                   </tr>
                 </thead>
@@ -252,36 +273,41 @@ export default async function MyStatsPage() {
 
       <div>
         <h2 className="font-display text-xl tracking-wide mb-1 flex items-center gap-2">
-          🌍 Stats globales (tout cumulé)
+          {ms.global_stats_title}
         </h2>
         <p className="text-xs text-muted-foreground">
-          Récap de l'ensemble de ton activité.
+          {ms.global_stats_subtitle}
         </p>
       </div>
 
       {/* Cartes principales */}
       <section className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <StatCard
-          label="Mes quizz"
+          label={ms.my_quizzes}
           value={totalQuizzes}
-          sub={`${publishedQuizzes} publiés`}
+          sub={interp(ms.published_suffix, { count: publishedQuizzes })}
           icon="🎩"
         />
         <StatCard
-          label="Questions créées"
+          label={ms.questions_created}
           value={totalQuestions}
           icon="❓"
         />
         <StatCard
-          label="Participations"
+          label={ms.participations}
           value={totalParticipations}
-          sub={`${completedParticipations} terminées (${completionRate}%)`}
+          sub={interp(ms.completed_suffix, {
+            count: completedParticipations,
+            rate: completionRate,
+          })}
           icon="🎮"
         />
         <StatCard
-          label="Dépensé"
+          label={ms.spent}
           value={`${formatStripeAmount(totalPaymentsSucceeded._sum.amountCents ?? 0)}`}
-          sub={`${totalPaymentsSucceeded._count} achat(s)`}
+          sub={interp(ms.purchases_count, {
+            count: totalPaymentsSucceeded._count,
+          })}
           icon="💳"
           isText
         />
@@ -289,22 +315,20 @@ export default async function MyStatsPage() {
 
       {/* Activité récente */}
       <section className="grid md:grid-cols-2 gap-4">
-        <Box title="🌟 7 derniers jours">
+        <Box title={ms.days_7_title}>
           <p className="font-display text-4xl font-bold text-[var(--color-violet-primary)]">
             {last7dParticipations}
           </p>
           <p className="text-sm text-muted-foreground">
-            participation{last7dParticipations > 1 ? "s" : ""} démarrée
-            {last7dParticipations > 1 ? "s" : ""}
+            {ms.participations_started}
           </p>
         </Box>
-        <Box title="📅 30 derniers jours">
+        <Box title={ms.days_30_title}>
           <p className="font-display text-4xl font-bold text-[var(--color-violet-primary)]">
             {last30dParticipations}
           </p>
           <p className="text-sm text-muted-foreground">
-            participation{last30dParticipations > 1 ? "s" : ""} démarrée
-            {last30dParticipations > 1 ? "s" : ""}
+            {ms.participations_started}
           </p>
         </Box>
       </section>
@@ -312,11 +336,11 @@ export default async function MyStatsPage() {
       {/* Top 5 quizz */}
       <section className="rounded-2xl bg-white border p-5">
         <h2 className="font-display text-lg tracking-wide mb-3">
-          🏆 Top 5 quizz par participation
+          {ms.top5_title}
         </h2>
         {topQuizzes.length === 0 ? (
           <p className="text-sm text-muted-foreground italic">
-            Aucun quizz pour l'instant.
+            {ms.no_quiz_yet}
           </p>
         ) : (
           <ul className="flex flex-col gap-2">
@@ -337,8 +361,10 @@ export default async function MyStatsPage() {
                       {q.title}
                     </Link>
                     <p className="text-xs text-muted-foreground">
-                      Code <span className="font-mono">{q.code}</span> ·{" "}
-                      {q._count.questions} questions
+                      {ms.code_label} <span className="font-mono">{q.code}</span> ·{" "}
+                      {interp(ms.questions_label, {
+                        count: q._count.questions,
+                      })}
                     </p>
                   </div>
                 </div>
@@ -346,7 +372,9 @@ export default async function MyStatsPage() {
                   <p className="font-display text-2xl font-bold text-[var(--color-gold)]">
                     {q._count.participations}
                   </p>
-                  <p className="text-xs text-muted-foreground">joueur(s)</p>
+                  <p className="text-xs text-muted-foreground">
+                    {ms.players_suffix}
+                  </p>
                 </div>
               </li>
             ))}
@@ -406,18 +434,6 @@ function Box({
       </p>
       {children}
     </div>
-  );
-}
-
-function statusLabel(s: string): string {
-  return (
-    {
-      DRAFT: "Brouillon",
-      PUBLISHED: "Publié",
-      RUNNING: "En direct",
-      FINISHED: "Terminé",
-      ARCHIVED: "Archivé",
-    }[s] ?? s
   );
 }
 

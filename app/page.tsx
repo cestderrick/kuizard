@@ -301,41 +301,41 @@ export default async function Home() {
       <section className="py-20 bg-[var(--color-lavender)]">
         <div className="max-w-5xl mx-auto px-6 text-center">
           <p className="text-xs uppercase tracking-[3px] text-[var(--color-violet-primary)] font-semibold mb-2">
-            ✨ Tarifs
+            {t.pricing_eyebrow ?? "✨ Tarifs"}
           </p>
           <h2
             className="font-display text-3xl md:text-4xl font-bold tracking-wide mb-3"
             style={{ color: "var(--color-violet-deep)" }}
           >
-            Simple et transparent
+            {t.pricing_title ?? "Simple et transparent"}
           </h2>
           <p className="text-muted-foreground mb-10 max-w-2xl mx-auto">
-            Gratuit pour essayer, à l'unité pour les événements, en abonnement
-            pour les pros. Sans engagement.
+            {t.pricing_subtitle ??
+              "Gratuit pour essayer, à l'unité pour les événements, en abonnement pour les pros. Sans engagement."}
           </p>
 
           <div className="grid gap-4 md:grid-cols-4">
             {[
               {
-                name: "Découverte",
+                name: t.plan_discovery_name ?? "Découverte",
                 price: "0 €",
-                desc: "5 questions, 15 joueurs",
+                desc: t.plan_discovery_desc ?? "5 questions, 15 joueurs",
               },
               {
-                name: "Essentiel",
+                name: t.plan_essential_name ?? "Essentiel",
                 price: "5 €",
-                desc: "20 questions, 30 joueurs",
+                desc: t.plan_essential_desc ?? "20 questions, 30 joueurs",
               },
               {
-                name: "Festif ⭐",
+                name: t.plan_festive_name ?? "Festif ⭐",
                 price: "10 €",
-                desc: "50 questions, 100 joueurs",
+                desc: t.plan_festive_desc ?? "50 questions, 100 joueurs",
                 featured: true,
               },
               {
-                name: "Magique",
+                name: t.plan_magic_name ?? "Magique",
                 price: "15 €",
-                desc: "Illimité, vidéos",
+                desc: t.plan_magic_desc ?? "Illimité, vidéos",
               },
             ].map((p) => (
               <div
@@ -369,8 +369,8 @@ export default async function Home() {
           </div>
 
           <p className="text-xs text-muted-foreground mt-6 italic">
-            Pour les pros (bars, hôtels, restos, séminaires) : abonnement
-            mensuel ci-dessous.
+            {t.pricing_footer_pros ??
+              "Pour les pros (bars, hôtels, restos, séminaires) : abonnement mensuel ci-dessous."}
           </p>
         </div>
       </section>
@@ -388,15 +388,14 @@ export default async function Home() {
         <div className="max-w-5xl mx-auto px-6 text-[var(--color-lavender)]">
           <div className="text-center mb-10">
             <p className="text-xs uppercase tracking-[3px] text-[var(--color-gold)] font-semibold mb-2">
-              ✨ Abonnements pros
+              {t.pro_eyebrow ?? "✨ Abonnements pros"}
             </p>
             <h2 className="font-display text-3xl md:text-4xl font-bold tracking-wide mb-3">
-              Quizz illimités pour ton lieu
+              {t.pro_title ?? "Quizz illimités pour ton lieu"}
             </h2>
             <p className="text-[var(--color-lavender-2)] opacity-90 max-w-2xl mx-auto">
-              Idéal pour bars, hôtels, restaurants, escape rooms ou tout
-              organisateur d'événements récurrents. Sans engagement, résiliable
-              à tout moment.
+              {t.pro_subtitle ??
+                "Idéal pour bars, hôtels, restaurants, escape rooms ou tout organisateur d'événements récurrents. Sans engagement, résiliable à tout moment."}
             </p>
           </div>
 
@@ -405,27 +404,27 @@ export default async function Home() {
             <div className="rounded-2xl bg-white/5 border border-white/15 p-6 flex flex-col gap-4 backdrop-blur-sm">
               <div>
                 <p className="text-xs uppercase tracking-[2px] text-[var(--color-gold)] font-semibold">
-                  Bar Essentiel
+                  {t.pro_bar_essentiel_name ?? "Bar Essentiel"}
                 </p>
                 <p className="font-display text-3xl font-bold mt-1">
-                  25 €
+                  {t.pro_bar_essentiel_price ?? "25 €"}
                   <span className="text-base font-normal opacity-70">
                     {" "}
-                    / mois
+                    {t.pro_bar_essentiel_period ?? "/ mois"}
                   </span>
                 </p>
                 <p className="text-xs opacity-70 mt-1">
-                  ou 250 €/an (10 mois facturés)
+                  {t.pro_bar_essentiel_yearly ?? "ou 250 €/an (10 mois facturés)"}
                 </p>
               </div>
               <ul className="text-sm space-y-1.5">
-                <li>✓ 1 lieu</li>
-                <li>✓ Quizz illimités</li>
-                <li>✓ 100 joueurs par session</li>
-                <li>✓ Mode pilotage live + afficheur</li>
-                <li>✓ Logo personnalisé</li>
-                <li>✓ Classement avec lots</li>
-                <li>✓ Conservation 6 mois</li>
+                <li>✓ {t.pro_bar_essentiel_f1 ?? "1 lieu"}</li>
+                <li>✓ {t.pro_bar_essentiel_f2 ?? "Quizz illimités"}</li>
+                <li>✓ {t.pro_bar_essentiel_f3 ?? "100 joueurs par session"}</li>
+                <li>✓ {t.pro_bar_essentiel_f4 ?? "Mode pilotage live + afficheur"}</li>
+                <li>✓ {t.pro_bar_essentiel_f5 ?? "Logo personnalisé"}</li>
+                <li>✓ {t.pro_bar_essentiel_f6 ?? "Classement avec lots"}</li>
+                <li>✓ {t.pro_bar_essentiel_f7 ?? "Conservation 6 mois"}</li>
               </ul>
             </div>
 
@@ -444,42 +443,42 @@ export default async function Home() {
                   color: "var(--color-violet-deep)",
                 }}
               >
-                MULTI-LIEUX
+                {t.pro_bar_pro_badge ?? "MULTI-LIEUX"}
               </span>
               <div>
                 <p className="text-xs uppercase tracking-[2px] text-[var(--color-gold)] font-semibold">
-                  Bar Pro
+                  {t.pro_bar_pro_name ?? "Bar Pro"}
                 </p>
                 <p className="font-display text-3xl font-bold mt-1">
-                  50 €
+                  {t.pro_bar_pro_price ?? "50 €"}
                   <span className="text-base font-normal opacity-70">
                     {" "}
-                    / mois
+                    {t.pro_bar_pro_period ?? "/ mois"}
                   </span>
                 </p>
                 <p className="text-xs opacity-70 mt-1">
-                  ou 500 €/an (10 mois facturés)
+                  {t.pro_bar_pro_yearly ?? "ou 500 €/an (10 mois facturés)"}
                 </p>
               </div>
               <ul className="text-sm space-y-1.5">
-                <li>✓ Lieux illimités</li>
-                <li>✓ Quizz illimités</li>
-                <li>✓ 500 joueurs par session</li>
-                <li>✓ Mode pilotage live + afficheur</li>
-                <li>✓ Logo + sous-domaine + thème custom</li>
-                <li>✓ Templates premium</li>
+                <li>✓ {t.pro_bar_pro_f1 ?? "Lieux illimités"}</li>
+                <li>✓ {t.pro_bar_pro_f2 ?? "Quizz illimités"}</li>
+                <li>✓ {t.pro_bar_pro_f3 ?? "500 joueurs par session"}</li>
+                <li>✓ {t.pro_bar_pro_f4 ?? "Mode pilotage live + afficheur"}</li>
+                <li>✓ {t.pro_bar_pro_f5 ?? "Logo + sous-domaine + thème custom"}</li>
+                <li>✓ {t.pro_bar_pro_f6 ?? "Templates premium"}</li>
                 <li>
-                  ✓ <strong>Stats avancées + export CSV</strong>
+                  ✓ <strong>{t.pro_bar_pro_f7_strong ?? "Stats avancées + export CSV"}</strong>
                 </li>
-                <li>✓ Support prioritaire (&lt; 24h)</li>
+                <li>✓ {t.pro_bar_pro_f8 ?? "Support prioritaire (< 24h)"}</li>
               </ul>
             </div>
           </div>
 
           <div className="mt-10 text-center text-sm">
             <p className="opacity-80">
-              ✓ Sans engagement &nbsp;·&nbsp; ✓ Résiliation libre &nbsp;·&nbsp;
-              ✓ Pas de reconduction tacite
+              {t.pro_footer_note ??
+                "✓ Sans engagement  ·  ✓ Résiliation libre  ·  ✓ Pas de reconduction tacite"}
             </p>
             {!isLoggedIn && (
               <div className="mt-6">
@@ -492,7 +491,7 @@ export default async function Home() {
                   }}
                   className="font-bold"
                 >
-                  <Link href="/signup">Créer un compte pro</Link>
+                  <Link href="/signup">{t.pro_cta_create ?? "Créer un compte pro"}</Link>
                 </Button>
               </div>
             )}

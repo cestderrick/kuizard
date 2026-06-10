@@ -8,13 +8,26 @@ import { getActivePlans } from "@/lib/plans/config";
 import { formatStripeAmount } from "@/lib/stripe/client";
 import { SubscribeButton } from "@/components/payment/subscribe-button";
 import { CustomerPortalButton } from "@/components/payment/customer-portal-button";
-import { getMessages } from "@/lib/i18n/get-locale";
+import { getLocale, getMessages } from "@/lib/i18n/get-locale";
+import { interp } from "@/lib/i18n/messages";
 
 export const metadata: Metadata = {
   title: "Mon abonnement",
 };
 
 type SearchParams = Promise<{ status?: string; error?: string }>;
+
+// Mapping locale → tag BCP47 pour Intl.DateTimeFormat
+const LOCALE_TAGS: Record<string, string> = {
+  fr: "fr-FR",
+  en: "en-GB",
+  es: "es-ES",
+  it: "it-IT",
+  de: "de-DE",
+  pt: "pt-PT",
+  ru: "ru-RU",
+  zh: "zh-CN",
+};
 
 export default async function SubscriptionPage({
   searchParams,
@@ -25,8 +38,7 @@ export default async function SubscriptionPage({
   if (!session?.user?.id) redirect("/login");
 
   const { status, error } = await searchParams;
-
-  const [activeSub, plans] = await Promise.all([
+  const [activeSub, plans, locale, m] = await Promise.all([
     prisma.subscription.findFirst({
       where: {
         userId: session.user.id,
@@ -35,58 +47,61 @@ export default async function SubscriptionPage({
       orderBy: { createdAt: "desc" },
     }),
     getActivePlans("subscription"),
+    getLocale(),
+    getMessages(),
   ]);
 
+  const tag = LOCALE_TAGS[locale] ?? "fr-FR";
   const fmt = (d: Date | null) =>
     d
-      ? new Intl.DateTimeFormat("fr-FR", { dateStyle: "long" }).format(d)
+      ? new Intl.DateTimeFormat(tag, { dateStyle: "long" }).format(d)
       : "—";
+
+  const ms = m.subscription;
 
   return (
     <div className="flex flex-col gap-6 max-w-4xl">
       <header>
         <p className="text-sm uppercase tracking-[3px] text-[var(--color-violet-primary)] mb-2 font-semibold">
-          🔁 Abonnement
+          {ms.page_eyebrow}
         </p>
         <h1
           className="font-display text-3xl md:text-4xl font-bold tracking-wide"
           style={{ color: "var(--color-violet-deep)" }}
         >
-          Mon abonnement
+          {ms.page_title}
         </h1>
         <p className="mt-2 text-muted-foreground text-sm max-w-xl">
-          Choisis un plan mensuel — idéal si tu organises plusieurs quizz
-          dans l'année (particuliers comme bars/pros).
+          {ms.page_subtitle}
         </p>
       </header>
 
       {/* Cross-link vers paiement à l'unité */}
       <section className="rounded-2xl bg-gradient-to-br from-[var(--color-gold)]/5 to-[var(--color-violet-primary)]/5 border-2 border-dashed border-[var(--color-violet-primary)]/30 p-5 text-center">
         <p className="text-sm">
-          💡 <strong>Tu n'as besoin que d'un seul quizz ?</strong> Tu peux
-          aussi payer à l'unité (à partir de 5 €), sans engagement.
+          💡 <strong>{ms.cross_sell_strong}</strong> {ms.cross_sell}
         </p>
         <Link
           href="/dashboard/quizzes"
           className="inline-block mt-2 text-sm font-semibold text-[var(--color-violet-primary)] underline-offset-4 hover:underline"
         >
-          Voir mes quizz et payer à l'unité →
+          {ms.cross_sell_link}
         </Link>
       </section>
 
       {status === "success" && (
         <div className="rounded-lg bg-green-100 text-green-800 px-4 py-3 text-sm">
-          ✓ Souscription réussie ! Ton abo est actif.
+          {ms.status_success}
         </div>
       )}
       {status === "cancel" && (
         <div className="rounded-lg bg-zinc-100 text-zinc-700 px-4 py-3 text-sm">
-          🪄 Souscription annulée, rien n'a été débité.
+          {ms.status_cancel}
         </div>
       )}
       {error === "no_customer" && (
         <div className="rounded-lg bg-amber-100 text-amber-800 px-4 py-3 text-sm">
-          Tu n'as pas encore de compte Stripe. Souscris d'abord à un abo.
+          {ms.error_no_customer}
         </div>
       )}
 
@@ -94,14 +109,14 @@ export default async function SubscriptionPage({
       {activeSub ? (
         <section className="rounded-2xl border-2 border-green-300 bg-green-50/60 p-6 flex flex-col gap-3">
           <h2 className="font-display text-xl tracking-wide">
-            ✓ Plan {activeSub.planSlug} actif
+            {interp(ms.active_plan_prefix, { plan: activeSub.planSlug })}
           </h2>
           <p className="text-sm text-muted-foreground">
-            Prochain renouvellement : {fmt(activeSub.currentPeriodEnd)}
-            {activeSub.cancelAtPeriodEnd && " (sera annulé à cette date)"}
+            {interp(ms.next_renewal, { date: fmt(activeSub.currentPeriodEnd) })}
+            {activeSub.cancelAtPeriodEnd && ` ${ms.will_cancel}`}
           </p>
           <p className="text-xs opacity-70">
-            Statut Stripe : <strong>{activeSub.status}</strong>
+            {interp(ms.stripe_status, { status: activeSub.status })}
           </p>
           <div>
             <CustomerPortalButton />
@@ -109,19 +124,17 @@ export default async function SubscriptionPage({
         </section>
       ) : (
         <section className="rounded-2xl bg-[rgba(85,35,187,0.04)] border border-[var(--color-violet-primary)] p-6 text-center text-sm text-muted-foreground">
-          Tu n'as pas encore d'abonnement actif. Choisis un plan ci-dessous.
+          {ms.no_subscription}
         </section>
       )}
 
       {/* Plans dispos */}
       <section>
         <h2 className="font-display text-xl tracking-wide mb-3">
-          Plans disponibles
+          {ms.plans_title}
         </h2>
         {plans.length === 0 ? (
-          <p className="text-sm text-muted-foreground italic">
-            Aucun plan d'abonnement configuré.
-          </p>
+          <p className="text-sm text-muted-foreground italic">{ms.no_plans}</p>
         ) : (
           <div className="grid md:grid-cols-2 gap-4">
             {plans.map((plan) => (
@@ -135,7 +148,7 @@ export default async function SubscriptionPage({
               >
                 {plan.isHighlighted && (
                   <p className="text-[10px] uppercase tracking-[3px] text-[var(--color-gold)] font-bold">
-                    ⭐ Recommandé
+                    {ms.recommended}
                   </p>
                 )}
                 <div>
@@ -158,7 +171,7 @@ export default async function SubscriptionPage({
                   {formatStripeAmount(plan.priceCents)}
                   <span className="text-sm text-muted-foreground font-normal">
                     {" "}
-                    / {plan.interval === "year" ? "an" : "mois"}
+                    / {plan.interval === "year" ? ms.per_year : ms.per_month}
                   </span>
                 </p>
                 {plan.description && (
@@ -170,7 +183,7 @@ export default async function SubscriptionPage({
                   <div className="mt-auto pt-2">
                     <SubscribeButton
                       planSlug={plan.slug}
-                      label={`Souscrire à ${plan.name}`}
+                      label={interp(ms.subscribe_button, { plan: plan.name })}
                       primary={plan.isHighlighted}
                     />
                   </div>
@@ -182,9 +195,9 @@ export default async function SubscriptionPage({
       </section>
 
       <p className="text-xs text-muted-foreground italic text-center">
-        Tu peux annuler à tout moment depuis le portail Stripe.{" "}
+        {ms.cancel_anytime}{" "}
         <Link href="/cgv" className="underline">
-          Conditions Générales de Vente
+          {ms.cgv_link}
         </Link>
       </p>
     </div>
