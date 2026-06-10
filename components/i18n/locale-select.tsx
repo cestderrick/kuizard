@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { SUPPORTED_LOCALES } from "@/lib/i18n/messages";
+import { SUPPORTED_LOCALES } from "@/lib/i18n/locales";
 
 /**
  * Sélecteur de langue — appelle un endpoint REST classique (plus fiable que

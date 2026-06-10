@@ -9,19 +9,9 @@
 //
 // Langues : FR (par défaut), EN, IT, DE, ES, PT, RU, ZH (simplifié)
 
-export type Locale = "fr" | "en" | "it" | "de" | "es" | "pt" | "ru" | "zh";
-
-export const SUPPORTED_LOCALES: { value: Locale; label: string; flag: string }[] =
-  [
-    { value: "fr", label: "Français", flag: "🇫🇷" },
-    { value: "en", label: "English", flag: "🇬🇧" },
-    { value: "es", label: "Español", flag: "🇪🇸" },
-    { value: "it", label: "Italiano", flag: "🇮🇹" },
-    { value: "de", label: "Deutsch", flag: "🇩🇪" },
-    { value: "pt", label: "Português", flag: "🇵🇹" },
-    { value: "zh", label: "中文", flag: "🇨🇳" },
-    { value: "ru", label: "Русский", flag: "🇷🇺" },
-  ];
+// Re-export depuis locales.ts (sans dépendance Node, safe pour client)
+export { type Locale, SUPPORTED_LOCALES } from "./locales";
+import type { Locale } from "./locales";
 
 // Type structurel commun à toutes les locales
 export type Messages = {
