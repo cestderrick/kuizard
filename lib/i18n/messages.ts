@@ -212,9 +212,13 @@ export type Messages = {
     page_title: string;
     page_subtitle: string;
     active_plan: string;
+    active_plan_prefix: string;
     next_renewal: string;
     will_cancel: string;
     stripe_status: string;
+    status_success: string;
+    status_cancel: string;
+    error_no_customer: string;
     no_subscription: string;
     plans_title: string;
     no_plans: string;
@@ -222,6 +226,7 @@ export type Messages = {
     per_month: string;
     per_year: string;
     subscribe_button: string;
+    cross_sell_strong: string;
     cross_sell: string;
     cross_sell_link: string;
     cancel_anytime: string;
