@@ -1154,27 +1154,35 @@ const MANUAL_LOCALES: Record<Locale, Messages> = {
 };
 
 // Fusion deep avec les traductions auto-générées par DeepL (si présentes).
-// Manuel a toujours priorité ; auto sert de fallback pour les nouvelles clés.
-function mergeDeep<T extends Record<string, unknown>>(
-  manual: T,
-  auto: Partial<T> | undefined
-): T {
-  if (!auto) return manual;
-  const out = { ...manual };
-  for (const k of Object.keys(out) as Array<keyof T>) {
-    const m = out[k];
-    const a = auto[k];
-    if (
-      m &&
-      typeof m === "object" &&
-      a &&
-      typeof a === "object" &&
-      !Array.isArray(m)
-    ) {
-      out[k] = mergeDeep(m as never, a as never);
+// Manuel a toujours priorité (sauf chaîne vide) ; auto remplit toutes les clés
+// absentes du manuel (typique : nouvelles sections ajoutées sans traduction
+// manuelle). On itère sur l'union des clés des deux objets, pas seulement
+// celles du manuel.
+function mergeDeep(manual: unknown, auto: unknown): unknown {
+  // Si auto absent → on retourne manual tel quel
+  if (auto === undefined || auto === null) return manual;
+  // Si manual absent → on prend auto
+  if (manual === undefined || manual === null) return auto;
+  // Chaîne vide côté manual → on prend auto
+  if (typeof manual === "string" && manual === "") return auto;
+  // Deux objets non-array : merge récursif sur l'union des clés
+  if (
+    typeof manual === "object" &&
+    typeof auto === "object" &&
+    !Array.isArray(manual) &&
+    !Array.isArray(auto)
+  ) {
+    const out: Record<string, unknown> = {};
+    const m = manual as Record<string, unknown>;
+    const a = auto as Record<string, unknown>;
+    const allKeys = new Set([...Object.keys(m), ...Object.keys(a)]);
+    for (const k of allKeys) {
+      out[k] = mergeDeep(m[k], a[k]);
     }
+    return out;
   }
-  return out;
+  // Feuille non vide côté manual → priorité au manuel
+  return manual;
 }
 
 // Charge le JSON auto-généré via lecture filesystem au boot du process
@@ -1194,13 +1202,13 @@ try {
 
 export const LOCALES: Record<Locale, Messages> = {
   fr: MANUAL_LOCALES.fr, // FR = source manuelle uniquement, jamais traduite
-  en: mergeDeep(MANUAL_LOCALES.en, AUTO.en),
-  es: mergeDeep(MANUAL_LOCALES.es, AUTO.es),
-  it: mergeDeep(MANUAL_LOCALES.it, AUTO.it),
-  de: mergeDeep(MANUAL_LOCALES.de, AUTO.de),
-  pt: mergeDeep(MANUAL_LOCALES.pt, AUTO.pt),
-  ru: mergeDeep(MANUAL_LOCALES.ru, AUTO.ru),
-  zh: mergeDeep(MANUAL_LOCALES.zh, AUTO.zh),
+  en: mergeDeep(MANUAL_LOCALES.en, AUTO.en) as Messages,
+  es: mergeDeep(MANUAL_LOCALES.es, AUTO.es) as Messages,
+  it: mergeDeep(MANUAL_LOCALES.it, AUTO.it) as Messages,
+  de: mergeDeep(MANUAL_LOCALES.de, AUTO.de) as Messages,
+  pt: mergeDeep(MANUAL_LOCALES.pt, AUTO.pt) as Messages,
+  ru: mergeDeep(MANUAL_LOCALES.ru, AUTO.ru) as Messages,
+  zh: mergeDeep(MANUAL_LOCALES.zh, AUTO.zh) as Messages,
 };
 
 /**
