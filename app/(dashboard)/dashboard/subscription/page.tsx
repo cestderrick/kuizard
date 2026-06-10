@@ -57,7 +57,7 @@ export default async function SubscriptionPage({
       ? new Intl.DateTimeFormat(tag, { dateStyle: "long" }).format(d)
       : "—";
 
-  const ms = m.subscription;
+  const ms = m.subscription!;
 
   return (
     <div className="flex flex-col gap-6 max-w-4xl">
