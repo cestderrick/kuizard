@@ -6,8 +6,9 @@
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let Sentry: any = null;
 try {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  Sentry = require("@sentry/nextjs");
+  // eslint-disable-next-line no-eval
+  const dynRequire = eval("require") as NodeRequire;
+  Sentry = dynRequire("@sentry/nextjs");
 } catch {
   console.warn("[sentry] @sentry/nextjs not installed — edge tracing skipped");
 }

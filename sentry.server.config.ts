@@ -1,17 +1,18 @@
 // =============================================
 // Sentry — Configuration côté serveur (Node.js runtime)
 // =============================================
-// Ce fichier n'est chargé que si SENTRY_DSN est présent (via instrumentation.ts).
-// Le require dynamique évite que le build casse si @sentry/nextjs n'est pas
-// installé.
+// Chargé uniquement via instrumentation.ts si SENTRY_DSN est présent.
+//
+// Pour éviter que Turbopack/Webpack tente de bundler @sentry/nextjs au build
+// time quand le package n'est pas installé, on utilise un require non
+// analysable via eval. À runtime, si le module n'est pas là, on no-op.
 
-// On évite `typeof import("@sentry/nextjs")` qui forcerait TS à résoudre
-// le package au typecheck. Le `any` est volontaire pour ce wrapper optionnel.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let Sentry: any = null;
 try {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  Sentry = require("@sentry/nextjs");
+  // eslint-disable-next-line no-eval
+  const dynRequire = eval("require") as NodeRequire;
+  Sentry = dynRequire("@sentry/nextjs");
 } catch {
   console.warn("[sentry] @sentry/nextjs not installed — server tracing skipped");
 }

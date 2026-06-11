@@ -1,7 +1,6 @@
 // =============================================
 // Next.js instrumentation — Sentry (optionnel)
 // =============================================
-// Ce fichier est appelé par Next.js au boot du process.
 // Si @sentry/nextjs n'est pas installé ou si SENTRY_DSN n'est pas configuré,
 // tout est no-op silencieusement.
 
@@ -29,8 +28,14 @@ export async function onRequestError(
 ) {
   if (!process.env.SENTRY_DSN) return;
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const Sentry = await import("@sentry/nextjs" as any);
+    // Import non analysable par les bundlers : eval() pour bypasser
+    // l'analyse statique de Turbopack/Webpack.
+    const pkgName = "@sentry/nextjs";
+    const dynImport = new Function("p", "return import(p)") as (
+      p: string
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ) => Promise<any>;
+    const Sentry = await dynImport(pkgName);
     Sentry.captureRequestError(err, request, context);
   } catch {
     // @sentry/nextjs pas installé — on ne fait rien
