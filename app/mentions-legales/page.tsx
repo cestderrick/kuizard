@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { LegalLayout } from "@/components/legal/legal-layout";
 
 export const metadata: Metadata = {
@@ -7,66 +8,99 @@ export const metadata: Metadata = {
 
 export default function MentionsLegalesPage() {
   return (
-    <LegalLayout title="Mentions légales" lastUpdate="3 juin 2026">
-      <h2>Éditeur du site</h2>
+    <LegalLayout title="Mentions légales" lastUpdate="11 juin 2026">
+      <h2>1. Éditeur du site</h2>
       <p>
-        <strong>Kuizard</strong> est édité par :
+        Le site <strong>Kuizard</strong> est édité par&nbsp;:
       </p>
       <ul>
         <li>
-          <strong>Projiat</strong> — Micro-entreprise individuelle
+          <strong>Projiat</strong> — entreprise individuelle (micro-entrepreneur).
         </li>
         <li>
-          Cédric Ghironzi — <em>[À COMPLÉTER : adresse postale]</em>
+          <strong>Titulaire&nbsp;:</strong> Cédric Ghironzi.
         </li>
-        <li>SIRET : <em>[À COMPLÉTER]</em></li>
-        <li>Email : <a href="mailto:contact@kuizard.fr">contact@kuizard.fr</a></li>
         <li>
-          Directeur de la publication : Cédric Ghironzi
+          <strong>Adresse&nbsp;:</strong> 8 place Bir-Hakeim, 69003 Lyon, France.
+        </li>
+        <li>
+          <strong>SIRET&nbsp;:</strong> <em>10404270000013</em>.
+        </li>
+        <li>
+          <strong>TVA&nbsp;:</strong> TVA non applicable, article 293 B du Code
+          général des impôts (franchise en base de TVA).
+        </li>
+        <li>
+          <strong>Email&nbsp;:</strong>{" "}
+          <a href="mailto:contact@kuizard.fr">contact@kuizard.fr</a>.
+        </li>
+        <li>
+          <strong>Directeur de la publication&nbsp;:</strong> Cédric Ghironzi, en
+          qualité d'éditeur du site.
         </li>
       </ul>
 
-      <h2>Hébergement</h2>
-      <p>
-        Le site est hébergé par :
-      </p>
+      <h2>2. Hébergeur</h2>
+      <p>Le site Kuizard est hébergé par&nbsp;:</p>
       <ul>
         <li>
-          <strong>OVH SAS</strong>
+          <strong>OVH SAS</strong>.
         </li>
-        <li>2 rue Kellermann, 59100 Roubaix, France</li>
+        <li>2 rue Kellermann, 59100 Roubaix, France.</li>
         <li>
-          Site web :{" "}
-          <a href="https://www.ovh.com" target="_blank" rel="noopener noreferrer">
+          Site web&nbsp;:{" "}
+          <a
+            href="https://www.ovh.com"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             ovh.com
           </a>
+          .
         </li>
-        <li>Téléphone : 1007 (numéro non surtaxé)</li>
+        <li>Téléphone&nbsp;: 1007 (numéro non surtaxé).</li>
       </ul>
 
-      <h2>Propriété intellectuelle</h2>
+      <h2>3. Propriété intellectuelle</h2>
       <p>
-        L'ensemble du contenu du site Kuizard (textes, images, logos, code)
-        est la propriété exclusive de Projiat, sauf mention contraire. Toute
-        reproduction sans autorisation préalable est interdite.
+        L'ensemble des éléments composant le site Kuizard (notamment textes,
+        graphismes, logo, icônes, images, vidéos, logiciels, architecture du
+        site, code source) est, sauf mention contraire, la propriété exclusive
+        de Projiat.
       </p>
       <p>
-        Les contenus créés par les utilisateurs (quizz, questions, photos)
-        restent leur propriété. Ils accordent à Kuizard une licence
-        d'utilisation non exclusive et limitée à la durée d'hébergement, pour
-        permettre l'affichage de leurs contenus aux participants.
+        Toute reproduction, représentation, modification, adaptation, diffusion
+        ou exploitation, totale ou partielle, du site ou de l'un de ses
+        éléments, par quelque procédé que ce soit, sans l'autorisation écrite
+        préalable de Projiat, est interdite et est susceptible de constituer une
+        contrefaçon au sens du Code de la propriété intellectuelle.
+      </p>
+      <p>
+        Les contenus (notamment quiz, questions, textes, images) créés par les
+        utilisateurs via le site restent la propriété de leurs auteurs, sous
+        réserve des droits que ceux-ci concèdent à Projiat pour les besoins du
+        fonctionnement du service, tels que précisés dans les{" "}
+        <Link href="/cgu">Conditions générales d'utilisation</Link>.
       </p>
 
-      <h2>Contact</h2>
+      <h2>4. Données personnelles</h2>
       <p>
-        Pour toute question : <a href="mailto:contact@kuizard.fr">contact@kuizard.fr</a>
+        Les informations relatives au traitement des données personnelles des
+        utilisateurs et des visiteurs du site Kuizard sont détaillées dans la{" "}
+        <Link href="/confidentialite">Politique de confidentialité</Link>.
       </p>
 
-      <hr />
-      <p className="text-sm italic text-muted-foreground">
-        <strong>À COMPLÉTER avant lancement public :</strong> adresse postale,
-        numéro SIRET. Le reste est correct mais ce template gagnera à être relu
-        par LegalPlace ou un avocat.
+      <h2>5. Cookies</h2>
+      <p>
+        Les modalités d'utilisation des cookies et autres traceurs sur le site
+        Kuizard sont précisées dans la{" "}
+        <Link href="/cookies">Politique de cookies</Link>.
+      </p>
+
+      <h2>6. Contact</h2>
+      <p>
+        Pour toute question, écris-nous à&nbsp;:{" "}
+        <a href="mailto:contact@kuizard.fr">contact@kuizard.fr</a>.
       </p>
     </LegalLayout>
   );

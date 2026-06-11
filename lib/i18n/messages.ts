@@ -159,6 +159,9 @@ export type Messages = {
     account_type_individual: string;
     account_type_business: string;
     creating: string;
+    terms_accept: string;
+    terms_cgu: string;
+    terms_cgv: string;
   };
   dashboard?: {
     welcome_eyebrow: string;
@@ -520,6 +523,9 @@ const fr: Messages = {
     account_type_individual: "👤 Particulier",
     account_type_business: "🏢 Professionnel",
     creating: "Création…",
+    terms_accept: "J'accepte les {cgu} et les {cgv} de Kuizard.",
+    terms_cgu: "Conditions générales d'utilisation",
+    terms_cgv: "Conditions générales de vente",
   },
   dashboard: {
     welcome_eyebrow: "✨ Bienvenue",

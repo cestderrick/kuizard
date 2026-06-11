@@ -32,6 +32,11 @@ type Texts = {
   creating: string;
   have_account: string;
   login_link: string;
+  // Acceptation des CGU/CGV — la chaîne contient {cgu} et {cgv} comme
+  // placeholders qu'on remplace par des liens hypertextes.
+  terms_accept: string;
+  terms_cgu: string;
+  terms_cgv: string;
 };
 
 export function SignupForm({ texts }: { texts: Texts }) {
@@ -120,6 +125,65 @@ export function SignupForm({ texts }: { texts: Texts }) {
               <option value="INDIVIDUAL">{texts.account_type_individual}</option>
               <option value="BUSINESS">{texts.account_type_business}</option>
             </select>
+          </div>
+
+          {/* Acceptation explicite CGU + CGV — obligatoire */}
+          <div className="flex flex-col gap-2 mt-2">
+            <label
+              htmlFor="termsAccepted"
+              className="flex items-start gap-2 text-sm cursor-pointer select-none"
+            >
+              <input
+                id="termsAccepted"
+                name="termsAccepted"
+                type="checkbox"
+                required
+                className="mt-1 size-4 shrink-0 cursor-pointer accent-[var(--color-violet-primary)]"
+              />
+              <span className="text-muted-foreground leading-snug">
+                {(() => {
+                  // Découpe la chaîne "J'accepte les {cgu} et les {cgv}." en
+                  // morceaux pour intercaler de vrais liens <Link>.
+                  const parts = texts.terms_accept.split(/(\{cgu\}|\{cgv\})/g);
+                  return parts.map((part, i) => {
+                    if (part === "{cgu}") {
+                      return (
+                        <Link
+                          key={i}
+                          href="/cgu"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="font-medium underline underline-offset-2 hover:opacity-80"
+                          style={{ color: "var(--color-violet-primary)" }}
+                        >
+                          {texts.terms_cgu}
+                        </Link>
+                      );
+                    }
+                    if (part === "{cgv}") {
+                      return (
+                        <Link
+                          key={i}
+                          href="/cgv"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="font-medium underline underline-offset-2 hover:opacity-80"
+                          style={{ color: "var(--color-violet-primary)" }}
+                        >
+                          {texts.terms_cgv}
+                        </Link>
+                      );
+                    }
+                    return <span key={i}>{part}</span>;
+                  });
+                })()}
+              </span>
+            </label>
+            {state.errors?.termsAccepted && (
+              <p className="text-sm text-destructive">
+                {state.errors.termsAccepted.join(" ")}
+              </p>
+            )}
           </div>
 
           <Button

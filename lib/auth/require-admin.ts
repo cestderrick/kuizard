@@ -8,6 +8,7 @@ import { notFound, redirect } from "next/navigation";
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
+import { needsTermsReacceptance } from "@/lib/legal/acceptance";
 
 export async function requireAdmin() {
   const session = await auth();
@@ -22,12 +23,18 @@ export async function requireAdmin() {
       name: true,
       email: true,
       role: true,
+      lastAcceptedTermsVersion: true,
     },
   });
 
   // 404 plutôt que 403 pour ne pas révéler l'existence de la zone admin
   if (!user || user.role !== "ADMIN") {
     notFound();
+  }
+
+  // Même les admin sont forcés à accepter les nouvelles versions des CGU/CGV
+  if (needsTermsReacceptance(user.lastAcceptedTermsVersion)) {
+    redirect("/accept-terms?next=/admin");
   }
 
   return { session, user };

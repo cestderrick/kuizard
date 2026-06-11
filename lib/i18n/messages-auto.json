@@ -137,7 +137,10 @@
       "account_type_label": "Type de compte",
       "account_type_individual": "👤 Particulier",
       "account_type_business": "🏢 Professionnel",
-      "creating": "Création…"
+      "creating": "Création…",
+      "terms_accept": "J'accepte les {cgu} et les {cgv} de Kuizard.",
+      "terms_cgu": "Conditions générales d'utilisation",
+      "terms_cgv": "Conditions générales de vente"
     },
     "dashboard": {
       "welcome_eyebrow": "✨ Bienvenue",
@@ -474,7 +477,10 @@
       "account_type_label": "Account type",
       "account_type_individual": "👤 Private individual",
       "account_type_business": "🏢 Professional",
-      "creating": "Creation…"
+      "creating": "Creation…",
+      "terms_accept": "I accept Kuizard’s {Terms of Use} and {Terms and Conditions}.",
+      "terms_cgu": "Terms and Conditions",
+      "terms_cgv": "Terms and Conditions"
     },
     "dashboard": {
       "welcome_eyebrow": "✨ Welcome",
@@ -811,7 +817,10 @@
       "account_type_label": "Tipo de cuenta",
       "account_type_individual": "👤 Particular",
       "account_type_business": "🏢 Profesional",
-      "creating": "Creación…"
+      "creating": "Creación…",
+      "terms_accept": "Acepto las {condiciones generales de uso} y las {condiciones generales de venta} de Kuizard.",
+      "terms_cgu": "Condiciones generales de uso",
+      "terms_cgv": "Condiciones generales de venta"
     },
     "dashboard": {
       "welcome_eyebrow": "✨ Bienvenido",
@@ -1148,7 +1157,10 @@
       "account_type_label": "Tipo di conto",
       "account_type_individual": "👤 Privato",
       "account_type_business": "🏢 Professionale",
-      "creating": "Creazione…"
+      "creating": "Creazione…",
+      "terms_accept": "Accetto le {Condizioni generali d'uso} e le {Condizioni generali di vendita} di Kuizard.",
+      "terms_cgu": "Condizioni generali di utilizzo",
+      "terms_cgv": "Condizioni generali di vendita"
     },
     "dashboard": {
       "welcome_eyebrow": "✨ Benvenuti",
@@ -1485,7 +1497,10 @@
       "account_type_label": "Kontotyp",
       "account_type_individual": "👤 Privatperson",
       "account_type_business": "🏢 Für Unternehmen",
-      "creating": "Entwurf…"
+      "creating": "Entwurf…",
+      "terms_accept": "Ich akzeptiere die {AGB} und die {AGB} von Kuizard.",
+      "terms_cgu": "Allgemeine Nutzungsbedingungen",
+      "terms_cgv": "Allgemeine Geschäftsbedingungen"
     },
     "dashboard": {
       "welcome_eyebrow": "✨ Willkommen",
@@ -1822,7 +1837,10 @@
       "account_type_label": "Tipo de conta",
       "account_type_individual": "👤 Particular",
       "account_type_business": "🏢 Profissional",
-      "creating": "Criação…"
+      "creating": "Criação…",
+      "terms_accept": "Aceito os {Términos de Utilização} e as {Condições Gerais de Venda} da Kuizard.",
+      "terms_cgu": "Condições gerais de utilização",
+      "terms_cgv": "Condições gerais de venda"
     },
     "dashboard": {
       "welcome_eyebrow": "✨ Bem-vindo",
@@ -2159,7 +2177,10 @@
       "account_type_label": "账户类型",
       "account_type_individual": "👤 个人",
       "account_type_business": "🏢 专业人士",
-      "creating": "创作……"
+      "creating": "创作……",
+      "terms_accept": "我接受Kuizard的{服务条款}和{销售条款}。",
+      "terms_cgu": "一般使用条款",
+      "terms_cgv": "一般销售条款"
     },
     "dashboard": {
       "welcome_eyebrow": "✨ 欢迎",
@@ -2496,7 +2517,10 @@
       "account_type_label": "Тип счета",
       "account_type_individual": "👤 Частное лицо",
       "account_type_business": "🏢 Профессионал",
-      "creating": "Создание…"
+      "creating": "Создание…",
+      "terms_accept": "Я принимаю {Условия использования} и {Условия предоставления услуг} Kuizard.",
+      "terms_cgu": "Общие условия использования",
+      "terms_cgv": "Общие условия продажи"
     },
     "dashboard": {
       "welcome_eyebrow": "✨ Добро пожаловать",

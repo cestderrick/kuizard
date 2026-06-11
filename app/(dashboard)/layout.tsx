@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { getMessages } from "@/lib/i18n/get-locale";
+import { needsTermsReacceptance } from "@/lib/legal/acceptance";
 import { KuizardLogo } from "@/components/brand/kuizard-logo";
 import { SiteFooter } from "@/components/legal/site-footer";
 import { NotificationBell } from "@/components/notifications/notification-bell";
@@ -28,11 +29,16 @@ export default async function DashboardLayout({
     redirect("/login");
   }
 
-  // Lit le rôle en BDD pour proposer l'accès admin si applicable
+  // Lit le rôle + acceptation CGU/CGV. Si version pas à jour → redirect
+  // vers /accept-terms (sauf pour les ADMIN qui peuvent y accéder via /admin
+  // si besoin — mais on les force aussi à accepter, par souci de cohérence).
   const me = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { role: true },
+    select: { role: true, lastAcceptedTermsVersion: true },
   });
+  if (me && needsTermsReacceptance(me.lastAcceptedTermsVersion)) {
+    redirect("/accept-terms");
+  }
   const isAdmin = me?.role === "ADMIN";
 
   // Charge les traductions selon la locale active du user

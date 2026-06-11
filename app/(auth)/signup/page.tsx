@@ -20,6 +20,9 @@ const FB = {
   submit_signup: "Créer mon compte ✨",
   creating: "Création…",
   have_account: "Tu as déjà un compte ?",
+  terms_accept: "J'accepte les {cgu} et les {cgv} de Kuizard.",
+  terms_cgu: "Conditions générales d'utilisation",
+  terms_cgv: "Conditions générales de vente",
 };
 
 export default async function SignupPage() {
@@ -44,6 +47,9 @@ export default async function SignupPage() {
         creating: t?.creating ?? FB.creating,
         have_account: t?.have_account ?? FB.have_account,
         login_link: navT.login,
+        terms_accept: t?.terms_accept ?? FB.terms_accept,
+        terms_cgu: t?.terms_cgu ?? FB.terms_cgu,
+        terms_cgv: t?.terms_cgv ?? FB.terms_cgv,
       }}
     />
   );

@@ -49,12 +49,18 @@ model User {
   // Date d'envoi du dernier avertissement "compte sera supprimé dans 30j"
   inactivityWarnedAt DateTime?
 
+  // Dernière version des CGU/CGV acceptée par l'utilisateur. Si différent
+  // de CURRENT_TERMS_VERSION (lib/legal/terms-version.ts), on redirige vers
+  // /accept-terms à la prochaine action. Format : "YYYY-MM-DD".
+  lastAcceptedTermsVersion String?
+
   accounts         Account[]
   sessions         Session[]
   quizzes          Quiz[]
   conversations    Conversation[]
   payments         Payment[]
   subscriptions    Subscription[]
+  termsAcceptances TermsAcceptance[]
 }
 
 enum AccountType {
@@ -359,6 +365,28 @@ model Subscription {
 
   @@index([userId])
   @@index([status])
+}
+
+// ====================================================
+// ACCEPTATION DES CGU/CGV — historique pour preuve juridique
+// ====================================================
+// Une ligne par acceptation explicite (à l'inscription, ou via /accept-terms
+// après bump de CURRENT_TERMS_VERSION). On garde toutes les acceptations pour
+// pouvoir prouver qu'à telle date, l'utilisateur a accepté telle version.
+
+model TermsAcceptance {
+  id           String   @id @default(cuid())
+  userId       String
+  termsVersion String   // ex: "2026-06-11"
+  acceptedAt   DateTime @default(now())
+  ipAddress    String?  // IP au moment de l'acceptation (preuve)
+  userAgent    String?  // User-Agent au moment de l'acceptation
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([termsVersion])
+  @@index([acceptedAt(sort: Desc)])
 }
 
 // ====================================================
