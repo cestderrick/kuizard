@@ -4,15 +4,33 @@ import Link from "next/link";
 import { InteractiveFaq } from "@/components/faq/interactive-faq";
 import { KuizardLogo } from "@/components/brand/kuizard-logo";
 import { SiteFooterNight } from "@/components/legal/site-footer-night";
+import { JsonLd } from "@/components/seo/json-ld";
+import { faqPageSchema } from "@/lib/seo/schemas";
+import { FAQ_NODES } from "@/lib/faq/tree";
 
 export const metadata: Metadata = {
-  title: "Aide",
-  description: "Trouvez la réponse à votre question en quelques clics.",
+  title: "Aide & FAQ",
+  description:
+    "Trouve la réponse à ta question sur Kuizard : création de quizz, mode live, paiement, abonnement, dépannage.",
 };
+
+// Extraction des paires (question, réponse) de l'arbre FAQ pour Schema.org
+const FAQ_QA = Object.values(FAQ_NODES)
+  .filter((node) => typeof node.answer === "string" && node.answer.length > 0)
+  .map((node) => ({
+    question: node.question,
+    // Strip simple du Markdown (gras, italique) qui ne passe pas bien en JSON-LD
+    answer: (node.answer as string)
+      .replace(/\*\*(.+?)\*\*/g, "$1")
+      .replace(/`(.+?)`/g, "$1"),
+  }));
 
 export default function AidePage() {
   return (
     <main className="min-h-screen flex flex-col items-center px-4 py-12 bg-[var(--color-night)] text-[var(--color-lavender)] relative overflow-hidden">
+      {/* JSON-LD FAQPage : Google peut afficher les Q&A directement dans
+          les résultats de recherche (rich snippet → CTR boosté) */}
+      <JsonLd data={faqPageSchema(FAQ_QA)} />
       <div
         aria-hidden
         className="pointer-events-none absolute -top-32 -left-32 w-[400px] h-[400px] rounded-full"

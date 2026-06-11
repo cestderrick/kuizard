@@ -5,6 +5,8 @@ import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/sonner";
 import { CookieBanner } from "@/components/legal/cookie-banner";
 import { getLocale } from "@/lib/i18n/get-locale";
+import { JsonLd } from "@/components/seo/json-ld";
+import { organizationSchema, websiteSchema } from "@/lib/seo/schemas";
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
@@ -39,10 +41,11 @@ export const metadata: Metadata = {
     siteName: "Kuizard",
     images: [
       {
-        url: "/og-image.svg",
+        url: "/og-image",
         width: 1200,
         height: 630,
         alt: "Kuizard — pour un moment magique",
+        type: "image/png",
       },
     ],
     locale: "fr_FR",
@@ -53,7 +56,7 @@ export const metadata: Metadata = {
     title: "Kuizard — Quizz magiques",
     description:
       "Crée un quizz personnalisé pour ton évènement. Partage en un QR code.",
-    images: ["/og-image.svg"],
+    images: ["/og-image"],
   },
   alternates: {
     canonical: BASE_URL,
@@ -93,6 +96,11 @@ export default async function RootLayout({
       className={cn("h-full", "antialiased", cinzel.variable, jakarta.variable, "font-sans", geist.variable)}
     >
       <body className="min-h-full flex flex-col font-sans">
+        {/* JSON-LD globaux (Organization Projiat + WebSite Kuizard) injectés
+            sur toutes les pages. Permet à Google de construire le Knowledge
+            Graph et d'afficher une éventuelle sitelinks search box. */}
+        <JsonLd data={organizationSchema()} />
+        <JsonLd data={websiteSchema()} />
         {children}
         <Toaster
           position="top-center"

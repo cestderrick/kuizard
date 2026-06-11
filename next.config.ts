@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { withSentryConfig } from "@sentry/nextjs";
 
 const nextConfig: NextConfig = {
   experimental: {
@@ -49,4 +50,27 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+// Wrap Sentry — uniquement si l'env contient SENTRY_DSN, sinon on retourne
+// la config Next telle quelle (utile en dev local sans monitoring).
+const finalConfig =
+  process.env.SENTRY_DSN || process.env.NEXT_PUBLIC_SENTRY_DSN
+    ? withSentryConfig(nextConfig, {
+        // Org + project Sentry (à configurer dans .env)
+        org: process.env.SENTRY_ORG,
+        project: process.env.SENTRY_PROJECT,
+        // Authentification pour l'upload de sourcemaps
+        authToken: process.env.SENTRY_AUTH_TOKEN,
+        // Silence le logging au build (sauf erreurs)
+        silent: !process.env.CI,
+        // Désactive les widgets (on n'utilise pas)
+        widenClientFileUpload: true,
+        // Tunneling : route /monitoring pour bypasser les bloqueurs de pub
+        tunnelRoute: "/monitoring",
+        // Hide source maps des bundles client (on les upload juste à Sentry)
+        sourcemaps: {
+          disable: false,
+        },
+      })
+    : nextConfig;
+
+export default finalConfig;
