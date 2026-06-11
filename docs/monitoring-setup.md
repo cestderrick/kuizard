@@ -37,8 +37,15 @@ Les deux services ont une formule gratuite suffisante pour démarrer.
 
    ```bash
    cd /var/www/kuizard
-   npm install @sentry/nextjs
+   # --legacy-peer-deps car @sentry/nextjs n'a pas encore mis à jour
+   # ses peerDependencies pour inclure Next 16 (au moment où ces lignes
+   # ont été écrites). Ça fonctionne très bien quand même.
+   npm install @sentry/nextjs --legacy-peer-deps
    ```
+
+   À l'avenir, quand Sentry aura publié une version avec Next 16 dans ses
+   peerDeps officielles, tu pourras retirer le flag et remettre `@sentry/nextjs`
+   dans le `package.json` (section dependencies).
 
 5. Rebuild + restart :
 

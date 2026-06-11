@@ -2,41 +2,42 @@
 // Sentry — Configuration côté navigateur
 // =============================================
 // Next.js charge automatiquement ce fichier dans le bundle client si présent.
+// Si @sentry/nextjs n'est pas installé ou si NEXT_PUBLIC_SENTRY_DSN n'est pas
+// défini, on no-op silencieusement.
 
-import * as Sentry from "@sentry/nextjs";
-
-if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
-  Sentry.init({
-    dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
-    environment: process.env.NODE_ENV,
-
-    // Performance monitoring (faible % pour ne pas exploser quota)
-    tracesSampleRate: 0.1,
-
-    // Session replay (super utile pour reproduire un bug visuel) — désactivé
-    // par défaut, à activer si tu veux la quota Replay de Sentry
-    replaysSessionSampleRate: 0,
-    replaysOnErrorSampleRate: 0,
-
-    enabled: process.env.NODE_ENV === "production",
-    sendDefaultPii: false,
-
-    initialScope: {
-      tags: {
-        app: "kuizard",
-        runtime: "browser",
-      },
-    },
-
-    // On filtre les bruits classiques côté browser
-    ignoreErrors: [
-      // Erreurs de bot crawler
-      "Non-Error promise rejection captured",
-      // Erreurs d'extension navigateur
-      "ResizeObserver loop limit exceeded",
-      "ResizeObserver loop completed with undelivered notifications",
-      // Cancellations user (back button, refresh)
-      "AbortError",
-    ],
-  });
+if (
+  typeof window !== "undefined" &&
+  process.env.NEXT_PUBLIC_SENTRY_DSN
+) {
+  // Import dynamique : Webpack inclura @sentry/nextjs UNIQUEMENT si l'env est
+  // configurée au build. Si le package n'est pas installé, le catch silencie.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  import("@sentry/nextjs" as any)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .then((Sentry: any) => {
+      Sentry.init({
+        dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+        environment: process.env.NODE_ENV,
+        tracesSampleRate: 0.1,
+        replaysSessionSampleRate: 0,
+        replaysOnErrorSampleRate: 0,
+        enabled: process.env.NODE_ENV === "production",
+        sendDefaultPii: false,
+        initialScope: {
+          tags: { app: "kuizard", runtime: "browser" },
+        },
+        ignoreErrors: [
+          "Non-Error promise rejection captured",
+          "ResizeObserver loop limit exceeded",
+          "ResizeObserver loop completed with undelivered notifications",
+          "AbortError",
+        ],
+      });
+    })
+    .catch((err) => {
+      console.warn(
+        "[sentry] @sentry/nextjs not installed — browser tracing skipped:",
+        err?.message ?? err
+      );
+    });
 }

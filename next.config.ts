@@ -1,5 +1,4 @@
 import type { NextConfig } from "next";
-import { withSentryConfig } from "@sentry/nextjs";
 
 const nextConfig: NextConfig = {
   experimental: {
@@ -50,27 +49,39 @@ const nextConfig: NextConfig = {
   },
 };
 
-// Wrap Sentry — uniquement si l'env contient SENTRY_DSN, sinon on retourne
-// la config Next telle quelle (utile en dev local sans monitoring).
-const finalConfig =
-  process.env.SENTRY_DSN || process.env.NEXT_PUBLIC_SENTRY_DSN
-    ? withSentryConfig(nextConfig, {
-        // Org + project Sentry (à configurer dans .env)
-        org: process.env.SENTRY_ORG,
-        project: process.env.SENTRY_PROJECT,
-        // Authentification pour l'upload de sourcemaps
-        authToken: process.env.SENTRY_AUTH_TOKEN,
-        // Silence le logging au build (sauf erreurs)
-        silent: !process.env.CI,
-        // Désactive les widgets (on n'utilise pas)
-        widenClientFileUpload: true,
-        // Tunneling : route /monitoring pour bypasser les bloqueurs de pub
-        tunnelRoute: "/monitoring",
-        // Hide source maps des bundles client (on les upload juste à Sentry)
-        sourcemaps: {
-          disable: false,
-        },
-      })
-    : nextConfig;
+// =============================================
+// Wrap Sentry (optionnel)
+// =============================================
+// On require Sentry seulement si :
+//   1. Le package est installé
+//   2. Un DSN est configuré dans l'env
+// Sinon on retourne la config Next telle quelle (utile en dev local).
+//
+// Le require sync (au lieu d'import) évite que le build casse si @sentry/nextjs
+// n'est pas installé. Et il est wrappé dans un try pour la même raison.
+function wrapWithSentryIfAvailable(config: NextConfig): NextConfig {
+  if (!process.env.SENTRY_DSN && !process.env.NEXT_PUBLIC_SENTRY_DSN) {
+    return config;
+  }
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { withSentryConfig } = require("@sentry/nextjs");
+    return withSentryConfig(config, {
+      org: process.env.SENTRY_ORG,
+      project: process.env.SENTRY_PROJECT,
+      authToken: process.env.SENTRY_AUTH_TOKEN,
+      silent: !process.env.CI,
+      widenClientFileUpload: true,
+      tunnelRoute: "/monitoring",
+      sourcemaps: { disable: false },
+    });
+  } catch (err) {
+    console.warn(
+      "[sentry] @sentry/nextjs not installed — Sentry wrapping skipped:",
+      (err as Error).message
+    );
+    return config;
+  }
+}
 
-export default finalConfig;
+export default wrapWithSentryIfAvailable(nextConfig);
