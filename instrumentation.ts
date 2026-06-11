@@ -3,16 +3,17 @@
 // =============================================
 // Si @sentry/nextjs n'est pas installé ou si SENTRY_DSN n'est pas configuré,
 // tout est no-op silencieusement.
+//
+// Note : on ne wire pas l'Edge runtime car le projet Kuizard n'a pas de
+// middleware Edge. L'init Edge nécessiterait un import statique de
+// @sentry/nextjs (eval interdit en Edge runtime), donc on évite.
 
 export async function register() {
   if (!process.env.SENTRY_DSN) return;
+  if (process.env.NEXT_RUNTIME !== "nodejs") return;
 
   try {
-    if (process.env.NEXT_RUNTIME === "nodejs") {
-      await import("./sentry.server.config");
-    } else if (process.env.NEXT_RUNTIME === "edge") {
-      await import("./sentry.edge.config");
-    }
+    await import("./sentry.server.config");
   } catch (err) {
     console.warn(
       "[sentry] register failed:",
@@ -28,7 +29,7 @@ export async function onRequestError(
 ) {
   if (!process.env.SENTRY_DSN) return;
   try {
-    // Import non analysable par les bundlers : eval() pour bypasser
+    // Import non analysable par les bundlers : new Function pour bypasser
     // l'analyse statique de Turbopack/Webpack.
     const pkgName = "@sentry/nextjs";
     const dynImport = new Function("p", "return import(p)") as (

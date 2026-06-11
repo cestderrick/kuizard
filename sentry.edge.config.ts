@@ -1,27 +1,14 @@
 // =============================================
-// Sentry — Configuration Edge runtime (middleware, route edge)
+// Sentry — Edge runtime (no-op)
 // =============================================
-// Chargé uniquement via instrumentation.ts si SENTRY_DSN est présent.
+// Le projet Kuizard n'utilise pas l'Edge runtime (pas de middleware Edge,
+// Auth.js v5 tourne en Node). On garde ce fichier vide pour respecter la
+// convention Next.js, sans déclencher d'init Sentry — ce qui éviterait de
+// toute façon les contraintes Edge (pas d'eval, pas de new Function).
+//
+// Si tu ajoutes un jour un middleware Edge et que tu veux y tracer les
+// erreurs, recopie le pattern de sentry.server.config.ts en utilisant
+// l'import statique de @sentry/nextjs (le package devra alors être
+// installé pour que le build passe en mode Edge).
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let Sentry: any = null;
-try {
-  // eslint-disable-next-line no-eval
-  const dynRequire = eval("require") as NodeRequire;
-  Sentry = dynRequire("@sentry/nextjs");
-} catch {
-  console.warn("[sentry] @sentry/nextjs not installed — edge tracing skipped");
-}
-
-if (Sentry) {
-  Sentry.init({
-    dsn: process.env.SENTRY_DSN,
-    environment: process.env.NODE_ENV,
-    tracesSampleRate: 0.1,
-    enabled: process.env.NODE_ENV === "production",
-    sendDefaultPii: false,
-    initialScope: {
-      tags: { app: "kuizard", runtime: "edge" },
-    },
-  });
-}
+export {};
