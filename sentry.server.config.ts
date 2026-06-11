@@ -35,3 +35,7 @@ if (Sentry) {
     ],
   });
 }
+
+// Marqueur d'export pour que TS considère ce fichier comme un module
+// (sinon `import("./sentry.server.config")` plante au typecheck).
+export {};
