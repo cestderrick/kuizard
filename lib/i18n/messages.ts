@@ -42,6 +42,10 @@ export type Messages = {
     faq: string;
     suggestion: string;
   };
+  legal_banner?: {
+    title: string;
+    body: string;
+  };
   common: {
     save: string;
     cancel: string;
@@ -377,6 +381,11 @@ const fr: Messages = {
     logout: "Se déconnecter",
     login: "Se connecter",
     signup: "Créer un compte",
+  },
+  legal_banner: {
+    title: "🇫🇷 Document en français",
+    body:
+      "Pour des raisons légales, les conditions générales et les politiques de Kuizard ne font foi qu'en version française. Si tu ne lis pas le français, tu peux utiliser ton navigateur pour traduire la page — mais seule la version française a valeur contractuelle.",
   },
   footer: {
     copy: "© {year} KUIZARD — Quizz personnalisés pour tes évènements",

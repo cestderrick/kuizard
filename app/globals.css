@@ -189,3 +189,151 @@
     @apply font-sans;
   }
 }
+
+/* ============================================
+   LEGAL-PROSE — Typographie pages légales
+   Remplace @tailwindcss/typography (non installé).
+   ============================================ */
+.legal-prose {
+  line-height: 1.75;
+  font-size: 0.975rem;
+  color: rgb(38, 38, 50);
+}
+.legal-prose > * + * {
+  margin-top: 1.25rem;
+}
+.legal-prose p {
+  margin-block: 1.25rem;
+}
+.legal-prose strong {
+  font-weight: 600;
+  color: var(--color-violet-deep);
+}
+.legal-prose em {
+  font-style: italic;
+}
+.legal-prose a {
+  color: var(--color-violet-primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+}
+.legal-prose a:hover {
+  color: var(--color-violet-deep);
+  text-decoration-thickness: 2px;
+}
+
+/* Hiérarchie des titres — beaucoup d'espace pour aérer */
+.legal-prose h2 {
+  font-family: var(--font-display, ui-serif), Georgia, serif;
+  font-weight: 700;
+  font-size: 1.625rem;
+  letter-spacing: 0.02em;
+  color: var(--color-violet-deep);
+  margin-top: 3.5rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid rgba(85, 35, 187, 0.12);
+}
+.legal-prose h2:first-child {
+  margin-top: 0;
+}
+.legal-prose h3 {
+  font-family: var(--font-display, ui-serif), Georgia, serif;
+  font-weight: 600;
+  font-size: 1.2rem;
+  color: var(--color-violet-primary);
+  margin-top: 2.25rem;
+  margin-bottom: 0.875rem;
+}
+
+/* Listes */
+.legal-prose ul,
+.legal-prose ol {
+  margin-block: 1.25rem;
+  padding-left: 1.5rem;
+}
+.legal-prose ul {
+  list-style: none;
+}
+.legal-prose ul > li {
+  position: relative;
+  padding-left: 0.25rem;
+  margin-block: 0.625rem;
+  line-height: 1.7;
+}
+.legal-prose ul > li::before {
+  content: "•";
+  position: absolute;
+  left: -1.1rem;
+  color: var(--color-violet-primary);
+  font-weight: 700;
+}
+.legal-prose ol {
+  list-style: decimal;
+}
+.legal-prose ol > li {
+  margin-block: 0.625rem;
+  line-height: 1.7;
+  padding-left: 0.25rem;
+}
+
+/* Code inline */
+.legal-prose code {
+  background: rgba(85, 35, 187, 0.08);
+  color: var(--color-violet-deep);
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  font-size: 0.875em;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+}
+
+/* Tables */
+.legal-prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-block: 1.5rem;
+  font-size: 0.9rem;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.legal-prose thead {
+  background: rgba(85, 35, 187, 0.06);
+}
+.legal-prose th {
+  text-align: left;
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+  color: var(--color-violet-deep);
+  border-bottom: 2px solid rgba(85, 35, 187, 0.15);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.legal-prose td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(85, 35, 187, 0.08);
+  vertical-align: top;
+  line-height: 1.5;
+}
+.legal-prose tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* hr séparateur */
+.legal-prose hr {
+  margin-block: 2.5rem;
+  border: none;
+  border-top: 1px solid rgba(85, 35, 187, 0.12);
+}
+
+/* Paragraphes d'intro (premier paragraphe direct enfant) */
+.legal-prose > p:first-child {
+  font-size: 1.05rem;
+  color: rgb(50, 50, 70);
+  padding: 1.25rem 1.5rem;
+  background: linear-gradient(135deg, rgba(85, 35, 187, 0.05), rgba(245, 158, 11, 0.04));
+  border-left: 3px solid var(--color-violet-primary);
+  border-radius: 8px;
+  margin-block: 0 2rem;
+}

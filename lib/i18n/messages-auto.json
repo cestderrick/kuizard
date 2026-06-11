@@ -16,6 +16,10 @@
       "login": "Se connecter",
       "signup": "Créer un compte"
     },
+    "legal_banner": {
+      "title": "🇫🇷 Document en français",
+      "body": "Pour des raisons légales, les conditions générales et les politiques de Kuizard ne font foi qu'en version française. Si tu ne lis pas le français, tu peux utiliser ton navigateur pour traduire la page — mais seule la version française a valeur contractuelle."
+    },
     "footer": {
       "copy": "© {year} KUIZARD — Quizz personnalisés pour tes évènements",
       "edited_by": "Édité par {brand} · Tous droits réservés",
@@ -355,6 +359,10 @@
       "logout": "Log out",
       "login": "Log in",
       "signup": "Create an account"
+    },
+    "legal_banner": {
+      "title": "🇫🇷 Document in French",
+      "body": "For legal reasons, Kuizard’s terms and conditions and policies are only valid in their French version. If you do not read French, you can use your browser to translate the page — but only the French version is legally binding."
     },
     "footer": {
       "copy": "© {year} KUIZARD — Customised quizzes for your events",
@@ -696,6 +704,10 @@
       "login": "Iniciar sesión",
       "signup": "Crear una cuenta"
     },
+    "legal_banner": {
+      "title": "🇫🇷 Documento en francés",
+      "body": "Por motivos legales, las condiciones generales y las políticas de Kuizard solo son válidas en su versión en francés. Si no entiendes el francés, puedes utilizar tu navegador para traducir la página, pero solo la versión en francés tiene valor contractual."
+    },
     "footer": {
       "copy": "© {year} KUIZARD — Concursos personalizados para tus eventos",
       "edited_by": "Publicado por {brand} · Todos los derechos reservados",
@@ -1035,6 +1047,10 @@
       "logout": "Esci",
       "login": "Accedi",
       "signup": "Crea un account"
+    },
+    "legal_banner": {
+      "title": "🇫🇷 Documento in francese",
+      "body": "Per motivi legali, le condizioni generali e le politiche di Kuizard fanno fede solo nella versione francese. Se non conosci il francese, puoi utilizzare il tuo browser per tradurre la pagina, ma solo la versione francese ha valore contrattuale."
     },
     "footer": {
       "copy": "© {anno} KUIZARD — Quiz personalizzati per i tuoi eventi",
@@ -1376,6 +1392,10 @@
       "login": "Anmelden",
       "signup": "Konto erstellen"
     },
+    "legal_banner": {
+      "title": "🇫🇷 Dokument auf Französisch",
+      "body": "Aus rechtlichen Gründen sind die Allgemeinen Geschäftsbedingungen und Richtlinien von Kuizard nur in der französischen Fassung verbindlich. Wenn du kein Französisch verstehst, kannst du die Seite über deinen Browser übersetzen lassen – vertraglich bindend ist jedoch ausschließlich die französische Fassung."
+    },
     "footer": {
       "copy": "© {Jahr} KUIZARD – Individuell gestaltete Quizze für deine Veranstaltungen",
       "edited_by": "Herausgegeben von {brand} · Alle Rechte vorbehalten",
@@ -1715,6 +1735,10 @@
       "logout": "Sair",
       "login": "Iniciar sessão",
       "signup": "Criar uma conta"
+    },
+    "legal_banner": {
+      "title": "🇫🇷 Documento em francês",
+      "body": "Por motivos legais, os termos e condições e as políticas da Kuizard só têm validade na versão em francês. Se não leres francês, podes usar o teu navegador para traduzir a página — mas apenas a versão em francês tem valor contratual."
     },
     "footer": {
       "copy": "© {year} KUIZARD — Questionários personalizados para os teus eventos",
@@ -2056,6 +2080,10 @@
       "login": "登录",
       "signup": "注册账户"
     },
+    "legal_banner": {
+      "title": "🇫🇷 法语文档",
+      "body": "出于法律原因，Kuizard的《一般条款》和《政策》仅以法语版本为准。如果你不读法语，可以使用浏览器翻译该页面——但只有法语版本具有法律效力。"
+    },
     "footer": {
       "copy": "© {year} KUIZARD — 专为您的活动定制的问答游戏",
       "edited_by": "由 {brand} 出版 · 版权所有",
@@ -2395,6 +2423,10 @@
       "logout": "Выйти",
       "login": "Войти",
       "signup": "Создать аккаунт"
+    },
+    "legal_banner": {
+      "title": "🇫🇷 Документ на французском языке",
+      "body": "В соответствии с законодательством, общие условия и политики Kuizard имеют юридическую силу только в французской версии. Если ты не владеешь французским языком, ты можешь воспользоваться функцией перевода в браузере, однако только французская версия имеет юридическую силу."
     },
     "footer": {
       "copy": "© {year} KUIZARD — Индивидуальные викторины для твоих мероприятий",
