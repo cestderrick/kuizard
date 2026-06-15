@@ -7,6 +7,7 @@ import { CookieBanner } from "@/components/legal/cookie-banner";
 import { getLocale } from "@/lib/i18n/get-locale";
 import { JsonLd } from "@/components/seo/json-ld";
 import { organizationSchema, websiteSchema } from "@/lib/seo/schemas";
+import { ThemeProvider } from "@/components/theme/theme-provider";
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
@@ -93,6 +94,7 @@ export default async function RootLayout({
   return (
     <html
       lang={locale}
+      suppressHydrationWarning
       className={cn("h-full", "antialiased", cinzel.variable, jakarta.variable, "font-sans", geist.variable)}
     >
       <body className="min-h-full flex flex-col font-sans">
@@ -101,17 +103,19 @@ export default async function RootLayout({
             Graph et d'afficher une éventuelle sitelinks search box. */}
         <JsonLd data={organizationSchema()} />
         <JsonLd data={websiteSchema()} />
-        {children}
-        <Toaster
-          position="top-center"
-          richColors
-          toastOptions={{
-            classNames: {
-              success: "bg-green-50 text-green-900 border-green-200",
-            },
-          }}
-        />
-        <CookieBanner />
+        <ThemeProvider>
+          {children}
+          <Toaster
+            position="top-center"
+            richColors
+            toastOptions={{
+              classNames: {
+                success: "bg-green-50 text-green-900 border-green-200",
+              },
+            }}
+          />
+          <CookieBanner />
+        </ThemeProvider>
       </body>
     </html>
   );
