@@ -63,16 +63,19 @@ export async function GET() {
               position: "relative",
             }}
           />
-          {/* Étoile dorée sur le chapeau */}
+          {/* Détail doré sur le chapeau — on évite ★ car satori a du mal
+              à trouver une police qui contient U+2605 et tente un download
+              Google Fonts qui retourne 400. Un "*" passe partout. */}
           <div
             style={{
-              fontSize: 48,
+              fontSize: 56,
               color: "#F59E0B",
-              marginTop: -85,
+              marginTop: -90,
               fontWeight: 900,
+              lineHeight: 1,
             }}
           >
-            ★
+            *
           </div>
           {/* Base / bord du chapeau */}
           <div

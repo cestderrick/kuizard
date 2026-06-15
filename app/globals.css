@@ -177,18 +177,16 @@
   --sidebar-border: oklch(1 0 0 / 12%);
   --sidebar-ring: oklch(0.556 0 0);
 
-  /* ====== Overrides palette marque Kuizard en dark ======
-     On garde violet-primary et gold identiques (couleurs d'accent),
-     mais on inverse les rôles fond/texte pour la lavender. */
+  /* ====== Palette marque Kuizard en dark — NON modifiée ======
+     Volontairement on NE modifie PAS les variables marque (lavender, night,
+     violet-deep, gold) en dark mode : elles sont utilisées sur des sections
+     qui sont always-dark par design (404, auth, CTA finale, admin, player TV).
+     Les inverser briserait le contraste sur ces sections.
 
-  /* Fond pâle clair → fond sombre profond avec teinte violet */
-  --color-lavender: #14102b;
-  /* Texte secondaire clair → teinte lavande sur fond sombre */
-  --color-lavender-2: #c4b5fd;
-  /* Texte primaire sombre → texte clair pour rester lisible */
-  --color-violet-deep: #f5f0ff;
-  /* Texte/accent foncé secondaire → version plus claire */
-  --color-violet-darker: #c4b5fd;
+     Le dark mode des pages normales (dashboard, légal, marketing) est obtenu
+     via les overrides shadcn (--background, --foreground) et via les règles
+     `.dark .bg-white` / `.dark .border` ci-dessous, qui ciblent les bg/borders
+     explicites des composants. */
 }
 
 /* ====== Composants legal-prose en dark ======

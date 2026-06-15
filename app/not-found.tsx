@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { Button } from "@/components/ui/button";
 import { KuizardLogo } from "@/components/brand/kuizard-logo";
 import { TopLocaleBar } from "@/components/i18n/top-locale-bar";
 
@@ -50,7 +49,7 @@ export default function NotFoundPage() {
       </Link>
 
       {/* Carte 404 */}
-      <section className="relative z-10 max-w-lg w-full text-center rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm px-6 py-10 md:px-10 md:py-12">
+      <section className="relative z-10 max-w-xl w-full text-center rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm px-6 py-10 md:px-10 md:py-12">
         <p
           className="text-xs uppercase tracking-[3px] font-semibold mb-3"
           style={{ color: "var(--color-gold)" }}
@@ -58,13 +57,13 @@ export default function NotFoundPage() {
           ✨ Erreur 404
         </p>
         <h1
-          className="font-display text-5xl md:text-6xl font-bold tracking-[3px] mb-2"
+          className="font-display text-4xl sm:text-5xl md:text-[3.25rem] font-bold tracking-normal mb-2 leading-tight break-words"
           style={{ color: "var(--color-lavender)" }}
         >
           Abracadabra…
         </h1>
         <p
-          className="font-display text-xl md:text-2xl mb-6 italic"
+          className="font-display text-lg md:text-2xl mb-6 italic"
           style={{ color: "var(--color-gold)" }}
         >
           cette page a disparu 🪄
@@ -79,25 +78,22 @@ export default function NotFoundPage() {
         </p>
 
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <Button
-            asChild
-            size="lg"
+          <Link
+            href="/"
+            className="inline-flex items-center justify-center rounded-lg px-6 py-3 font-bold text-sm transition hover:opacity-90"
             style={{
               backgroundColor: "var(--color-gold)",
               color: "var(--color-violet-deep)",
             }}
-            className="font-bold"
           >
-            <Link href="/">← Retour à l'accueil</Link>
-          </Button>
-          <Button
-            asChild
-            size="lg"
-            variant="outline"
-            className="font-semibold border-[var(--color-gold)]/40 text-[var(--color-lavender)] hover:bg-white/5"
+            ← Retour à l'accueil
+          </Link>
+          <Link
+            href="/aide"
+            className="inline-flex items-center justify-center rounded-lg px-6 py-3 font-semibold text-sm transition border border-[var(--color-gold)]/40 bg-transparent text-[#f5f0ff] hover:bg-white/10"
           >
-            <Link href="/aide">💬 Besoin d'aide ?</Link>
-          </Button>
+            💬 Besoin d'aide ?
+          </Link>
         </div>
       </section>
 
