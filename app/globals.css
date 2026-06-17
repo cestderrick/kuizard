@@ -2,6 +2,14 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+/* ============================================
+   THÈME PREMIUM (overlay optionnel)
+   ============================================
+   Pour ROLLBACK : commente la ligne suivante. Tu retrouves le design
+   d'origine instantanément (juste rebuild + restart).
+*/
+@import "./premium-theme.css";
+
 @custom-variant dark (&:is(.dark *));
 
 /* ============================================

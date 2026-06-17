@@ -1,0 +1,204 @@
+/* ============================================
+   KUIZARD — Theme Premium (overlay optionnel)
+   ============================================
+   Ce fichier override certaines variables et ajoute des effets visuels
+   pour donner un look "premium" / éditorial.
+
+   ROLLBACK : commente la ligne `@import "./premium-theme.css";` dans
+   globals.css pour revenir au design d'origine.
+*/
+
+:root {
+  /* ====== Palette enrichie ====== */
+  /* Violet plus profond et plus saturé, moins synthétique */
+  --color-violet-primary: #5b21b6;
+  --color-violet-deep: #2e1065;
+  --color-violet-darker: #3b1078;
+  --color-violet-light: #c4b5fd;
+
+  /* Nuits plus chaudes (légèrement violacées au lieu du noir-bleu) */
+  --color-night: #1a0b3d;
+  --color-night-2: #2a1655;
+
+  /* Or chaud, moins jaune pétant */
+  --color-gold: #d4a017;
+  --color-gold-light: #e9b943;
+  --color-gold-pale: #fef6dc;
+
+  /* Magenta plus subtil */
+  --color-magenta: #c026d3;
+
+  /* Fond crème éditorial au lieu du blanc cru */
+  --color-lavender: #f7f4ff;
+  --color-lavender-2: #ddd2f5;
+}
+
+/* ====== Texture grain subtile sur les fonds sombres ====== */
+.bg-\[var\(--color-night\)\],
+[style*="background: linear-gradient(160deg, #1F1B3A"],
+[style*="background: linear-gradient(160deg, #1a0b3d"] {
+  position: relative;
+}
+.bg-\[var\(--color-night\)\]::before,
+[style*="background: linear-gradient(160deg, #1F1B3A"]::before,
+[style*="background: linear-gradient(160deg, #1a0b3d"]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' /%3E%3CfeColorMatrix values='0 0 0 0 0.96  0 0 0 0 0.94  0 0 0 0 0.99  0 0 0 0.04 0' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' /%3E%3C/svg%3E");
+  pointer-events: none;
+  mix-blend-mode: overlay;
+  opacity: 0.7;
+  z-index: 0;
+}
+/* On s'assure que le contenu reste au-dessus */
+.bg-\[var\(--color-night\)\] > *,
+[style*="background: linear-gradient(160deg, #1F1B3A"] > *,
+[style*="background: linear-gradient(160deg, #1a0b3d"] > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ====== Cartes / panneaux premium ======
+   On cible toutes les `bg-white` avec un style "élevé" : ombre colorée + bord
+   subtil + arrondi un peu plus généreux. */
+.bg-white.rounded-2xl,
+.bg-white.rounded-xl {
+  box-shadow:
+    0 1px 2px rgba(46, 16, 101, 0.04),
+    0 10px 30px -10px rgba(91, 33, 182, 0.12),
+    0 2px 8px -2px rgba(91, 33, 182, 0.06);
+  border: 1px solid rgba(196, 181, 253, 0.25);
+  transition: box-shadow 250ms ease, transform 250ms ease;
+}
+/* Au hover, on élève légèrement et on accentue l'ombre */
+a:has(> .bg-white.rounded-2xl):hover .bg-white.rounded-2xl,
+button:has(.bg-white.rounded-2xl):hover .bg-white.rounded-2xl,
+.bg-white.rounded-2xl:hover {
+  box-shadow:
+    0 2px 4px rgba(46, 16, 101, 0.06),
+    0 20px 40px -10px rgba(91, 33, 182, 0.18),
+    0 4px 12px -2px rgba(91, 33, 182, 0.1);
+}
+
+/* ====== Cartes glassmorphism sur fonds sombres ======
+   Les cartes white/5 qui sont sur les sections sombres deviennent du verre. */
+.bg-white\/5,
+.bg-white\/10,
+[class*="rounded-2xl"][class*="bg-white/5"] {
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  background-color: rgba(255, 255, 255, 0.06) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+/* ====== Titres typographie raffinée ====== */
+h1.font-display,
+h2.font-display {
+  letter-spacing: 0.02em;
+  font-weight: 700;
+}
+h1.font-display {
+  /* Petit text-shadow doux pour donner du relief */
+  text-shadow: 0 2px 24px rgba(91, 33, 182, 0.08);
+}
+
+/* ====== Boutons or — gradient + glow ======
+   Les boutons qui utilisent `backgroundColor: var(--color-gold)` deviennent
+   des gradients dorés avec un halo léger. */
+[style*="backgroundColor: var(--color-gold)"],
+[style*="background-color: var(--color-gold)"] {
+  background: linear-gradient(135deg, var(--color-gold-light), var(--color-gold)) !important;
+  box-shadow:
+    0 4px 14px -2px rgba(212, 160, 23, 0.4),
+    0 0 0 1px rgba(212, 160, 23, 0.1);
+  transition: box-shadow 250ms ease, transform 200ms ease;
+}
+[style*="backgroundColor: var(--color-gold)"]:hover,
+[style*="background-color: var(--color-gold)"]:hover {
+  box-shadow:
+    0 6px 20px -2px rgba(212, 160, 23, 0.55),
+    0 0 0 1px rgba(212, 160, 23, 0.2);
+  transform: translateY(-1px);
+}
+
+/* ====== Bouton violet primary — pareil avec un gradient subtil ====== */
+[style*="backgroundColor: var(--color-violet-primary)"] {
+  background: linear-gradient(135deg, var(--color-violet-primary), var(--color-violet-deep)) !important;
+  box-shadow:
+    0 4px 14px -2px rgba(91, 33, 182, 0.35),
+    0 0 0 1px rgba(91, 33, 182, 0.1);
+  transition: box-shadow 250ms ease, transform 200ms ease;
+}
+[style*="backgroundColor: var(--color-violet-primary)"]:hover {
+  box-shadow:
+    0 6px 20px -2px rgba(91, 33, 182, 0.5),
+    0 0 0 1px rgba(91, 33, 182, 0.2);
+  transform: translateY(-1px);
+}
+
+/* ====== Section éditorial : crème léger sur les fonds light ======
+   On remplace le `bg-[var(--color-lavender)]` par un gradient ultra-subtil
+   qui apporte de la profondeur sans casser la lisibilité. */
+.bg-\[var\(--color-lavender\)\] {
+  background-image:
+    radial-gradient(ellipse 800px 400px at 20% 0%, rgba(196, 181, 253, 0.15), transparent 60%),
+    radial-gradient(ellipse 600px 300px at 80% 100%, rgba(212, 160, 23, 0.06), transparent 60%);
+  background-color: var(--color-lavender);
+}
+
+/* ====== Inputs — bordure plus douce, ring de focus doré ====== */
+input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]),
+textarea,
+select {
+  transition: border-color 200ms ease, box-shadow 200ms ease;
+}
+input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--color-violet-primary) !important;
+  box-shadow: 0 0 0 3px rgba(91, 33, 182, 0.15);
+}
+
+/* ====== Eyebrows (text-xs uppercase tracking) — un peu plus chic ====== */
+.tracking-\[3px\] {
+  letter-spacing: 0.18em !important;
+}
+.tracking-\[2px\] {
+  letter-spacing: 0.14em !important;
+}
+
+/* ====== Liens dans le corps prose — soulignement doré au hover ====== */
+.legal-prose a {
+  position: relative;
+  transition: color 200ms ease;
+}
+.legal-prose a:hover {
+  color: var(--color-gold) !important;
+  text-decoration-color: var(--color-gold);
+}
+
+/* ====== Section pricing/CTA finale — gradient or-violet plus riche ====== */
+[style*="linear-gradient(160deg, #1F1B3A"],
+[style*="linear-gradient(160deg, #1a0b3d"] {
+  background: linear-gradient(
+    160deg,
+    #1a0b3d 0%,
+    #2e1065 35%,
+    #5b21b6 70%,
+    #7c3aed 100%
+  ) !important;
+}
+
+/* ====== Smooth scroll global ====== */
+html {
+  scroll-behavior: smooth;
+}
+
+/* ====== Focus visible — ring violet plus visible ====== */
+*:focus-visible {
+  outline: 2px solid var(--color-violet-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}

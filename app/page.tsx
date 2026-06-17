@@ -7,6 +7,8 @@ import { KuizardLogo } from "@/components/brand/kuizard-logo";
 import { PublicStats } from "@/components/stats/public-stats";
 import { getMessages } from "@/lib/i18n/get-locale";
 import { TopLocaleBar } from "@/components/i18n/top-locale-bar";
+import { getActivePlans } from "@/lib/plans/config";
+import { formatStripeAmount } from "@/lib/stripe/client";
 
 // 👉 Pour activer une vidéo plus tard, remplace `null` par une URL (YouTube
 // embed, Vimeo, ou .mp4 direct). Exemples :
@@ -23,9 +25,13 @@ const STEP_ICONS = ["🪄", "📲", "🏆"];
 const USECASE_EMOJIS = ["💍", "🎉", "👰", "🍻", "👶", "🎓"];
 
 export default async function Home() {
-  const session = await auth();
+  const [session, messages, oneShotPlans, subscriptionPlans] = await Promise.all([
+    auth(),
+    getMessages(),
+    getActivePlans("one_shot"),
+    getActivePlans("subscription"),
+  ]);
   const isLoggedIn = !!session?.user;
-  const messages = await getMessages();
   const t = messages.home;
   const navT = messages.nav;
   const footerT = messages.footer;
@@ -316,30 +322,24 @@ export default async function Home() {
               "Gratuit pour essayer, à l'unité pour les événements, en abonnement pour les pros. Sans engagement."}
           </p>
 
-          <div className="grid gap-4 md:grid-cols-4">
-            {[
-              {
-                name: t.plan_discovery_name ?? "Découverte",
-                price: "0 €",
-                desc: t.plan_discovery_desc ?? "5 questions, 15 joueurs",
-              },
-              {
-                name: t.plan_essential_name ?? "Essentiel",
-                price: "5 €",
-                desc: t.plan_essential_desc ?? "20 questions, 30 joueurs",
-              },
-              {
-                name: t.plan_festive_name ?? "Festif ⭐",
-                price: "10 €",
-                desc: t.plan_festive_desc ?? "50 questions, 100 joueurs",
-                featured: true,
-              },
-              {
-                name: t.plan_magic_name ?? "Magique",
-                price: "15 €",
-                desc: t.plan_magic_desc ?? "Illimité, vidéos",
-              },
-            ].map((p) => (
+          <div
+            className={`grid gap-4 ${
+              oneShotPlans.length >= 4
+                ? "md:grid-cols-4"
+                : oneShotPlans.length === 3
+                ? "md:grid-cols-3"
+                : "md:grid-cols-2"
+            }`}
+          >
+            {oneShotPlans.map((plan) => ({
+              name: plan.name + (plan.isHighlighted ? " ⭐" : ""),
+              price:
+                plan.priceCents === 0
+                  ? "Gratuit"
+                  : formatStripeAmount(plan.priceCents),
+              desc: plan.description ?? plan.tagline ?? "",
+              featured: plan.isHighlighted,
+            })).map((p) => (
               <div
                 key={p.name}
                 className={`rounded-2xl p-5 ${
@@ -401,81 +401,71 @@ export default async function Home() {
             </p>
           </div>
 
-          <div className="grid gap-5 md:grid-cols-2 max-w-3xl mx-auto">
-            {/* Bar Essentiel */}
-            <div className="rounded-2xl bg-white/5 border border-white/15 p-6 flex flex-col gap-4 backdrop-blur-sm">
-              <div>
-                <p className="text-xs uppercase tracking-[2px] text-[var(--color-gold)] font-semibold">
-                  {t.pro_bar_essentiel_name ?? "Bar Essentiel"}
-                </p>
-                <p className="font-display text-3xl font-bold mt-1">
-                  {t.pro_bar_essentiel_price ?? "25 €"}
-                  <span className="text-base font-normal opacity-70">
-                    {" "}
-                    {t.pro_bar_essentiel_period ?? "/ mois"}
-                  </span>
-                </p>
-                <p className="text-xs opacity-70 mt-1">
-                  {t.pro_bar_essentiel_yearly ?? "ou 250 €/an (10 mois facturés)"}
-                </p>
-              </div>
-              <ul className="text-sm space-y-1.5">
-                <li>✓ {t.pro_bar_essentiel_f1 ?? "1 lieu"}</li>
-                <li>✓ {t.pro_bar_essentiel_f2 ?? "Quizz illimités"}</li>
-                <li>✓ {t.pro_bar_essentiel_f3 ?? "100 joueurs par session"}</li>
-                <li>✓ {t.pro_bar_essentiel_f4 ?? "Mode pilotage live + afficheur"}</li>
-                <li>✓ {t.pro_bar_essentiel_f5 ?? "Logo personnalisé"}</li>
-                <li>✓ {t.pro_bar_essentiel_f6 ?? "Classement avec lots"}</li>
-                <li>✓ {t.pro_bar_essentiel_f7 ?? "Conservation 6 mois"}</li>
-              </ul>
-            </div>
-
-            {/* Bar Pro */}
+          {subscriptionPlans.length === 0 ? (
+            <p className="text-center opacity-70 italic">
+              Aucun abonnement actif pour le moment.
+            </p>
+          ) : (
             <div
-              className="rounded-2xl p-6 flex flex-col gap-4 relative"
-              style={{
-                background: "linear-gradient(160deg, #F59E0B22, #D946EF22)",
-                border: "2px solid var(--color-gold)",
-              }}
+              className={`grid gap-5 max-w-3xl mx-auto ${
+                subscriptionPlans.length >= 2 ? "md:grid-cols-2" : "md:grid-cols-1"
+              }`}
             >
-              <span
-                className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-xs font-bold tracking-wider"
-                style={{
-                  backgroundColor: "var(--color-gold)",
-                  color: "var(--color-violet-deep)",
-                }}
-              >
-                {t.pro_bar_pro_badge ?? "MULTI-LIEUX"}
-              </span>
-              <div>
-                <p className="text-xs uppercase tracking-[2px] text-[var(--color-gold)] font-semibold">
-                  {t.pro_bar_pro_name ?? "Bar Pro"}
-                </p>
-                <p className="font-display text-3xl font-bold mt-1">
-                  {t.pro_bar_pro_price ?? "50 €"}
-                  <span className="text-base font-normal opacity-70">
-                    {" "}
-                    {t.pro_bar_pro_period ?? "/ mois"}
-                  </span>
-                </p>
-                <p className="text-xs opacity-70 mt-1">
-                  {t.pro_bar_pro_yearly ?? "ou 500 €/an (10 mois facturés)"}
-                </p>
-              </div>
-              <ul className="text-sm space-y-1.5">
-                <li>✓ {t.pro_bar_pro_f1 ?? "Lieux illimités"}</li>
-                <li>✓ {t.pro_bar_pro_f2 ?? "Quizz illimités"}</li>
-                <li>✓ {t.pro_bar_pro_f3 ?? "500 joueurs par session"}</li>
-                <li>✓ {t.pro_bar_pro_f4 ?? "Mode pilotage live + afficheur"}</li>
-                <li>✓ {t.pro_bar_pro_f5 ?? "Logo + sous-domaine + thème custom"}</li>
-                <li>✓ {t.pro_bar_pro_f6 ?? "Templates premium"}</li>
-                <li>
-                  ✓ <strong>{t.pro_bar_pro_f7_strong ?? "Stats avancées + export CSV"}</strong>
-                </li>
-                <li>✓ {t.pro_bar_pro_f8 ?? "Support prioritaire (< 24h)"}</li>
-              </ul>
+              {subscriptionPlans.map((plan) => (
+                <div
+                  key={plan.id}
+                  className={
+                    plan.isHighlighted
+                      ? "rounded-2xl p-6 flex flex-col gap-4 relative"
+                      : "rounded-2xl bg-white/5 border border-white/15 p-6 flex flex-col gap-4 backdrop-blur-sm"
+                  }
+                  style={
+                    plan.isHighlighted
+                      ? {
+                          background:
+                            "linear-gradient(160deg, #F59E0B22, #D946EF22)",
+                          border: "2px solid var(--color-gold)",
+                        }
+                      : undefined
+                  }
+                >
+                  {plan.isHighlighted && (
+                    <span
+                      className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-xs font-bold tracking-wider"
+                      style={{
+                        backgroundColor: "var(--color-gold)",
+                        color: "var(--color-violet-deep)",
+                      }}
+                    >
+                      ⭐ POPULAIRE
+                    </span>
+                  )}
+                  <div>
+                    <p className="text-xs uppercase tracking-[2px] text-[var(--color-gold)] font-semibold">
+                      {plan.name}
+                    </p>
+                    <p className="font-display text-3xl font-bold mt-1">
+                      {formatStripeAmount(plan.priceCents)}
+                      <span className="text-base font-normal opacity-70">
+                        {" "}
+                        / {plan.interval === "year" ? "an" : "mois"}
+                      </span>
+                    </p>
+                    {plan.tagline && (
+                      <p className="text-xs opacity-80 italic mt-1">
+                        {plan.tagline}
+                      </p>
+                    )}
+                  </div>
+                  {plan.description && (
+                    <p className="text-sm opacity-90 leading-relaxed">
+                      {plan.description}
+                    </p>
+                  )}
+                </div>
+              ))}
             </div>
-          </div>
+          )}
 
           <div className="mt-10 text-center text-sm">
             <p className="opacity-80">
