@@ -83,6 +83,7 @@ export default async function DashboardLayout({
                 href="/dashboard/suggestions"
                 label={navT.suggestions}
               />
+              <DashboardNavLink href="/tarifs" label="💳 Tarifs" />
               <DashboardNavLink href="/" label={navT.home} />
             </nav>
           </div>

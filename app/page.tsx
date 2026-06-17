@@ -146,6 +146,7 @@ export default async function Home() {
                   href="/dashboard/suggestions"
                   label={navT.suggestions}
                 />
+                <DashboardNavLink href="/tarifs" label="💳 Tarifs" />
               </nav>
             </div>
 

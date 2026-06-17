@@ -1,27 +1,21 @@
 /* ============================================
    KUIZARD — Theme Magic Show (overlay optionnel)
    ============================================
-   Direction visuelle "spectacle de magie" : spotlights, sparkles animés,
-   shimmer or sur les boutons, glow sur les cartes, transitions théâtrales.
+   Direction "spectacle de magie" : shimmer doré partout, sparkles
+   visibles, glow expressif, animations marquées.
 
    ROLLBACK : commente la ligne `@import "./magic-show-theme.css";` dans
-   globals.css pour revenir au design premium-only.
-
-   ============================================
-   Ordre des imports requis dans globals.css :
-     @import "./premium-theme.css";      <- base premium
-     @import "./magic-show-theme.css";   <- couche magic-show par-dessus
+   globals.css.
 */
 
-/* ====== Palette enrichie (couleurs plus saturées et chaudes) ====== */
+/* ====== Palette ====== */
 :root {
-  /* Or "scène" — plus chaud et plus lumineux */
   --color-gold: #e6b422;
   --color-gold-light: #f5cc3a;
   --color-gold-pale: #fff4d2;
-  /* Violet "rideau" — plus profond pour les fonds sombres */
-  --color-night: #14082e;
-  --color-night-2: #241050;
+  /* Nuits PROFONDES (PAS de violet trop clair sur les gradients) */
+  --color-night: #100527;
+  --color-night-2: #1c0a44;
 }
 
 /* ====== Animations clés ====== */
@@ -33,32 +27,59 @@
   0%, 100% { opacity: 0; transform: scale(0.5); }
   50% { opacity: 1; transform: scale(1); }
 }
-@keyframes spotlight-sweep {
-  0%, 100% { transform: translateX(-30%) rotate(-15deg); opacity: 0.3; }
-  50% { transform: translateX(30%) rotate(15deg); opacity: 0.7; }
-}
 @keyframes gold-pulse {
   0%, 100% {
     box-shadow:
-      0 4px 14px -2px rgba(230, 180, 34, 0.45),
-      0 0 0 1px rgba(230, 180, 34, 0.15),
-      0 0 30px -8px rgba(230, 180, 34, 0.4);
+      0 4px 14px -2px rgba(230, 180, 34, 0.5),
+      0 0 0 1px rgba(230, 180, 34, 0.2),
+      0 0 30px -8px rgba(230, 180, 34, 0.5);
   }
   50% {
     box-shadow:
-      0 4px 14px -2px rgba(230, 180, 34, 0.65),
-      0 0 0 1px rgba(230, 180, 34, 0.25),
-      0 0 50px -8px rgba(230, 180, 34, 0.7);
+      0 4px 14px -2px rgba(230, 180, 34, 0.7),
+      0 0 0 1px rgba(230, 180, 34, 0.3),
+      0 0 60px -8px rgba(230, 180, 34, 0.8);
   }
 }
-@keyframes star-float {
-  0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.4; }
-  50% { transform: translateY(-8px) rotate(180deg); opacity: 1; }
+@keyframes star-fall {
+  0% { transform: translateY(-100vh) rotate(0deg); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+}
+@keyframes float-up {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-12px); }
+}
+@keyframes glow-pulse {
+  0%, 100% { text-shadow: 0 0 12px rgba(230, 180, 34, 0.4), 0 0 24px rgba(230, 180, 34, 0.2); }
+  50% { text-shadow: 0 0 20px rgba(230, 180, 34, 0.7), 0 0 40px rgba(230, 180, 34, 0.4); }
+}
+@keyframes fade-in-up {
+  0% { opacity: 0; transform: translateY(30px); }
+  100% { opacity: 1; transform: translateY(0); }
 }
 
-/* ====== Titres ‹h1› "présentation" ======
-   Effet shimmer doré sur les titres principaux. */
-h1.font-display {
+/* ====== Gradient sombre uniforme — PAS de violet clair ====== */
+[style*="linear-gradient(160deg, #1F1B3A"],
+[style*="linear-gradient(160deg, #1a0b3d"],
+[style*="linear-gradient(160deg, #14082e"],
+[style*="linear-gradient(160deg, #100527"],
+[style*="background: linear-gradient(135deg, #3D1786"] {
+  background: linear-gradient(
+    160deg,
+    #100527 0%,
+    #1c0a44 40%,
+    #2a1559 70%,
+    #1c0a44 100%
+  ) !important;
+}
+
+/* ====== TITRES H1, H2 et H3 avec shimmer doré ======
+   On applique l'effet "trop beau" du logo Kuizard à TOUS les titres */
+h1.font-display,
+h2.font-display,
+h3.font-display {
   background-image: linear-gradient(
     100deg,
     var(--color-violet-deep) 0%,
@@ -73,10 +94,16 @@ h1.font-display {
   -webkit-text-fill-color: transparent;
   animation: shimmer 6s ease-in-out infinite;
 }
-/* Sur fond sombre, on inverse */
-.bg-\[var\(--color-night\)\] h1.font-display,
-[style*="linear-gradient(160deg, #1a0b3d"] h1.font-display,
-[style*="linear-gradient(160deg, #14082e"] h1.font-display {
+h2.font-display { animation-duration: 8s; animation-delay: -2s; }
+h3.font-display { animation-duration: 10s; animation-delay: -4s; }
+
+/* Sur fond sombre, inversion */
+[class*="bg-[var(--color-night)]"] h1.font-display,
+[class*="bg-[var(--color-night)]"] h2.font-display,
+[class*="bg-[var(--color-night)]"] h3.font-display,
+[style*="linear-gradient(160deg"] h1.font-display,
+[style*="linear-gradient(160deg"] h2.font-display,
+[style*="linear-gradient(160deg"] h3.font-display {
   background-image: linear-gradient(
     100deg,
     #f5f0ff 0%,
@@ -85,179 +112,49 @@ h1.font-display {
     #f5f0ff 70%,
     #f5f0ff 100%
   );
+  background-size: 200% auto;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-/* ====== Boutons or — shimmer continu plus marqué ====== */
+/* ====== Eyebrows (text-xs uppercase tracking) avec glow doré ====== */
+.text-\[var\(--color-gold\)\],
+[class*="text-[var(--color-gold)]"],
+.tracking-\[3px\].text-\[var\(--color-gold\)\] {
+  animation: glow-pulse 3s ease-in-out infinite;
+}
+
+/* ====== Boutons or — shimmer + pulse continu MARQUÉ ====== */
 [style*="backgroundColor: var(--color-gold)"],
 [style*="background-color: var(--color-gold)"] {
   background: linear-gradient(
     100deg,
     var(--color-gold-light),
     var(--color-gold),
+    #ffd54f,
+    var(--color-gold),
     var(--color-gold-light)
   ) !important;
-  background-size: 200% auto !important;
+  background-size: 300% auto !important;
   animation:
-    shimmer 4s linear infinite,
-    gold-pulse 3s ease-in-out infinite;
+    shimmer 3s linear infinite,
+    gold-pulse 2.5s ease-in-out infinite;
 }
 [style*="backgroundColor: var(--color-gold)"]:hover,
 [style*="background-color: var(--color-gold)"]:hover {
-  animation-duration: 2s, 1.5s;
-  transform: translateY(-2px) scale(1.02);
+  animation-duration: 1.5s, 1s;
+  transform: translateY(-3px) scale(1.04);
 }
 
-/* ====== Spotlight de scène sur les sections sombres ======
-   Deux rayons de lumière qui traversent doucement en fond. */
-section.bg-\[var\(--color-night\)\],
-section[style*="linear-gradient(160deg, #1a0b3d"],
-section[style*="linear-gradient(160deg, #14082e"] {
-  position: relative;
-  overflow: hidden;
-}
-section.bg-\[var\(--color-night\)\]::after,
-section[style*="linear-gradient(160deg, #1a0b3d"]::after,
-section[style*="linear-gradient(160deg, #14082e"]::after {
-  content: "";
-  position: absolute;
-  top: -50%;
-  left: 50%;
-  width: 60%;
-  height: 200%;
-  background: linear-gradient(
-    180deg,
-    rgba(230, 180, 34, 0.15) 0%,
-    rgba(230, 180, 34, 0.05) 40%,
-    transparent 70%
-  );
-  filter: blur(40px);
-  pointer-events: none;
-  animation: spotlight-sweep 12s ease-in-out infinite;
-  z-index: 0;
-}
-
-/* ====== Sparkles sur le hero ======
-   Sparkles dorés positionnés qui scintillent en boucle décalée. */
-.kuizard-hero-sparkles {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 1;
-}
-.kuizard-hero-sparkles::before,
-.kuizard-hero-sparkles::after {
-  content: "";
-  position: absolute;
-  background-image:
-    radial-gradient(2px 2px at 15% 20%, var(--color-gold-light), transparent),
-    radial-gradient(2px 2px at 35% 40%, var(--color-gold), transparent),
-    radial-gradient(2px 2px at 55% 25%, var(--color-gold-light), transparent),
-    radial-gradient(2px 2px at 75% 35%, var(--color-gold), transparent),
-    radial-gradient(2px 2px at 85% 60%, var(--color-gold-light), transparent),
-    radial-gradient(1px 1px at 25% 55%, var(--color-gold), transparent),
-    radial-gradient(1px 1px at 45% 70%, var(--color-gold-light), transparent),
-    radial-gradient(1px 1px at 65% 80%, var(--color-gold), transparent),
-    radial-gradient(1px 1px at 95% 30%, var(--color-gold-light), transparent),
-    radial-gradient(1px 1px at 5% 80%, var(--color-gold), transparent);
-  inset: 0;
-}
-.kuizard-hero-sparkles::before {
-  animation: twinkle 5s ease-in-out infinite;
-  animation-delay: 0s;
-}
-.kuizard-hero-sparkles::after {
-  animation: twinkle 5s ease-in-out infinite;
-  animation-delay: 2.5s;
-  filter: blur(0.3px);
-}
-
-/* ====== Cartes "tour de magie" ======
-   Bordures qui gradient gold + glow soft au hover. */
-.bg-white.rounded-2xl,
-.bg-white.rounded-xl {
-  position: relative;
-  border: 1px solid rgba(196, 181, 253, 0.25);
-}
-.bg-white.rounded-2xl::before,
-.bg-white.rounded-xl::before {
-  content: "";
-  position: absolute;
-  inset: -1px;
-  border-radius: inherit;
-  padding: 1px;
-  background: linear-gradient(
-    135deg,
-    transparent 30%,
-    rgba(230, 180, 34, 0.3) 50%,
-    transparent 70%
-  );
-  -webkit-mask:
-    linear-gradient(#fff 0 0) content-box,
-    linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  opacity: 0;
-  transition: opacity 350ms ease;
-  pointer-events: none;
-}
-.bg-white.rounded-2xl:hover::before,
-.bg-white.rounded-xl:hover::before,
-a:hover .bg-white.rounded-2xl::before {
-  opacity: 1;
-}
-
-/* ====== Cartes glassmorphism + bordure subtile or ====== */
-.bg-white\/5,
-.bg-white\/10,
-[class*="rounded-2xl"][class*="bg-white/5"] {
-  border-color: rgba(230, 180, 34, 0.15) !important;
-}
-
-/* ====== Eyebrows — typo plus serrée + or ====== */
-.text-\[var\(--color-violet-primary\)\] {
-  /* Eyebrows déjà violets, on les force en or sur fond clair */
-}
-[class*="text-[var(--color-gold)]"] {
-  text-shadow: 0 0 12px rgba(230, 180, 34, 0.25);
-}
-
-/* ====== Hero — texte plus dramatique ======
-   Plus d'espacement, drop shadow doré subtil sur les hero. */
-.font-display.text-6xl,
-.font-display.text-7xl,
-.font-display.text-5xl {
-  letter-spacing: 0.04em;
-  text-shadow:
-    0 0 20px rgba(91, 33, 182, 0.15),
-    0 1px 2px rgba(0, 0, 0, 0.05);
-}
-
-/* ====== Effets de transition entre sections ======
-   "Rideau" subtil — une fine bande dégradée or au bord des sections sombres. */
-section.bg-\[var\(--color-night\)\]::before,
-section[style*="linear-gradient(160deg, #1a0b3d"]:not([class*="bg-[var(--color-night)]"])::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    var(--color-gold) 30%,
-    var(--color-gold-light) 50%,
-    var(--color-gold) 70%,
-    transparent 100%
-  );
-  opacity: 0.5;
-  z-index: 2;
-}
-
-/* ====== Bouton primary violet — légère lueur violette ====== */
+/* ====== Bouton primary violet — sweep blanc au hover ====== */
 [style*="backgroundColor: var(--color-violet-primary)"] {
+  background: linear-gradient(135deg, var(--color-violet-primary), var(--color-violet-deep)) !important;
   position: relative;
   overflow: hidden;
+  box-shadow:
+    0 4px 14px -2px rgba(91, 33, 182, 0.5),
+    0 0 0 1px rgba(91, 33, 182, 0.15);
 }
 [style*="backgroundColor: var(--color-violet-primary)"]::after {
   content: "";
@@ -269,7 +166,7 @@ section[style*="linear-gradient(160deg, #1a0b3d"]:not([class*="bg-[var(--color-n
   background: linear-gradient(
     100deg,
     transparent 30%,
-    rgba(255, 255, 255, 0.2) 50%,
+    rgba(255, 255, 255, 0.3) 50%,
     transparent 70%
   );
   transition: left 700ms ease;
@@ -278,27 +175,112 @@ section[style*="linear-gradient(160deg, #1a0b3d"]:not([class*="bg-[var(--color-n
   left: 100%;
 }
 
-/* ====== Compteurs / chiffres — typo plus expressive ======
-   Tu sais ces gros chiffres style stats du dashboard. */
+/* ====== ÉTOILES QUI TOMBENT en background fixed ======
+   Effet "pluie de paillettes" visible et continu. */
+body::before {
+  content: "✦ ✧ ★ ✦ ✧ ★ ✦ ✧ ★ ✦";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  font-size: 14px;
+  color: rgba(230, 180, 34, 0.4);
+  pointer-events: none;
+  z-index: 1;
+  text-align: center;
+  letter-spacing: 20vw;
+  line-height: 35vh;
+  overflow: hidden;
+  animation: star-fall 15s linear infinite;
+  text-shadow: 0 0 8px rgba(230, 180, 34, 0.6);
+}
+/* Deuxième vague décalée */
+body::after {
+  content: "★ ✦ ★ ✧ ★ ✦ ★ ✧";
+  position: fixed;
+  top: 0;
+  left: 5vw;
+  width: 100vw;
+  height: 100vh;
+  font-size: 10px;
+  color: rgba(230, 180, 34, 0.25);
+  pointer-events: none;
+  z-index: 1;
+  text-align: center;
+  letter-spacing: 22vw;
+  line-height: 45vh;
+  overflow: hidden;
+  animation: star-fall 22s linear infinite;
+  animation-delay: -7s;
+  text-shadow: 0 0 6px rgba(230, 180, 34, 0.4);
+}
+
+/* ====== Cartes premium — bordure or au hover + float ====== */
+.bg-white.rounded-2xl,
+.bg-white.rounded-xl {
+  box-shadow:
+    0 1px 2px rgba(46, 16, 101, 0.04),
+    0 10px 30px -10px rgba(91, 33, 182, 0.15),
+    0 2px 8px -2px rgba(91, 33, 182, 0.08);
+  border: 1px solid rgba(196, 181, 253, 0.3);
+  transition: all 350ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.bg-white.rounded-2xl:hover,
+.bg-white.rounded-xl:hover,
+a:has(> .bg-white.rounded-2xl):hover .bg-white.rounded-2xl {
+  transform: translateY(-6px);
+  border-color: rgba(230, 180, 34, 0.5);
+  box-shadow:
+    0 2px 4px rgba(46, 16, 101, 0.08),
+    0 30px 50px -10px rgba(91, 33, 182, 0.25),
+    0 0 0 1px rgba(230, 180, 34, 0.2),
+    0 0 40px -8px rgba(230, 180, 34, 0.3);
+}
+
+/* ====== Cartes glassmorphism sur fonds sombres ====== */
+.bg-white\/5,
+.bg-white\/10,
+[class*="rounded-2xl"][class*="bg-white/5"] {
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  background-color: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(230, 180, 34, 0.2) !important;
+  transition: all 350ms ease;
+}
+.bg-white\/5:hover,
+.bg-white\/10:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(230, 180, 34, 0.4) !important;
+  transform: translateY(-4px);
+}
+
+/* ====== Float subtle sur les emojis dans les cartes ====== */
+.text-3xl[aria-hidden],
+.text-4xl[aria-hidden],
+.text-5xl[aria-hidden] {
+  display: inline-block;
+  animation: float-up 4s ease-in-out infinite;
+}
+
+/* ====== Fade-in-up sur sections au scroll ======
+   Note : sans IntersectionObserver, on applique sur tous les <section>
+   au chargement de la page. Effet "rideau qui se lève". */
+section {
+  animation: fade-in-up 0.8s ease-out backwards;
+}
+section:nth-child(2) { animation-delay: 0.1s; }
+section:nth-child(3) { animation-delay: 0.2s; }
+section:nth-child(4) { animation-delay: 0.3s; }
+
+/* ====== Stats / chiffres — gradient violet→or ====== */
 .font-display.text-4xl,
-.font-display.text-3xl {
+.font-display.text-3xl,
+.font-display.text-2xl {
   background: linear-gradient(
     135deg,
     var(--color-violet-deep) 0%,
-    var(--color-violet-primary) 100%
-  );
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-/* Sur fond sombre on bascule en or */
-.bg-\[var\(--color-night\)\] .font-display.text-4xl,
-.bg-\[var\(--color-night\)\] .font-display.text-3xl,
-[style*="background: linear-gradient(160deg, #1a0b3d"] .font-display.text-4xl,
-[style*="background: linear-gradient(160deg, #14082e"] .font-display.text-4xl {
-  background: linear-gradient(
-    135deg,
-    var(--color-gold-light) 0%,
+    var(--color-violet-primary) 50%,
     var(--color-gold) 100%
   );
   background-clip: text;
@@ -306,32 +288,14 @@ section[style*="linear-gradient(160deg, #1a0b3d"]:not([class*="bg-[var(--color-n
   -webkit-text-fill-color: transparent;
 }
 
-/* ====== Hover sur les Link cards (Dashboard, Mes paiements, Stats) ======
-   Effet d'élévation + bordure or qui apparait. */
-a:has(> .bg-white.rounded-2xl):hover .bg-white.rounded-2xl,
-a:has(> .bg-white.rounded-xl):hover .bg-white.rounded-xl {
-  transform: translateY(-3px);
-  border-color: rgba(230, 180, 34, 0.5);
+/* ====== Focus visible — ring doré ====== */
+*:focus-visible {
+  outline: 2px solid var(--color-gold) !important;
+  outline-offset: 3px !important;
+  border-radius: 6px;
 }
 
-/* ====== Page d'accueil — déco étoiles flottantes ======
-   Petites étoiles dorées flottantes en background fixed sur la home. */
-body::after {
-  content: "★ ✦ ✧ ★ ✦";
-  position: fixed;
-  inset: 0;
-  font-size: 12px;
-  letter-spacing: 80vh;
-  word-spacing: 30vw;
-  color: rgba(230, 180, 34, 0.05);
-  pointer-events: none;
-  z-index: 0;
-  text-align: center;
-  line-height: 50vh;
-  overflow: hidden;
-}
-
-/* ====== Performance : on respecte prefers-reduced-motion ====== */
+/* ====== prefers-reduced-motion (accessibilité) ====== */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -340,4 +304,6 @@ body::after {
     animation-iteration-count: 1 !important;
     transition-duration: 0s !important;
   }
+  body::before,
+  body::after { display: none; }
 }

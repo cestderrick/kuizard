@@ -8,6 +8,7 @@ import {
   type AdminTemplateState,
 } from "@/lib/actions/admin-templates";
 import { useActionToast } from "@/lib/hooks/use-action-toast";
+import { TemplateQuestionsEditor } from "@/components/admin/template-questions-editor";
 
 const INITIAL: AdminTemplateState = { ok: false };
 
@@ -165,16 +166,8 @@ export function TemplateForm({ template }: { template?: Template }) {
           />
         </Field>
 
-        <Field label="Questions (JSON)">
-          <textarea
-            name="questionsJson"
-            defaultValue={questionsJson}
-            required
-            rows={12}
-            spellCheck={false}
-            className="kz-input font-mono text-[11px]"
-          />
-        </Field>
+        {/* Éditeur de questions visuel (boutons, dropdowns) — plus de JSON */}
+        <TemplateQuestionsEditor initialJson={questionsJson} />
 
         <div className="grid grid-cols-2 gap-3">
           <Field label="Ordre affichage">
