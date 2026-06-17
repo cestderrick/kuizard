@@ -76,11 +76,60 @@
 }
 
 /* ====== Fix trait : .bg-[var(--color-lavender)] transparent ======
-   Les sections avec cette classe couvraient le pattern de points fixed
-   du body, créant un trait visible à chaque frontière. On les rend
-   transparentes pour que le pattern continu du body se voie partout. */
+   Plus de pattern de points sur body. Toutes les sections lavender
+   sont transparentes → fond uni continu sur toute la page. */
 .bg-\[var\(--color-lavender\)\] {
   background-color: transparent !important;
+}
+
+/* ====== Transitions douces light → dark ======
+   Ajoute un fade-in au TOP des sections sombres pour éviter le passage
+   brutal d'une zone claire à une zone très sombre. */
+section.bg-\[var\(--color-night\)\],
+section[style*="linear-gradient(160deg"],
+section[style*="linear-gradient(135deg, #3D1786"],
+section[style*="bg-gradient-to-br from-[var(--color-violet-deep)]"],
+section.bg-gradient-to-br {
+  position: relative;
+}
+section.bg-\[var\(--color-night\)\]::before,
+section[style*="linear-gradient(160deg"]:not(.no-fade)::before,
+section[style*="linear-gradient(135deg, #3D1786"]::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 80px;
+  background: linear-gradient(
+    180deg,
+    var(--color-lavender) 0%,
+    rgba(20, 5, 39, 0) 100%
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ====== Footer SiteFooter — fix dark mode ======
+   Le mot "KUIZARD" et certains textes utilisent --color-violet-deep qui
+   reste foncé en dark mode → invisible. On force des couleurs claires. */
+.dark footer[class*="bg-white"] {
+  background-color: oklch(0.18 0.03 280) !important;
+  border-color: rgba(167, 139, 250, 0.15) !important;
+  color: rgb(220, 210, 240) !important;
+}
+.dark footer[class*="bg-white"] .text-\[var\(--color-violet-deep\)\],
+.dark footer[class*="bg-white"] .font-display {
+  color: rgb(229, 220, 245) !important;
+}
+.dark footer[class*="bg-white"] .text-\[var\(--color-violet-primary\)\] {
+  color: rgb(196, 181, 253) !important;
+}
+.dark footer[class*="bg-white"] a:hover {
+  color: var(--color-gold-light) !important;
+}
+.dark footer[class*="bg-white"] .text-muted-foreground {
+  color: rgb(180, 170, 200) !important;
 }
 
 /* ====== TITRES H1, H2 et H3 avec shimmer doré ======

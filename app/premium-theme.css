@@ -33,23 +33,11 @@
   --color-lavender-2: #ede4d3;
 }
 
-/* ====== Motif global subtil — appliqué au body ======
-   Dot grid très discret. On NE met PAS le pattern sur chaque section
-   .bg-[var(--color-lavender)] séparément, sinon on a un trait visible
-   à la frontière entre 2 sections. Le body est sous toutes les sections,
-   donc le pattern reste continu même quand on passe par-dessus des
-   sections white/sombres. */
+/* ====== Fond uniforme global ======
+   Pas de pattern de dots — il créait un trait visible à chaque frontière
+   d'élément avec un bg opaque (video card, footer, etc.). Fond uni pur. */
 body {
   background-color: var(--color-lavender);
-  background-image:
-    radial-gradient(
-      circle at 1px 1px,
-      rgba(91, 33, 182, 0.07) 1px,
-      transparent 0
-    );
-  background-size: 28px 28px;
-  background-position: 0 0;
-  background-attachment: fixed;
 }
 
 /* ====== Texture grain sur les fonds sombres ====== */
