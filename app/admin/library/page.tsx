@@ -29,19 +29,26 @@ export default async function AdminLibraryPage() {
 
   return (
     <div className="flex flex-col gap-6 max-w-5xl">
-      <header>
-        <h1 className="font-display text-3xl tracking-wide text-[var(--color-lavender)]">
-          📚 Banque de quizz
-        </h1>
-        <p className="text-sm text-[var(--color-lavender-2)] opacity-80 mt-1">
-          Quizz <strong>complets</strong> (questions, réponses, ambiance) mis à
-          disposition des users pour duplication. Distinct des{" "}
-          <Link href="/admin/templates" className="underline">
-            Templates
-          </Link>{" "}
-          qui ne sont que des structures vides (couleurs, ambiance, sans
-          questions).
-        </p>
+      <header className="flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <h1 className="font-display text-3xl tracking-wide text-[var(--color-lavender)]">
+            📚 Banque de quizz
+          </h1>
+          <p className="text-sm text-[var(--color-lavender-2)] opacity-80 mt-1 max-w-2xl">
+            Quizz <strong>complets</strong> (questions, réponses, ambiance) mis
+            à disposition des users pour duplication. Distinct des{" "}
+            <Link href="/admin/templates" className="underline">
+              Templates
+            </Link>{" "}
+            qui ne sont que des structures vides.
+          </p>
+        </div>
+        <Link
+          href="/admin/library/import"
+          className="px-4 py-2 rounded-lg bg-[var(--color-gold)] text-[var(--color-violet-deep)] font-semibold text-sm hover:opacity-90"
+        >
+          📥 Import CSV
+        </Link>
       </header>
 
       <section className="rounded-2xl bg-[var(--color-night-2)] border border-[var(--color-gold)]/30 p-5">

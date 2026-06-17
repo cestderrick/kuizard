@@ -14,6 +14,7 @@ import {
 } from "@/lib/actions/participation";
 import { QuestionTimer } from "@/components/play/question-timer";
 import { TopLocaleBarClient } from "@/components/i18n/top-locale-bar-client";
+import { MyAnswersPanel } from "@/components/play/my-answers-panel";
 
 type Theme = {
   primaryColor: string;
@@ -331,6 +332,7 @@ export function QuizPlayer({
             canModify={resume?.canModify ?? false}
             onModify={() => setPhase("playing")}
             texts={texts}
+            participationId={participationId}
           />
         )}
       </div>
@@ -555,6 +557,7 @@ function ResultCard({
   canModify,
   onModify,
   texts,
+  participationId,
 }: {
   code: string;
   title: string;
@@ -564,6 +567,7 @@ function ResultCard({
   canModify: boolean;
   onModify: () => void;
   texts: PlayerTexts;
+  participationId: string | null;
 }) {
   const ratio = total > 0 ? Math.round((score / total) * 100) : 0;
   const message =
@@ -631,6 +635,12 @@ function ResultCard({
           {texts.leaderboard_button}
         </a>
       </div>
+
+      {/* Historique des réponses — visible uniquement quand le quizz
+          est clôturé (l'API gating renvoie un message d'attente sinon) */}
+      {participationId && (
+        <MyAnswersPanel code={code} participationId={participationId} />
+      )}
     </div>
   );
 }

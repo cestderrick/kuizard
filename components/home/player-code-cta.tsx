@@ -15,9 +15,15 @@ export function PlayerCodeCTA() {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    // Le code Kuizard fait exactement 6 caractères alphanumériques uppercase.
+    // L'alphabet exclut les caractères ambigus (0, O, 1, I, L).
     const cleaned = code.trim().toUpperCase().replace(/\s/g, "");
-    if (cleaned.length < 4 || cleaned.length > 10) {
-      setError("Code invalide. Vérifie ton affiche/QR.");
+    if (cleaned.length !== 6) {
+      setError("Le code doit faire 6 caractères. Vérifie ton affiche/QR.");
+      return;
+    }
+    if (!/^[A-Z0-9]+$/.test(cleaned)) {
+      setError("Le code doit contenir uniquement des lettres et chiffres.");
       return;
     }
     setError(null);
@@ -67,7 +73,7 @@ export function PlayerCodeCTA() {
                 className="text-sm mt-1"
                 style={{ color: "#e9d5ff" }}
               >
-                Le code à 6 chiffres est sur ton affiche, ton QR code ou ton
+                Le code à 6 caractères est sur ton affiche, ton QR code ou ton
                 invitation.
               </p>
             </div>
@@ -82,15 +88,21 @@ export function PlayerCodeCTA() {
                 autoCapitalize="characters"
                 autoComplete="off"
                 spellCheck={false}
-                placeholder="ABC123"
+                placeholder="K3PNRT"
                 value={code}
                 onChange={(e) => {
-                  setCode(e.target.value.toUpperCase());
+                  // Filtre : on ne garde que les caractères alphanumériques
+                  // et on uppercase à la volée pour matcher le format du code.
+                  const raw = e.target.value
+                    .toUpperCase()
+                    .replace(/[^A-Z0-9]/g, "");
+                  setCode(raw.slice(0, 6));
                   setError(null);
                 }}
-                maxLength={10}
+                maxLength={6}
+                pattern="[A-Z0-9]{6}"
                 className="rounded-xl px-4 py-3 text-lg font-bold font-mono tracking-[6px] text-center bg-white text-[var(--color-violet-deep)] border-2 border-transparent focus:outline-none focus:border-[var(--color-gold)] w-full sm:w-[180px]"
-                aria-label="Code du quizz"
+                aria-label="Code du quizz (6 caractères)"
               />
               <button
                 type="submit"
