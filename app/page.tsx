@@ -237,6 +237,11 @@ export default async function Home() {
             )}
           </div>
 
+          {/* PLAYER CTA — juste avant la vidéo pour un accès direct */}
+          <div className="w-full max-w-2xl mb-8">
+            <PlayerCodeCTA />
+          </div>
+
           <div className="w-full max-w-2xl">
             <VideoEmbed
               src={VIDEO_INTRO}
@@ -246,11 +251,6 @@ export default async function Home() {
           </div>
         </div>
       </section>
-
-      {/* ============================================ */}
-      {/* PLAYER CTA — "j'ai un code pour participer" */}
-      {/* ============================================ */}
-      <PlayerCodeCTA />
 
       {/* ============================================ */}
       {/* STATS PUBLIQUES (si activé par admin) */}

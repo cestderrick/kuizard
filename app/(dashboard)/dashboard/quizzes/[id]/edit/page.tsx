@@ -16,6 +16,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { QuizMetaForm } from "@/components/quiz/quiz-meta-form";
+import { CollapsibleSection } from "@/components/ui/collapsible-section";
 import { DeleteQuestionButton } from "@/components/quiz/delete-question-button";
 import { DeleteQuizButton } from "@/components/quiz/delete-quiz-button";
 import { ShareSection } from "@/components/quiz/share-section";
@@ -238,40 +239,35 @@ export default async function EditQuizPage({
       />
 
       {/* Metadata du quizz */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="font-display tracking-wide">
-            Paramètres du quizz
-          </CardTitle>
-          <CardDescription>
-            Titre, description, mode de pilotage.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <QuizMetaForm
-            quizId={quiz.id}
-            defaultTitle={quiz.title}
-            defaultDescription={quiz.description}
-            defaultMode={quiz.mode as "LIVE_MANUAL" | "SCHEDULED"}
-            defaultOpenAt={quiz.scheduledOpenAt}
-            defaultCloseAt={quiz.scheduledCloseAt}
-          />
-        </CardContent>
-      </Card>
+      <CollapsibleSection
+        icon="⚙️"
+        title="Paramètres du quizz"
+        description="Titre, description, mode de pilotage."
+        defaultOpen
+      >
+        <QuizMetaForm
+          quizId={quiz.id}
+          defaultTitle={quiz.title}
+          defaultDescription={quiz.description}
+          defaultMode={quiz.mode as "LIVE_MANUAL" | "SCHEDULED"}
+          defaultOpenAt={quiz.scheduledOpenAt}
+          defaultCloseAt={quiz.scheduledCloseAt}
+        />
+      </CollapsibleSection>
 
       {/* Liste des questions */}
-      <Card>
-        <CardHeader className="flex flex-row items-start justify-between gap-3">
-          <div>
-            <CardTitle className="font-display tracking-wide">
-              Questions ({quiz.questions.length})
-            </CardTitle>
-            <CardDescription>
-              {quiz.questions.length === 0
-                ? "Ajoute ta première question."
-                : "Clique sur une question pour l'éditer."}
-            </CardDescription>
-          </div>
+      <CollapsibleSection
+        icon="❓"
+        title="Questions"
+        description={
+          quiz.questions.length === 0
+            ? "Ajoute ta première question."
+            : "Clique sur une question pour l'éditer."
+        }
+        badge={`${quiz.questions.length}/${maxQuestions === Infinity ? "∞" : maxQuestions}`}
+        defaultOpen
+      >
+        <div className="mb-4 flex justify-end">
           <form action={createQuestionAction}>
             <input type="hidden" name="quizId" value={quiz.id} />
             <Button
@@ -284,8 +280,8 @@ export default async function EditQuizPage({
               + Nouvelle question
             </Button>
           </form>
-        </CardHeader>
-        <CardContent>
+        </div>
+        <div>
           {quiz.questions.length === 0 ? (
             <div className="flex flex-col items-center gap-3 py-10 text-center">
               <div className="text-5xl" aria-hidden>
@@ -330,86 +326,63 @@ export default async function EditQuizPage({
               ))}
             </ol>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </CollapsibleSection>
 
       {/* Photo de couverture */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="font-display tracking-wide">
-            🖼️ Photo de couverture
-          </CardTitle>
-          <CardDescription>
-            Affichée à l'arrivée des participants sur le quizz. Fortement
-            recommandée pour l'ambiance.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ImageUploader
-            currentUrl={quiz.coverImageUrl}
-            uploadAction={uploadCoverImageAction}
-            removeAction={removeCoverImageAction}
-            hiddenFields={{ quizId: quiz.id }}
-            emptyLabel="Glisse une photo de couverture ou clique pour parcourir"
-            previewHeightClass="h-56"
-          />
-        </CardContent>
-      </Card>
+      <CollapsibleSection
+        icon="🖼️"
+        title="Photo de couverture"
+        description="Affichée à l'arrivée des participants. Fortement recommandée pour l'ambiance."
+        badge={quiz.coverImageUrl ? "✓" : undefined}
+      >
+        <ImageUploader
+          currentUrl={quiz.coverImageUrl}
+          uploadAction={uploadCoverImageAction}
+          removeAction={removeCoverImageAction}
+          hiddenFields={{ quizId: quiz.id }}
+          emptyLabel="Glisse une photo de couverture ou clique pour parcourir"
+          previewHeightClass="h-56"
+        />
+      </CollapsibleSection>
 
       {/* Apparence visuelle */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="font-display tracking-wide">
-            🎨 Apparence
-          </CardTitle>
-          <CardDescription>
-            Couleur principale et ambiance — visible côté joueur sur la page de
-            jeu.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ThemeEditor
-            quizId={quiz.id}
-            defaultTheme={parseTheme(quiz.theme)}
-          />
-        </CardContent>
-      </Card>
+      <CollapsibleSection
+        icon="🎨"
+        title="Apparence"
+        description="Couleur principale et ambiance — visible côté joueur."
+      >
+        <ThemeEditor
+          quizId={quiz.id}
+          defaultTheme={parseTheme(quiz.theme)}
+        />
+      </CollapsibleSection>
 
       {/* Lots / récompenses */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="font-display tracking-wide">
-            🎁 Lots et récompenses
-          </CardTitle>
-          <CardDescription>
-            Associe un lot à un rang du classement. Visible sur la page de
-            classement publique. Tu peux les modifier à tout moment, même après
-            la fin du quizz.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <PrizesEditor
-            quizId={quiz.id}
-            defaultPrizes={parsePrizes(quiz.prizes)}
-          />
-        </CardContent>
-      </Card>
+      <CollapsibleSection
+        icon="🎁"
+        title="Lots et récompenses"
+        description="Associe un lot à un rang du classement. Modifiable à tout moment."
+        badge={
+          quiz.prizes && Array.isArray(quiz.prizes) && quiz.prizes.length > 0
+            ? `${quiz.prizes.length} lot${quiz.prizes.length > 1 ? "s" : ""}`
+            : undefined
+        }
+      >
+        <PrizesEditor
+          quizId={quiz.id}
+          defaultPrizes={parsePrizes(quiz.prizes)}
+        />
+      </CollapsibleSection>
 
       {/* Classement (mini, côté admin) */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="font-display tracking-wide">
-            🏆 Classement
-          </CardTitle>
-          <CardDescription>
-            Aperçu du top 3 des participants. Lien vers la page publique en
-            dessous.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <AdminLeaderboard code={quiz.code} />
-        </CardContent>
-      </Card>
+      <CollapsibleSection
+        icon="🏆"
+        title="Classement"
+        description="Aperçu du top 3 des participants. Lien vers la page publique."
+      >
+        <AdminLeaderboard code={quiz.code} />
+      </CollapsibleSection>
 
       {/* Panneau ADMIN — Banque de quizz (visible uniquement pour admin) */}
       {isAdmin && (

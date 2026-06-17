@@ -25,7 +25,7 @@ export function PlayerCodeCTA() {
   }
 
   return (
-    <section className="px-4 py-8 md:py-10 -mb-4">
+    <div className="w-full">
       <div className="max-w-4xl mx-auto">
         <div
           className="rounded-3xl p-6 md:p-8 shadow-2xl border-2 relative overflow-hidden"
@@ -47,18 +47,26 @@ export function PlayerCodeCTA() {
 
           <div className="relative z-10 flex flex-col md:flex-row gap-5 md:items-center">
             <div className="flex-1 min-w-0">
-              <p className="text-xs uppercase tracking-[3px] font-bold mb-2"
-                style={{ color: "var(--color-gold-light)" }}
+              <p
+                className="text-xs uppercase tracking-[3px] font-bold mb-2"
+                style={{ color: "#f5cc3a" }}
               >
                 🎩 Tu es invité à un quizz ?
               </p>
-              <h2
-                className="font-display text-xl md:text-2xl font-bold tracking-wide"
-                style={{ color: "#f5f0ff" }}
+              {/* Note : on évite class font-display car mon CSS magic-show
+                  applique un gradient violet→or sur les h2.font-display qui
+                  rend le texte invisible sur fond violet. Ici on utilise
+                  font-sans + couleur claire forcée. */}
+              <p
+                className="text-xl md:text-2xl font-bold tracking-tight"
+                style={{ color: "#ffffff" }}
               >
                 Saisis ton code et c'est parti
-              </h2>
-              <p className="text-sm opacity-80 mt-1" style={{ color: "#e9d5ff" }}>
+              </p>
+              <p
+                className="text-sm mt-1"
+                style={{ color: "#e9d5ff" }}
+              >
                 Le code à 6 chiffres est sur ton affiche, ton QR code ou ton
                 invitation.
               </p>
@@ -107,6 +115,6 @@ export function PlayerCodeCTA() {
           )}
         </div>
       </div>
-    </section>
+    </div>
   );
 }
