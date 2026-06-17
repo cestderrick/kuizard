@@ -44,10 +44,18 @@ const QUESTION_TYPE_LABEL: Record<string, string> = {
 
 export default async function EditQuizPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{
+    error?: string;
+    used?: string;
+    max?: string;
+    plan?: string;
+  }>;
 }) {
   const { id } = await params;
+  const sp = await searchParams;
   const quiz = await getMyQuiz(id);
   if (!quiz) notFound();
 
@@ -93,8 +101,50 @@ export default async function EditQuizPage({
     }
   }
 
+  // Bandeau d'erreur si la limite de questions est atteinte
+  const showLimitBanner = sp.error === "question_limit";
+  const limitUsed = sp.used ?? String(usedQuestions);
+  const limitMax = sp.max ?? String(maxQuestions);
+  const limitPlanName = sp.plan ?? plan.name;
+
   return (
     <div className="max-w-4xl mx-auto flex flex-col gap-6">
+      {showLimitBanner && (
+        <div className="rounded-2xl border-2 border-amber-300 bg-gradient-to-br from-amber-50 to-orange-50 p-5 shadow-md">
+          <div className="flex flex-col sm:flex-row gap-4 items-start">
+            <div className="text-3xl shrink-0">🪄</div>
+            <div className="flex-1">
+              <p className="font-display text-lg font-bold text-amber-900 mb-1">
+                Limite atteinte sur le plan {limitPlanName}
+              </p>
+              <p className="text-sm text-amber-900/80 mb-3">
+                Tu as utilisé <strong>{limitUsed}/{limitMax}</strong> questions
+                sur ce quizz. Pour en ajouter davantage, passe à un palier
+                supérieur — c'est instantané et tes questions existantes sont
+                conservées.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <Link
+                  href="/tarifs"
+                  className="inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-bold transition hover:opacity-90"
+                  style={{
+                    backgroundColor: "var(--color-gold)",
+                    color: "var(--color-violet-deep)",
+                  }}
+                >
+                  ✨ Voir les tarifs
+                </Link>
+                <Link
+                  href={`/dashboard/quizzes/${quiz.id}/edit`}
+                  className="inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-semibold border border-amber-300 text-amber-900 hover:bg-amber-100/50"
+                >
+                  Compris
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <Link

@@ -39,13 +39,16 @@ export async function createQuestionAction(formData: FormData) {
   const quiz = await assertOwnQuiz(quizId, session.user.id);
   if (!quiz) throw new Error("Quizz introuvable.");
 
-  // Gating : check du nombre max de questions du plan en cours
+  // Gating : check du nombre max de questions du plan en cours.
+  // On NE THROW PAS (Next.js 16 montrerait une page d'erreur générique
+  // côté browser). On redirige vers l'éditeur avec un param d'erreur,
+  // ce qui permet d'afficher un bandeau explicite et une CTA d'upgrade.
   const plan = await getEffectivePlan(quizId);
   const currentCount = await prisma.question.count({ where: { quizId } });
   const maxQuestions = plan.limits.maxQuestions ?? 5;
   if (currentCount >= maxQuestions) {
-    throw new Error(
-      `Limite atteinte : ${currentCount}/${maxQuestions} questions sur le plan "${plan.name}". Passe à un plan supérieur pour en ajouter davantage.`
+    redirect(
+      `/dashboard/quizzes/${quizId}/edit?error=question_limit&used=${currentCount}&max=${maxQuestions}&plan=${encodeURIComponent(plan.name)}`
     );
   }
 
