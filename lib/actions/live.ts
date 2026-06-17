@@ -20,7 +20,7 @@ import {
   scoreAnswer,
   isOptionArray,
   type Answer,
-} from "@/lib/actions/participation";
+} from "@/lib/quiz/scoring";
 
 async function getOwnedQuiz(quizId: string, userId: string) {
   return prisma.quiz.findFirst({

@@ -16,7 +16,6 @@ export function PlayerCodeCTA() {
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     // Le code Kuizard fait exactement 6 caractères alphanumériques uppercase.
-    // L'alphabet exclut les caractères ambigus (0, O, 1, I, L).
     const cleaned = code.trim().toUpperCase().replace(/\s/g, "");
     if (cleaned.length !== 6) {
       setError("Le code doit faire 6 caractères. Vérifie ton affiche/QR.");
@@ -41,7 +40,6 @@ export function PlayerCodeCTA() {
             borderColor: "var(--color-gold)",
           }}
         >
-          {/* Halo doré */}
           <div
             aria-hidden
             className="absolute -top-20 -right-20 w-[300px] h-[300px] rounded-full pointer-events-none"
@@ -59,20 +57,13 @@ export function PlayerCodeCTA() {
               >
                 🎩 Tu es invité à un quizz ?
               </p>
-              {/* Note : on évite class font-display car mon CSS magic-show
-                  applique un gradient violet→or sur les h2.font-display qui
-                  rend le texte invisible sur fond violet. Ici on utilise
-                  font-sans + couleur claire forcée. */}
               <p
                 className="text-xl md:text-2xl font-bold tracking-tight"
                 style={{ color: "#ffffff" }}
               >
-                Saisis ton code et c'est parti
+                Saisis ton code et c&apos;est parti
               </p>
-              <p
-                className="text-sm mt-1"
-                style={{ color: "#e9d5ff" }}
-              >
+              <p className="text-sm mt-1" style={{ color: "#e9d5ff" }}>
                 Le code à 6 caractères est sur ton affiche, ton QR code ou ton
                 invitation.
               </p>
@@ -88,7 +79,7 @@ export function PlayerCodeCTA() {
                 autoCapitalize="characters"
                 autoComplete="off"
                 spellCheck={false}
-                placeholder="K3PNRT"
+                placeholder="ex : K3PNRT"
                 value={code}
                 onChange={(e) => {
                   const raw = e.target.value
@@ -99,19 +90,26 @@ export function PlayerCodeCTA() {
                 }}
                 maxLength={6}
                 pattern="[A-Z0-9]{6}"
-                // Styles inline pour blinder contre tout conflit CSS (les
-                // règles magic-show sur .font-display + le -webkit-text-fill
-                // pouvaient rendre le texte transparent dans certains cas).
+                // Inline styles pour blinder contre tout conflit CSS magic-show.
+                // Pas de font-bold global ni letter-spacing élargi quand vide :
+                // sinon le placeholder ressemble à un vrai code tapé.
                 style={{
                   backgroundColor: "#ffffff",
                   color: "#2e1065",
                   WebkitTextFillColor: "#2e1065",
                   caretColor: "#5b21b6",
-                  letterSpacing: "0.35em",
-                  textIndent: "0.35em",
+                  letterSpacing: code ? "0.35em" : "0.05em",
+                  textIndent: code ? "0.35em" : "0",
+                  fontWeight: code ? 700 : 400,
                 }}
-                className="rounded-xl px-4 py-3 text-lg font-bold font-mono text-center border-2 border-transparent focus:outline-none focus:border-[var(--color-gold)] w-full sm:w-[180px] placeholder:text-zinc-400"
+                className="kz-code-input rounded-xl px-4 py-3 text-lg font-mono text-center border-2 border-transparent focus:outline-none focus:border-[var(--color-gold)] w-full sm:w-[200px]"
                 aria-label="Code du quizz (6 caractères)"
+              />
+              <style
+                dangerouslySetInnerHTML={{
+                  __html:
+                    ".kz-code-input::placeholder{color:#c4b5fd;font-weight:400;font-style:italic;letter-spacing:.04em;opacity:.85}",
+                }}
               />
               <button
                 type="submit"

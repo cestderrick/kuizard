@@ -12,80 +12,16 @@ import type { Prisma } from "@prisma/client";
 
 import { prisma } from "@/lib/db";
 import { getEffectivePlan } from "@/lib/plans/gating";
+// Helpers de scoring déplacés dans lib/quiz/scoring.ts car Next 16 exige que
+// tous les exports d'un fichier "use server" soient async — or scoreAnswer et
+// isOptionArray sont synchrones. On les ré-importe ici pour usage interne.
+import {
+  isOptionArray,
+  scoreAnswer,
+  type Answer,
+} from "@/lib/quiz/scoring";
 
 const COOKIE_PREFIX = "kz_play_"; // un cookie par quizId
-
-// -----------------------------------------------------
-// Helpers
-// -----------------------------------------------------
-
-/**
- * Normalise un texte pour comparaison "tolérante" : sans accents, en minuscule,
- * sans espaces de bordure.
- */
-function normalize(s: string): string {
-  return s
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .toLowerCase()
-    .trim();
-}
-
-export type StoredOption = { label: string; isCorrect: boolean };
-
-export type Answer =
-  | { type: "choice"; selectedIndices: number[] }
-  | { type: "text"; value: string };
-
-export function isOptionArray(v: unknown): v is StoredOption[] {
-  return (
-    Array.isArray(v) &&
-    v.every(
-      (o) =>
-        typeof o === "object" &&
-        o !== null &&
-        typeof (o as StoredOption).label === "string" &&
-        typeof (o as StoredOption).isCorrect === "boolean"
-    )
-  );
-}
-
-export function scoreAnswer(
-  type: string,
-  options: StoredOption[],
-  answer: Answer | undefined,
-  points: number
-): number {
-  if (!answer) return 0;
-
-  if (type === "TEXT") {
-    if (answer.type !== "text") return 0;
-    const expected = options[0]?.label ?? "";
-    return normalize(answer.value) === normalize(expected) ? points : 0;
-  }
-
-  if (answer.type !== "choice") return 0;
-  const selectedSet = new Set(answer.selectedIndices);
-  const correctSet = new Set(
-    options.map((o, i) => (o.isCorrect ? i : -1)).filter((i) => i >= 0)
-  );
-
-  if (type === "SINGLE_CHOICE" || type === "TRUE_FALSE") {
-    if (selectedSet.size !== 1) return 0;
-    const [picked] = selectedSet;
-    return correctSet.has(picked) ? points : 0;
-  }
-
-  if (type === "MULTIPLE_CHOICE") {
-    if (selectedSet.size !== correctSet.size) return 0;
-    for (const i of selectedSet) {
-      if (!correctSet.has(i)) return 0;
-    }
-    return points;
-  }
-
-  return 0;
-}
 
 // -----------------------------------------------------
 // CREATE PARTICIPATION (entrée joueur)
