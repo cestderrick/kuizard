@@ -219,6 +219,19 @@ model Quiz {
   // Mot de fin personnalisé (plan Magique)
   finalMessage      String?    @db.Text
 
+  // ====== Banque de quizz (admin) ======
+  // Distinct des templates (qui sont juste des structures/thèmes vides).
+  // Un quiz "isLibrary" est un quiz COMPLET (questions, réponses, photos)
+  // qu'un user peut DUPLIQUER dans son propre compte pour l'utiliser tel quel
+  // ou le modifier. Géré côté admin via /admin/quizzes ou le dashboard normal.
+  isLibrary         Boolean    @default(false)
+  // Description courte pour le browser library côté user
+  libraryDescription String?   @db.Text
+  // Tags pour le filtre côté user (array de string)
+  libraryTags       String[]   @default([])
+  // Langue principale du quiz library (pour filtre user)
+  libraryLanguage   String?
+
   status            QuizStatus @default(DRAFT)
   expiresAt         DateTime?
 

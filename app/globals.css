@@ -3,12 +3,24 @@
 @import "shadcn/tailwind.css";
 
 /* ============================================
-   THÈME PREMIUM (overlay optionnel)
+   THÈME PREMIUM (base optionnelle)
    ============================================
-   Pour ROLLBACK : commente la ligne suivante. Tu retrouves le design
-   d'origine instantanément (juste rebuild + restart).
+   Couleurs marque enrichies + glassmorphism + ombres premium.
+   Pour ROLLBACK total au design initial : commente cette ligne.
 */
 @import "./premium-theme.css";
+
+/* ============================================
+   THÈME MAGIC SHOW (overlay optionnel par-dessus premium)
+   ============================================
+   Direction "spectacle de magie" : spotlights, sparkles, shimmer or,
+   bordures glow sur les cartes, animations théâtrales.
+
+   ROLLBACK :
+   - Pour revenir au premium-only : commente la ligne ci-dessous
+   - Pour revenir au design d'origine : commente AUSSI la ligne du dessus
+*/
+@import "./magic-show-theme.css";
 
 @custom-variant dark (&:is(.dark *));
 

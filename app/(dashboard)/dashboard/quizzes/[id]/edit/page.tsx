@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { auth } from "@/auth";
+import { prisma } from "@/lib/db";
 import { getMyQuiz } from "@/lib/actions/quiz";
+import { QuizLibraryToggle } from "@/components/admin/quiz-library-toggle";
 import { createQuestionAction } from "@/lib/actions/question";
 import { Button } from "@/components/ui/button";
 import {
@@ -53,6 +56,42 @@ export default async function EditQuizPage({
   const limits = plan.limits;
   const usedQuestions = quiz.questions.length;
   const maxQuestions = limits.maxQuestions ?? 5;
+
+  // Pour le panneau admin Banque de quizz
+  const session = await auth();
+  let isAdmin = false;
+  let libraryFields = {
+    isLibrary: false,
+    libraryDescription: null as string | null,
+    libraryTags: [] as string[],
+    libraryLanguage: null as string | null,
+  };
+  if (session?.user?.id) {
+    const me = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { role: true },
+    });
+    isAdmin = me?.role === "ADMIN";
+    if (isAdmin) {
+      const fullQuiz = await prisma.quiz.findUnique({
+        where: { id: quiz.id },
+        select: {
+          isLibrary: true,
+          libraryDescription: true,
+          libraryTags: true,
+          libraryLanguage: true,
+        },
+      });
+      if (fullQuiz) {
+        libraryFields = {
+          isLibrary: fullQuiz.isLibrary,
+          libraryDescription: fullQuiz.libraryDescription,
+          libraryTags: fullQuiz.libraryTags,
+          libraryLanguage: fullQuiz.libraryLanguage,
+        };
+      }
+    }
+  }
 
   return (
     <div className="max-w-4xl mx-auto flex flex-col gap-6">
@@ -321,6 +360,34 @@ export default async function EditQuizPage({
           <AdminLeaderboard code={quiz.code} />
         </CardContent>
       </Card>
+
+      {/* Panneau ADMIN — Banque de quizz (visible uniquement pour admin) */}
+      {isAdmin && (
+        <Card className="border-[var(--color-gold)]/40 bg-[var(--color-gold)]/5">
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              📚 Banque de quizz
+              <span className="text-[10px] uppercase tracking-[2px] px-2 py-0.5 rounded-full bg-[var(--color-gold)] text-[var(--color-violet-deep)] font-bold">
+                Admin only
+              </span>
+            </CardTitle>
+            <CardDescription>
+              Mettre ce quizz à disposition de tous les users dans la banque
+              publique. Ils pourront le dupliquer dans leur compte pour
+              l'utiliser tel quel ou le modifier.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <QuizLibraryToggle
+              quizId={quiz.id}
+              isLibrary={libraryFields.isLibrary}
+              libraryDescription={libraryFields.libraryDescription}
+              libraryTags={libraryFields.libraryTags}
+              libraryLanguage={libraryFields.libraryLanguage}
+            />
+          </CardContent>
+        </Card>
+      )}
 
       {/* Zone danger */}
       <Card className="border-destructive/30">

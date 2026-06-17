@@ -39,13 +39,25 @@ export async function getActiveWeeklyFeatured(): Promise<WeeklyFeaturedDTO | nul
     select: {
       id: true,
       code: true,
-      color: true,
+      theme: true,
       coverImageUrl: true,
       status: true,
     },
   });
   // Si le quiz référencé a été supprimé ou n'est plus publié, on ne l'affiche pas
   if (!quiz || quiz.status === "DRAFT" || quiz.status === "ARCHIVED") return null;
+
+  // Extraction de la couleur primaire depuis le JSON `theme` (champ optionnel)
+  let quizColor: string | null = null;
+  if (
+    quiz.theme &&
+    typeof quiz.theme === "object" &&
+    !Array.isArray(quiz.theme)
+  ) {
+    const t = quiz.theme as Record<string, unknown>;
+    if (typeof t.primaryColor === "string") quizColor = t.primaryColor;
+    else if (typeof t.color === "string") quizColor = t.color;
+  }
 
   return {
     id: row.id,
@@ -57,7 +69,7 @@ export async function getActiveWeeklyFeatured(): Promise<WeeklyFeaturedDTO | nul
     ctaLabel: row.ctaLabel,
     quizId: quiz.id,
     quizCode: quiz.code,
-    quizColor: quiz.color,
+    quizColor,
     quizCoverImageUrl: quiz.coverImageUrl,
   };
 }
