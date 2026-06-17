@@ -8,6 +8,7 @@ import { TopLocaleBar } from "@/components/i18n/top-locale-bar";
 import { SiteFooter } from "@/components/legal/site-footer";
 import { JsonLd } from "@/components/seo/json-ld";
 import { breadcrumbSchema, productSchema } from "@/lib/seo/schemas";
+import { PublicNavbar } from "@/components/nav/public-navbar";
 import { getActivePlans } from "@/lib/plans/config";
 import {
   OneShotCompareTable,
@@ -45,6 +46,8 @@ export default async function TarifsPage() {
 
   return (
     <main className="min-h-screen bg-[var(--color-lavender)] relative">
+      {/* Navbar globale (visible uniquement quand connecté) */}
+      <PublicNavbar />
       <TopLocaleBar variant="light" />
 
       {/* Breadcrumb JSON-LD */}

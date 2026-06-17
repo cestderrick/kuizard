@@ -75,6 +75,14 @@
   ) !important;
 }
 
+/* ====== Fix trait : .bg-[var(--color-lavender)] transparent ======
+   Les sections avec cette classe couvraient le pattern de points fixed
+   du body, créant un trait visible à chaque frontière. On les rend
+   transparentes pour que le pattern continu du body se voie partout. */
+.bg-\[var\(--color-lavender\)\] {
+  background-color: transparent !important;
+}
+
 /* ====== TITRES H1, H2 et H3 avec shimmer doré ======
    On applique l'effet "trop beau" du logo Kuizard à TOUS les titres */
 h1.font-display,
