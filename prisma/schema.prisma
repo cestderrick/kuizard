@@ -73,6 +73,32 @@ model User {
 }
 
 // ====================================================
+// QUIZZ DE LA SEMAINE — featured public, gratuit, à lots
+// ====================================================
+// Géré entièrement côté admin. Un seul "Quizz de la semaine" actif à la fois
+// (le plus récent dont weekStart <= now() < weekEnd). Pas de paiement requis
+// pour y jouer. L'admin renseigne les lots à gagner et la deadline.
+
+model WeeklyFeaturedQuiz {
+  id          String   @id @default(cuid())
+  quizId      String   @unique  // référence au Quiz existant en BDD
+  title       String              // titre affiché sur la home (peut différer)
+  subtitle    String?             // accroche courte
+  prizesText  String              // descriptif libre des lots à gagner
+  weekStart   DateTime            // date d'ouverture
+  weekEnd     DateTime            // date de clôture (et tirage)
+
+  ctaLabel    String?  @default("🎁 Tenter ma chance")
+
+  featuredBy  String              // id de l'admin qui a featuré
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([weekStart, weekEnd])
+  @@index([quizId])
+}
+
+// ====================================================
 // CADEAUX ADMIN — plans offerts par un admin à un user
 // ====================================================
 // Permet à un admin d'offrir un palier payant à un user (typiquement pour

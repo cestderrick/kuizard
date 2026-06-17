@@ -73,6 +73,7 @@ export default async function AdminLayout({
               label="🔁 Abonnements"
             />
             <AdminNavLink href="/admin/templates" label="📝 Templates" />
+            <AdminNavLink href="/admin/weekly" label="🎁 Quizz de la semaine" />
             <AdminNavLink href="/admin/public-stats" label="🌍 Stats publiques" />
           </nav>
         </aside>

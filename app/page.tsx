@@ -14,6 +14,8 @@ import { NotificationBell } from "@/components/notifications/notification-bell";
 import { UserMenu } from "@/components/nav/user-menu";
 import { DashboardNavLink } from "@/components/nav/dashboard-nav-link";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
+import { getActiveWeeklyFeatured } from "@/lib/weekly/featured";
+import { WeeklyFeaturedCard } from "@/components/home/weekly-featured-card";
 
 // 👉 Pour activer une vidéo plus tard, remplace `null` par une URL (YouTube
 // embed, Vimeo, ou .mp4 direct). Exemples :
@@ -30,12 +32,14 @@ const STEP_ICONS = ["🪄", "📲", "🏆"];
 const USECASE_EMOJIS = ["💍", "🎉", "👰", "🍻", "👶", "🎓"];
 
 export default async function Home() {
-  const [session, messages, oneShotPlans, subscriptionPlans] = await Promise.all([
-    auth(),
-    getMessages(),
-    getActivePlans("one_shot"),
-    getActivePlans("subscription"),
-  ]);
+  const [session, messages, oneShotPlans, subscriptionPlans, weeklyFeatured] =
+    await Promise.all([
+      auth(),
+      getMessages(),
+      getActivePlans("one_shot"),
+      getActivePlans("subscription"),
+      getActiveWeeklyFeatured(),
+    ]);
   const isLoggedIn = !!session?.user;
   const t = messages.home;
   const navT = messages.nav;
@@ -254,6 +258,11 @@ export default async function Home() {
           <PublicStats variant="light" />
         </div>
       </section>
+
+      {/* ============================================ */}
+      {/* QUIZZ DE LA SEMAINE — affiché si activé côté admin */}
+      {/* ============================================ */}
+      {weeklyFeatured && <WeeklyFeaturedCard data={weeklyFeatured} />}
 
       {/* ============================================ */}
       {/* COMMENT ÇA MARCHE */}
