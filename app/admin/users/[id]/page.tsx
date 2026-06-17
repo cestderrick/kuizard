@@ -9,6 +9,8 @@ import { StartConvoForm } from "@/components/admin/start-convo-form";
 import {
   BanUserForm,
   UnbanUserForm,
+  PromoteUserForm,
+  DemoteUserForm,
 } from "@/components/admin/user-moderation-panel";
 import {
   GrantOneShotForm,
@@ -144,31 +146,32 @@ export default async function AdminUserDetailPage({
         <Stat label="Abos" value={user._count.subscriptions} />
       </section>
 
-      {/* ====== MODÉRATION (ban) ====== */}
-      <section className="rounded-2xl bg-[var(--color-night-2)] border border-red-900/30 p-5">
+      {/* ====== RÔLE ADMIN ====== */}
+      <section className="rounded-2xl bg-[var(--color-night-2)] border border-[var(--color-gold)]/30 p-5">
         <h2 className="font-display text-lg tracking-wide mb-4 text-[var(--color-lavender)]">
-          🛡 Modération
+          👑 Rôle administrateur
         </h2>
-        {user.bannedAt ? (
+        {user.role === "ADMIN" ? (
           <div className="flex flex-col gap-3">
-            <div className="rounded-lg p-3 bg-red-900/20 border border-red-700/40 text-sm">
-              <p className="font-semibold">
-                🚫 Compte banni le {fmt(user.bannedAt)}
+            <div className="rounded-lg p-3 bg-[var(--color-gold)]/10 border border-[var(--color-gold)]/30 text-sm">
+              <p className="font-semibold text-[var(--color-gold-light)]">
+                👑 Cet utilisateur est ADMIN
               </p>
-              {user.bannedReason && (
-                <p className="text-xs opacity-80 mt-1 italic">
-                  Raison : « {user.bannedReason} »
-                </p>
-              )}
+              <p className="text-xs opacity-80 mt-1">
+                Il a accès à toute la zone /admin (gestion users, plans,
+                paiements, audit log, etc.).
+              </p>
             </div>
-            <UnbanUserForm userId={user.id} />
+            <DemoteUserForm userId={user.id} userEmail={user.email} />
           </div>
+        ) : user.bannedAt ? (
+          <p className="text-xs italic opacity-70">
+            Impossible de promouvoir un utilisateur banni. Lève d'abord le ban
+            (tout en bas).
+          </p>
         ) : (
-          <BanUserForm userId={user.id} />
+          <PromoteUserForm userId={user.id} userEmail={user.email} />
         )}
-        <p className="text-[10px] opacity-50 mt-3">
-          Conformément aux CGU §4 — Modération et suspension.
-        </p>
       </section>
 
       {/* ====== CADEAUX ====== */}
@@ -217,6 +220,40 @@ export default async function AdminUserDetailPage({
           ✉️ Envoyer un message
         </h2>
         <StartConvoForm userId={user.id} />
+      </section>
+
+      {/* ====== ZONE DANGER — BAN tout en bas ====== */}
+      <section className="rounded-2xl bg-red-900/10 border-2 border-red-900/40 p-5 mt-8">
+        <h2 className="font-display text-lg tracking-wide mb-2 text-red-300 flex items-center gap-2">
+          ⚠️ Zone dangereuse
+        </h2>
+        <p className="text-xs opacity-70 mb-4">
+          Le bannissement empêche l'utilisateur de se reconnecter. Action
+          tracée dans l'audit log et réversible. CGU §4 — Modération et
+          suspension.
+        </p>
+        {user.bannedAt ? (
+          <div className="flex flex-col gap-3">
+            <div className="rounded-lg p-3 bg-red-900/20 border border-red-700/40 text-sm">
+              <p className="font-semibold">
+                🚫 Compte banni le {fmt(user.bannedAt)}
+              </p>
+              {user.bannedReason && (
+                <p className="text-xs opacity-80 mt-1 italic">
+                  Raison : « {user.bannedReason} »
+                </p>
+              )}
+            </div>
+            <UnbanUserForm userId={user.id} />
+          </div>
+        ) : user.role === "ADMIN" ? (
+          <p className="text-xs italic opacity-70 px-3 py-2 rounded bg-[rgba(0,0,0,0.25)]">
+            Impossible de bannir un admin. Retire d'abord son rôle ADMIN
+            (section « 👑 Rôle administrateur » plus haut).
+          </p>
+        ) : (
+          <BanUserForm userId={user.id} userEmail={user.email} />
+        )}
       </section>
     </div>
   );

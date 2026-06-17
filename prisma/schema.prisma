@@ -73,6 +73,45 @@ model User {
 }
 
 // ====================================================
+// AUDIT LOG ADMIN — trace toutes les actions des admins
+// ====================================================
+// Permet de savoir qui a fait quoi quand. Indispensable s'il y a plusieurs
+// admins. Aide aussi à diagnostiquer les ban abusifs, les cadeaux mal
+// attribués, etc. Conservation longue durée — on ne purge pas.
+
+model AdminAction {
+  id            String   @id @default(cuid())
+  adminId       String              // id de l'admin qui agit
+  adminEmail    String              // copie pour si l'admin est supprimé/renommé
+
+  // Type d'action — string libre pour faciliter l'ajout futur
+  // Conventions : "ban", "unban", "promote", "demote", "grant_one_shot",
+  // "grant_subscription", "revoke_grant", "weekly_set", "weekly_remove",
+  // "library_toggle", etc.
+  action        String
+
+  // Cible(s) de l'action (selon le type)
+  targetUserId  String?             // pour ban/unban/promote/grant/etc.
+  targetUserEmail String?           // copie
+  targetQuizId  String?             // pour weekly/library-toggle
+  targetEntityId String?            // grantId, plan slug, etc.
+
+  // Payload libre — détails de l'action (raison, ancienne valeur, etc.)
+  payload       Json?
+
+  // Contexte de la requête
+  ipAddress     String?
+  userAgent     String?
+
+  createdAt     DateTime @default(now())
+
+  @@index([adminId, createdAt(sort: Desc)])
+  @@index([action, createdAt(sort: Desc)])
+  @@index([targetUserId])
+  @@index([createdAt(sort: Desc)])
+}
+
+// ====================================================
 // QUIZZ DE LA SEMAINE — featured public, gratuit, à lots
 // ====================================================
 // Géré entièrement côté admin. Un seul "Quizz de la semaine" actif à la fois

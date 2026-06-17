@@ -16,6 +16,7 @@ import { DashboardNavLink } from "@/components/nav/dashboard-nav-link";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { getActiveWeeklyFeatured } from "@/lib/weekly/featured";
 import { WeeklyFeaturedCard } from "@/components/home/weekly-featured-card";
+import { PlayerCodeCTA } from "@/components/home/player-code-cta";
 
 // 👉 Pour activer une vidéo plus tard, remplace `null` par une URL (YouTube
 // embed, Vimeo, ou .mp4 direct). Exemples :
@@ -245,6 +246,11 @@ export default async function Home() {
           </div>
         </div>
       </section>
+
+      {/* ============================================ */}
+      {/* PLAYER CTA — "j'ai un code pour participer" */}
+      {/* ============================================ */}
+      <PlayerCodeCTA />
 
       {/* ============================================ */}
       {/* STATS PUBLIQUES (si activé par admin) */}

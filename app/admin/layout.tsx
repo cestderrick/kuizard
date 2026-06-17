@@ -50,6 +50,7 @@ export default async function AdminLayout({
           <nav className="flex flex-row md:flex-col gap-1 text-sm overflow-x-auto">
             <AdminNavLink href="/admin" label="📊 Tableau de bord" />
             <AdminNavLink href="/admin/users" label="👥 Utilisateurs" />
+            <AdminNavLink href="/admin/audit-log" label="📋 Audit log" />
             <AdminNavLink href="/admin/quizzes" label="🎩 Quizz" />
             <AdminNavLink
               href="/admin/suggestions"

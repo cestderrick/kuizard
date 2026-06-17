@@ -9,6 +9,7 @@ import { z } from "zod";
 
 import { prisma } from "@/lib/db";
 import { requireAdmin } from "@/lib/auth/require-admin";
+import { logAdminAction } from "@/lib/admin/audit";
 
 export type GrantState = {
   ok: boolean;
@@ -64,7 +65,7 @@ export async function grantOneShotPlanAction(
     };
   }
 
-  await prisma.grantedPlan.create({
+  const granted = await prisma.grantedPlan.create({
     data: {
       userId: parsed.data.userId,
       quizId: parsed.data.quizId,
@@ -73,6 +74,16 @@ export async function grantOneShotPlanAction(
       grantedBy: admin.id,
       reason: parsed.data.reason ?? null,
     },
+  });
+
+  await logAdminAction({
+    adminId: admin.id,
+    adminEmail: admin.email,
+    action: "grant_one_shot",
+    targetUserId: parsed.data.userId,
+    targetQuizId: parsed.data.quizId,
+    targetEntityId: granted.id,
+    payload: { planSlug: parsed.data.planSlug, reason: parsed.data.reason },
   });
 
   revalidatePath(`/admin/users/${parsed.data.userId}`);
@@ -122,7 +133,7 @@ export async function grantSubscriptionAction(
   const endsAt = new Date(startsAt);
   endsAt.setMonth(endsAt.getMonth() + parsed.data.durationMonths);
 
-  await prisma.grantedPlan.create({
+  const granted = await prisma.grantedPlan.create({
     data: {
       userId: parsed.data.userId,
       planSlug: parsed.data.planSlug,
@@ -131,6 +142,19 @@ export async function grantSubscriptionAction(
       endsAt,
       grantedBy: admin.id,
       reason: parsed.data.reason ?? null,
+    },
+  });
+
+  await logAdminAction({
+    adminId: admin.id,
+    adminEmail: admin.email,
+    action: "grant_subscription",
+    targetUserId: parsed.data.userId,
+    targetEntityId: granted.id,
+    payload: {
+      planSlug: parsed.data.planSlug,
+      durationMonths: parsed.data.durationMonths,
+      reason: parsed.data.reason,
     },
   });
 
@@ -178,6 +202,15 @@ export async function revokeGrantAction(
       revokedBy: admin.id,
       revokeReason: parsed.data.reason ?? null,
     },
+  });
+
+  await logAdminAction({
+    adminId: admin.id,
+    adminEmail: admin.email,
+    action: "revoke_grant",
+    targetUserId: grant.userId,
+    targetEntityId: grant.id,
+    payload: { reason: parsed.data.reason },
   });
 
   revalidatePath(`/admin/users/${grant.userId}`);
