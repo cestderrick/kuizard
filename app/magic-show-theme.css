@@ -87,15 +87,21 @@
    brutal d'une zone claire à une zone très sombre. S'applique aux
    sections ET aux footers (la home a un footer inline bg-night). */
 section.bg-\[var\(--color-night\)\],
-section[style*="linear-gradient(160deg"],
-section[style*="linear-gradient(135deg, #3D1786"],
+section[style*="linear-gradient(160deg, #1F"],
+section[style*="linear-gradient(160deg, #1a"],
+section[style*="linear-gradient(160deg, #10"],
+section[style*="linear-gradient(160deg, #14"],
+section[style*="linear-gradient(135deg, #3D"],
 section.bg-gradient-to-br,
 footer.bg-\[var\(--color-night\)\] {
   position: relative;
 }
 section.bg-\[var\(--color-night\)\]::before,
-section[style*="linear-gradient(160deg"]:not(.no-fade)::before,
-section[style*="linear-gradient(135deg, #3D1786"]::before,
+section[style*="linear-gradient(160deg, #1F"]::before,
+section[style*="linear-gradient(160deg, #1a"]::before,
+section[style*="linear-gradient(160deg, #10"]::before,
+section[style*="linear-gradient(160deg, #14"]::before,
+section[style*="linear-gradient(135deg, #3D"]::before,
 footer.bg-\[var\(--color-night\)\]::before {
   content: "";
   position: absolute;
@@ -156,13 +162,28 @@ h3.font-display {
 h2.font-display { animation-duration: 8s; animation-delay: -2s; }
 h3.font-display { animation-duration: 10s; animation-delay: -4s; }
 
-/* Sur fond sombre, inversion */
+/* Sur fond SOMBRE uniquement, inversion en texte clair.
+   On cible spécifiquement les anciennes gradient sombres avec des hex
+   commençant par #1F, #1a, #10, #14 (= night). Les nouveaux gradients
+   light utilisent rgba(...) et ne matchent pas ces sélecteurs. */
 [class*="bg-[var(--color-night)]"] h1.font-display,
 [class*="bg-[var(--color-night)]"] h2.font-display,
 [class*="bg-[var(--color-night)]"] h3.font-display,
-[style*="linear-gradient(160deg"] h1.font-display,
-[style*="linear-gradient(160deg"] h2.font-display,
-[style*="linear-gradient(160deg"] h3.font-display {
+[style*="linear-gradient(160deg, #1F"] h1.font-display,
+[style*="linear-gradient(160deg, #1F"] h2.font-display,
+[style*="linear-gradient(160deg, #1F"] h3.font-display,
+[style*="linear-gradient(160deg, #1a"] h1.font-display,
+[style*="linear-gradient(160deg, #1a"] h2.font-display,
+[style*="linear-gradient(160deg, #1a"] h3.font-display,
+[style*="linear-gradient(160deg, #10"] h1.font-display,
+[style*="linear-gradient(160deg, #10"] h2.font-display,
+[style*="linear-gradient(160deg, #10"] h3.font-display,
+[style*="linear-gradient(160deg, #14"] h1.font-display,
+[style*="linear-gradient(160deg, #14"] h2.font-display,
+[style*="linear-gradient(160deg, #14"] h3.font-display,
+[style*="linear-gradient(135deg, #3D"] h1.font-display,
+[style*="linear-gradient(135deg, #3D"] h2.font-display,
+[style*="linear-gradient(135deg, #3D"] h3.font-display {
   background-image: linear-gradient(
     100deg,
     #f5f0ff 0%,
