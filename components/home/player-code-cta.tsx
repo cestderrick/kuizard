@@ -91,8 +91,6 @@ export function PlayerCodeCTA() {
                 placeholder="K3PNRT"
                 value={code}
                 onChange={(e) => {
-                  // Filtre : on ne garde que les caractères alphanumériques
-                  // et on uppercase à la volée pour matcher le format du code.
                   const raw = e.target.value
                     .toUpperCase()
                     .replace(/[^A-Z0-9]/g, "");
@@ -101,7 +99,18 @@ export function PlayerCodeCTA() {
                 }}
                 maxLength={6}
                 pattern="[A-Z0-9]{6}"
-                className="rounded-xl px-4 py-3 text-lg font-bold font-mono tracking-[6px] text-center bg-white text-[var(--color-violet-deep)] border-2 border-transparent focus:outline-none focus:border-[var(--color-gold)] w-full sm:w-[180px]"
+                // Styles inline pour blinder contre tout conflit CSS (les
+                // règles magic-show sur .font-display + le -webkit-text-fill
+                // pouvaient rendre le texte transparent dans certains cas).
+                style={{
+                  backgroundColor: "#ffffff",
+                  color: "#2e1065",
+                  WebkitTextFillColor: "#2e1065",
+                  caretColor: "#5b21b6",
+                  letterSpacing: "0.35em",
+                  textIndent: "0.35em",
+                }}
+                className="rounded-xl px-4 py-3 text-lg font-bold font-mono text-center border-2 border-transparent focus:outline-none focus:border-[var(--color-gold)] w-full sm:w-[180px] placeholder:text-zinc-400"
                 aria-label="Code du quizz (6 caractères)"
               />
               <button
