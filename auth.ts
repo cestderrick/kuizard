@@ -41,6 +41,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         });
         if (!user || !user.passwordHash) return null;
 
+        // 2.bis. Bloquer les comptes bannis (CGU §4 — suspension/résiliation)
+        if (user.bannedAt) {
+          console.warn(
+            `[auth] tentative de login d'un compte banni : ${user.email}`
+          );
+          return null;
+        }
+
         // 3. Vérifier le mot de passe
         const ok = await verifyPassword(password, user.passwordHash);
         if (!ok) return null;

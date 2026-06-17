@@ -11,6 +11,7 @@ import { NotificationBell } from "@/components/notifications/notification-bell";
 import { DashboardNavLink } from "@/components/nav/dashboard-nav-link";
 import { UserMenu } from "@/components/nav/user-menu";
 import { MobileNav } from "@/components/nav/mobile-nav";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 
 // Force le rendu dynamique pour que getLocale() soit ré-évalué à chaque
 // requête au lieu de servir une version cachée.
@@ -86,8 +87,9 @@ export default async function DashboardLayout({
             </nav>
           </div>
 
-          {/* Bloc droit : cloche + menu user + burger mobile */}
-          <div className="flex items-center gap-1">
+          {/* Bloc droit : toggle dark + cloche + menu user + burger mobile */}
+          <div className="flex items-center gap-2">
+            <ThemeToggle variant="light" />
             <NotificationBell />
             <UserMenu
               name={session.user.name ?? null}

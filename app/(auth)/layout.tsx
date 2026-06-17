@@ -29,7 +29,7 @@ export default async function AuthLayout({
         className="pointer-events-none absolute -bottom-32 -right-24 w-[420px] h-[420px] rounded-full"
         style={{
           background:
-            "radial-gradient(circle, rgba(217, 70, 239, 0.30) 0%, transparent 70%)",
+            "radial-gradient(circle, rgba(212, 160, 23, 0.25) 0%, transparent 70%)",
         }}
       />
 

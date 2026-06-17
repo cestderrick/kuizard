@@ -83,6 +83,26 @@ export async function getEffectivePlan(
     if (plan) return toDTO(plan);
   }
 
+  // 1.bis. Abonnement OFFERT par un admin (GrantedPlan subscription actif) ?
+  //         Un cadeau admin a la même valeur qu'une subscription payée.
+  const now = new Date();
+  const giftedSub = await prisma.grantedPlan.findFirst({
+    where: {
+      userId: quiz.userId,
+      type: "subscription",
+      revokedAt: null,
+      startsAt: { lte: now },
+      OR: [{ endsAt: null }, { endsAt: { gt: now } }],
+    },
+    orderBy: { createdAt: "desc" },
+  });
+  if (giftedSub) {
+    const plan = await prisma.planConfig.findUnique({
+      where: { slug: giftedSub.planSlug },
+    });
+    if (plan) return toDTO(plan);
+  }
+
   // 2. Quizz payé via Payment ?
   if (quiz.isPaid) {
     const payment = await prisma.payment.findFirst({
@@ -96,6 +116,23 @@ export async function getEffectivePlan(
       });
       if (plan) return toDTO(plan);
     }
+  }
+
+  // 2.bis. Quiz OFFERT par un admin (GrantedPlan one_shot sur ce quiz) ?
+  const giftedOneShot = await prisma.grantedPlan.findFirst({
+    where: {
+      userId: quiz.userId,
+      quizId,
+      type: "one_shot",
+      revokedAt: null,
+    },
+    orderBy: { createdAt: "desc" },
+  });
+  if (giftedOneShot) {
+    const plan = await prisma.planConfig.findUnique({
+      where: { slug: giftedOneShot.planSlug },
+    });
+    if (plan) return toDTO(plan);
   }
 
   // 3. Fallback : plan free depuis la BDD ou hardcoded si pas seedé

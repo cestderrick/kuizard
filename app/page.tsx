@@ -13,6 +13,7 @@ import { formatStripeAmount } from "@/lib/stripe/client";
 import { NotificationBell } from "@/components/notifications/notification-bell";
 import { UserMenu } from "@/components/nav/user-menu";
 import { DashboardNavLink } from "@/components/nav/dashboard-nav-link";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 
 // 👉 Pour activer une vidéo plus tard, remplace `null` par une URL (YouTube
 // embed, Vimeo, ou .mp4 direct). Exemples :
@@ -144,7 +145,8 @@ export default async function Home() {
               </nav>
             </div>
 
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-2">
+              <ThemeToggle variant="light" />
               <NotificationBell />
               <UserMenu
                 name={session.user.name ?? null}
@@ -173,7 +175,7 @@ export default async function Home() {
           className="pointer-events-none absolute inset-0"
           style={{
             background:
-              "radial-gradient(circle at 20% 30%, rgba(124, 58, 237, 0.18) 0%, transparent 50%), radial-gradient(circle at 80% 70%, rgba(217, 70, 239, 0.15) 0%, transparent 50%)",
+              "radial-gradient(circle at 20% 30%, rgba(124, 58, 237, 0.22) 0%, transparent 50%), radial-gradient(circle at 80% 70%, rgba(212, 160, 23, 0.12) 0%, transparent 55%)",
           }}
         />
         <div className="relative max-w-5xl mx-auto px-6 py-20 md:py-28 text-center flex flex-col items-center">
@@ -494,7 +496,7 @@ export default async function Home() {
                     plan.isHighlighted
                       ? {
                           background:
-                            "linear-gradient(160deg, #F59E0B22, #D946EF22)",
+                            "linear-gradient(160deg, #F59E0B22, #7C3AED22)",
                           border: "2px solid var(--color-gold)",
                         }
                       : undefined

@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useTheme } from "next-themes";
 
 import { signoutAction } from "@/lib/actions/auth";
 
@@ -31,9 +30,6 @@ export function UserMenu({
 }) {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const { resolvedTheme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
 
   // Ferme au clic extérieur / Escape
   useEffect(() => {
@@ -150,30 +146,6 @@ export function UserMenu({
               />
             </div>
           )}
-
-          {/* Toggle dark mode — entre la zone principale et le logout */}
-          <div className="py-1.5 border-t border-violet-100">
-            <button
-              type="button"
-              role="menuitem"
-              onClick={() => {
-                if (!mounted) return;
-                setTheme(resolvedTheme === "dark" ? "light" : "dark");
-              }}
-              className="w-full flex items-center gap-3 px-4 py-2 text-sm text-foreground hover:bg-violet-50 transition"
-            >
-              <span aria-hidden>
-                {mounted ? (resolvedTheme === "dark" ? "☀️" : "🌙") : "🌓"}
-              </span>
-              <span>
-                {mounted
-                  ? resolvedTheme === "dark"
-                    ? "Mode clair"
-                    : "Mode sombre"
-                  : "Thème"}
-              </span>
-            </button>
-          </div>
 
           <div className="py-1.5 border-t border-violet-100">
             <form action={signoutAction}>
