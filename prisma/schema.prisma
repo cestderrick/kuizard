@@ -54,6 +54,14 @@ model User {
   // /accept-terms à la prochaine action. Format : "YYYY-MM-DD".
   lastAcceptedTermsVersion String?
 
+  // ====== Modération / Bannissement ======
+  // Conformément à la clause "Modération et suspension" des CGU §4, Projiat
+  // peut suspendre ou résilier un compte. On garde l'historique (qui a banni,
+  // quand, pourquoi) pour pouvoir justifier la sanction si besoin.
+  bannedAt         DateTime?
+  bannedReason     String?      // raison interne (visible dans l'admin)
+  bannedBy         String?      // id de l'admin qui a banni
+
   accounts         Account[]
   sessions         Session[]
   quizzes          Quiz[]
@@ -61,6 +69,48 @@ model User {
   payments         Payment[]
   subscriptions    Subscription[]
   termsAcceptances TermsAcceptance[]
+  grantedPlans     GrantedPlan[]
+}
+
+// ====================================================
+// CADEAUX ADMIN — plans offerts par un admin à un user
+// ====================================================
+// Permet à un admin d'offrir un palier payant à un user (typiquement pour
+// les amis ou les early adopters) sans passer par Stripe. Le code de gating
+// (lib/plans/gating.ts) regarde aussi cette table en plus de Payment et
+// Subscription pour déterminer les limites d'un quiz.
+
+model GrantedPlan {
+  id          String   @id @default(cuid())
+  userId      String
+  planSlug    String   // ex: "festive", "magic", "bar_essentiel", "bar_pro"
+
+  // "one_shot" → le plan s'applique à un quiz précis (quizId requis)
+  // "subscription" → durée en mois, le plan s'applique à TOUS les quiz du user
+  //                  pendant cette période (quizId = null)
+  type        String   // "one_shot" | "subscription"
+  quizId      String?  // pour one_shot uniquement
+
+  // Pour les subscriptions offertes : période de validité
+  startsAt    DateTime @default(now())
+  endsAt      DateTime?  // null = pas d'échéance (rare)
+
+  // Trace administrative
+  grantedBy   String     // id de l'admin qui a octroyé
+  reason      String?    // raison (note interne)
+  createdAt   DateTime   @default(now())
+
+  // Si l'admin révoque, on garde la ligne mais on marque la date
+  revokedAt   DateTime?
+  revokedBy   String?
+  revokeReason String?
+
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([quizId])
+  @@index([type])
+  @@index([endsAt])
 }
 
 enum AccountType {

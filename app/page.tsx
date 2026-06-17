@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { auth } from "@/auth";
+import { prisma } from "@/lib/db";
 import { Button } from "@/components/ui/button";
 import { VideoEmbed } from "@/components/home/video-embed";
 import { KuizardLogo } from "@/components/brand/kuizard-logo";
@@ -9,6 +10,9 @@ import { getMessages } from "@/lib/i18n/get-locale";
 import { TopLocaleBar } from "@/components/i18n/top-locale-bar";
 import { getActivePlans } from "@/lib/plans/config";
 import { formatStripeAmount } from "@/lib/stripe/client";
+import { NotificationBell } from "@/components/notifications/notification-bell";
+import { UserMenu } from "@/components/nav/user-menu";
+import { DashboardNavLink } from "@/components/nav/dashboard-nav-link";
 
 // 👉 Pour activer une vidéo plus tard, remplace `null` par une URL (YouTube
 // embed, Vimeo, ou .mp4 direct). Exemples :
@@ -36,6 +40,15 @@ export default async function Home() {
   const navT = messages.nav;
   const footerT = messages.footer;
   const year = new Date().getFullYear();
+
+  // Si connecté, on lit le rôle admin pour proposer l'accès admin dans le menu
+  const me = isLoggedIn
+    ? await prisma.user.findUnique({
+        where: { id: session!.user!.id },
+        select: { role: true },
+      })
+    : null;
+  const isAdmin = me?.role === "ADMIN";
 
   // Sections dynamiques construites depuis les traductions
   const STEPS = [
@@ -92,6 +105,64 @@ export default async function Home() {
   return (
     <div className="flex-1 flex flex-col relative">
       <TopLocaleBar variant="light" />
+
+      {/* ============================================ */}
+      {/* NAVBAR (visible uniquement quand connecté) */}
+      {/* ============================================ */}
+      {isLoggedIn && session?.user && (
+        <header className="sticky top-0 z-40 border-b border-violet-100 bg-white/85 backdrop-blur supports-[backdrop-filter]:bg-white/70">
+          <div className="mx-auto max-w-7xl flex items-center justify-between gap-3 px-4 py-2.5">
+            {/* Bloc gauche : logo + nav principale (desktop) */}
+            <div className="flex items-center gap-4 min-w-0">
+              <Link
+                href="/dashboard"
+                className="inline-flex items-center gap-2 shrink-0"
+                style={{ color: "var(--color-violet-deep)" }}
+                aria-label="Dashboard Kuizard"
+              >
+                <KuizardLogo size={28} />
+                <span className="font-display text-lg font-bold tracking-[2px] hidden xs:inline">
+                  Kuizard
+                </span>
+              </Link>
+
+              <nav className="hidden md:flex items-center gap-1">
+                <DashboardNavLink href="/dashboard" label={navT.dashboard} exact />
+                <DashboardNavLink
+                  href="/dashboard/quizzes"
+                  label={navT.quizzes}
+                />
+                <DashboardNavLink href="/dashboard/stats" label={navT.stats} />
+                <DashboardNavLink
+                  href="/dashboard/messages"
+                  label={navT.messages}
+                />
+                <DashboardNavLink
+                  href="/dashboard/suggestions"
+                  label={navT.suggestions}
+                />
+              </nav>
+            </div>
+
+            <div className="flex items-center gap-1">
+              <NotificationBell />
+              <UserMenu
+                name={session.user.name ?? null}
+                email={session.user.email ?? ""}
+                isAdmin={isAdmin}
+                labels={{
+                  profile: navT.profile,
+                  subscription: navT.subscription,
+                  payments: navT.payments,
+                  promos: navT.promos,
+                  admin: navT.admin,
+                  logout: navT.logout,
+                }}
+              />
+            </div>
+          </div>
+        </header>
+      )}
 
       {/* ============================================ */}
       {/* HERO */}

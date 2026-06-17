@@ -9,31 +9,45 @@
 */
 
 :root {
-  /* ====== Palette enrichie ====== */
-  /* Violet plus profond et plus saturé, moins synthétique */
+  /* ====== Palette enrichie — pas de rose ====== */
+  /* Violet plus profond et plus saturé */
   --color-violet-primary: #5b21b6;
   --color-violet-deep: #2e1065;
   --color-violet-darker: #3b1078;
   --color-violet-light: #c4b5fd;
 
-  /* Nuits plus chaudes (légèrement violacées au lieu du noir-bleu) */
+  /* Nuits chaudes (violet profond) */
   --color-night: #1a0b3d;
   --color-night-2: #2a1655;
 
-  /* Or chaud, moins jaune pétant */
+  /* Or chaud */
   --color-gold: #d4a017;
   --color-gold-light: #e9b943;
   --color-gold-pale: #fef6dc;
 
-  /* Magenta plus subtil */
-  --color-magenta: #c026d3;
+  /* Magenta éteint */
+  --color-magenta: #a855f7;
 
-  /* Fond crème éditorial au lieu du blanc cru */
-  --color-lavender: #f7f4ff;
-  --color-lavender-2: #ddd2f5;
+  /* Fond ivoire neutre (PAS rose) — légère teinte chaude */
+  --color-lavender: #faf8f3;
+  --color-lavender-2: #ede4d3;
 }
 
-/* ====== Texture grain subtile sur les fonds sombres ====== */
+/* ====== Motif global subtil sur les fonds clairs ======
+   Dot grid très discret type "papier millimétré magique". */
+.bg-\[var\(--color-lavender\)\] {
+  background-color: var(--color-lavender);
+  background-image:
+    radial-gradient(
+      circle at 1px 1px,
+      rgba(91, 33, 182, 0.08) 1px,
+      transparent 0
+    );
+  background-size: 24px 24px;
+  background-position: 0 0;
+}
+
+/* ====== Texture grain sur les fonds sombres ====== */
 .bg-\[var\(--color-night\)\],
 [style*="background: linear-gradient(160deg, #1F1B3A"],
 [style*="background: linear-gradient(160deg, #1a0b3d"] {
@@ -45,13 +59,13 @@
   content: "";
   position: absolute;
   inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' /%3E%3CfeColorMatrix values='0 0 0 0 0.96  0 0 0 0 0.94  0 0 0 0 0.99  0 0 0 0.04 0' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' /%3E%3C/svg%3E");
+  background-image:
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' /%3E%3CfeColorMatrix values='0 0 0 0 0.95  0 0 0 0 0.92  0 0 0 0 1  0 0 0 0.05 0' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' /%3E%3C/svg%3E");
   pointer-events: none;
   mix-blend-mode: overlay;
-  opacity: 0.7;
+  opacity: 0.6;
   z-index: 0;
 }
-/* On s'assure que le contenu reste au-dessus */
 .bg-\[var\(--color-night\)\] > *,
 [style*="background: linear-gradient(160deg, #1F1B3A"] > *,
 [style*="background: linear-gradient(160deg, #1a0b3d"] > * {
@@ -59,9 +73,64 @@
   z-index: 1;
 }
 
-/* ====== Cartes / panneaux premium ======
-   On cible toutes les `bg-white` avec un style "élevé" : ombre colorée + bord
-   subtil + arrondi un peu plus généreux. */
+/* ====== Magic stars / sparkles sur les sections sombres ======
+   Petites étoiles dorées scintillantes en background fixed. */
+section.bg-\[var\(--color-night\)\],
+section[style*="linear-gradient(160deg, #1a0b3d"],
+section[style*="linear-gradient(160deg, #1F1B3A"] {
+  background-image:
+    /* étoiles dorées en plusieurs tailles */
+    radial-gradient(2px 2px at 20% 30%, rgba(212, 160, 23, 0.7), transparent),
+    radial-gradient(1px 1px at 60% 70%, rgba(233, 185, 67, 0.6), transparent),
+    radial-gradient(1.5px 1.5px at 80% 10%, rgba(212, 160, 23, 0.5), transparent),
+    radial-gradient(1px 1px at 30% 80%, rgba(233, 185, 67, 0.7), transparent),
+    radial-gradient(2px 2px at 90% 50%, rgba(212, 160, 23, 0.4), transparent),
+    radial-gradient(1px 1px at 10% 60%, rgba(212, 160, 23, 0.6), transparent),
+    radial-gradient(1.5px 1.5px at 50% 20%, rgba(233, 185, 67, 0.5), transparent),
+    radial-gradient(1px 1px at 70% 40%, rgba(212, 160, 23, 0.7), transparent),
+    /* gradient de base déjà défini par le style inline */;
+  background-size:
+    400px 400px,
+    320px 320px,
+    480px 480px,
+    280px 280px,
+    360px 360px,
+    420px 420px,
+    300px 300px,
+    340px 340px;
+  background-repeat: repeat;
+}
+
+/* ====== Blobs animés sur le hero ======
+   On ajoute des "blobs" violets/dorés qui flottent doucement derrière le hero. */
+@keyframes blob-float-1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(30px, -20px) scale(1.05); }
+  66% { transform: translate(-20px, 20px) scale(0.95); }
+}
+@keyframes blob-float-2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(-30px, 20px) scale(0.95); }
+  66% { transform: translate(20px, -20px) scale(1.05); }
+}
+.kuizard-blob-violet {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(124, 58, 237, 0.35), transparent 70%);
+  filter: blur(40px);
+  animation: blob-float-1 20s ease-in-out infinite;
+  pointer-events: none;
+}
+.kuizard-blob-gold {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(212, 160, 23, 0.28), transparent 70%);
+  filter: blur(40px);
+  animation: blob-float-2 25s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* ====== Cartes premium ====== */
 .bg-white.rounded-2xl,
 .bg-white.rounded-xl {
   box-shadow:
@@ -71,18 +140,16 @@
   border: 1px solid rgba(196, 181, 253, 0.25);
   transition: box-shadow 250ms ease, transform 250ms ease;
 }
-/* Au hover, on élève légèrement et on accentue l'ombre */
 a:has(> .bg-white.rounded-2xl):hover .bg-white.rounded-2xl,
 button:has(.bg-white.rounded-2xl):hover .bg-white.rounded-2xl,
 .bg-white.rounded-2xl:hover {
   box-shadow:
     0 2px 4px rgba(46, 16, 101, 0.06),
-    0 20px 40px -10px rgba(91, 33, 182, 0.18),
-    0 4px 12px -2px rgba(91, 33, 182, 0.1);
+    0 20px 40px -10px rgba(91, 33, 182, 0.2),
+    0 4px 12px -2px rgba(91, 33, 182, 0.12);
 }
 
-/* ====== Cartes glassmorphism sur fonds sombres ======
-   Les cartes white/5 qui sont sur les sections sombres deviennent du verre. */
+/* ====== Glassmorphism sur cartes en sections sombres ====== */
 .bg-white\/5,
 .bg-white\/10,
 [class*="rounded-2xl"][class*="bg-white/5"] {
@@ -99,13 +166,10 @@ h2.font-display {
   font-weight: 700;
 }
 h1.font-display {
-  /* Petit text-shadow doux pour donner du relief */
   text-shadow: 0 2px 24px rgba(91, 33, 182, 0.08);
 }
 
-/* ====== Boutons or — gradient + glow ======
-   Les boutons qui utilisent `backgroundColor: var(--color-gold)` deviennent
-   des gradients dorés avec un halo léger. */
+/* ====== Boutons or — gradient + glow ====== */
 [style*="backgroundColor: var(--color-gold)"],
 [style*="background-color: var(--color-gold)"] {
   background: linear-gradient(135deg, var(--color-gold-light), var(--color-gold)) !important;
@@ -122,7 +186,7 @@ h1.font-display {
   transform: translateY(-1px);
 }
 
-/* ====== Bouton violet primary — pareil avec un gradient subtil ====== */
+/* ====== Bouton violet primary — gradient subtil ====== */
 [style*="backgroundColor: var(--color-violet-primary)"] {
   background: linear-gradient(135deg, var(--color-violet-primary), var(--color-violet-deep)) !important;
   box-shadow:
@@ -137,17 +201,7 @@ h1.font-display {
   transform: translateY(-1px);
 }
 
-/* ====== Section éditorial : crème léger sur les fonds light ======
-   On remplace le `bg-[var(--color-lavender)]` par un gradient ultra-subtil
-   qui apporte de la profondeur sans casser la lisibilité. */
-.bg-\[var\(--color-lavender\)\] {
-  background-image:
-    radial-gradient(ellipse 800px 400px at 20% 0%, rgba(196, 181, 253, 0.15), transparent 60%),
-    radial-gradient(ellipse 600px 300px at 80% 100%, rgba(212, 160, 23, 0.06), transparent 60%);
-  background-color: var(--color-lavender);
-}
-
-/* ====== Inputs — bordure plus douce, ring de focus doré ====== */
+/* ====== Inputs — focus violet doré ====== */
 input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]),
 textarea,
 select {
@@ -161,7 +215,7 @@ select:focus {
   box-shadow: 0 0 0 3px rgba(91, 33, 182, 0.15);
 }
 
-/* ====== Eyebrows (text-xs uppercase tracking) — un peu plus chic ====== */
+/* ====== Eyebrows ====== */
 .tracking-\[3px\] {
   letter-spacing: 0.18em !important;
 }
@@ -169,7 +223,7 @@ select:focus {
   letter-spacing: 0.14em !important;
 }
 
-/* ====== Liens dans le corps prose — soulignement doré au hover ====== */
+/* ====== Liens dans le corps prose ====== */
 .legal-prose a {
   position: relative;
   transition: color 200ms ease;
@@ -179,24 +233,12 @@ select:focus {
   text-decoration-color: var(--color-gold);
 }
 
-/* ====== Section pricing/CTA finale — gradient or-violet plus riche ====== */
-[style*="linear-gradient(160deg, #1F1B3A"],
-[style*="linear-gradient(160deg, #1a0b3d"] {
-  background: linear-gradient(
-    160deg,
-    #1a0b3d 0%,
-    #2e1065 35%,
-    #5b21b6 70%,
-    #7c3aed 100%
-  ) !important;
-}
-
 /* ====== Smooth scroll global ====== */
 html {
   scroll-behavior: smooth;
 }
 
-/* ====== Focus visible — ring violet plus visible ====== */
+/* ====== Focus visible ====== */
 *:focus-visible {
   outline: 2px solid var(--color-violet-primary);
   outline-offset: 2px;

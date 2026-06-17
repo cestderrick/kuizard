@@ -9,7 +9,10 @@ import { SiteFooter } from "@/components/legal/site-footer";
 import { JsonLd } from "@/components/seo/json-ld";
 import { breadcrumbSchema, productSchema } from "@/lib/seo/schemas";
 import { getActivePlans } from "@/lib/plans/config";
-import { formatStripeAmount } from "@/lib/stripe/client";
+import {
+  OneShotCompareTable,
+  SubscriptionCompareTable,
+} from "@/components/pricing/compare-table";
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://kuizard.com";
 
@@ -113,53 +116,10 @@ export default async function TarifsPage() {
             Conservation des données et fonctionnalités au prorata de l'offre.
           </p>
 
-          {oneShotPlans.length === 0 ? (
-            <p className="text-center text-muted-foreground italic">
-              Aucune offre à l'unité active pour le moment.
-            </p>
-          ) : (
-            <div className="grid gap-4 md:grid-cols-4">
-              {oneShotPlans.map((p) => (
-                <article
-                  key={p.id}
-                  id={p.slug}
-                  className={`rounded-2xl p-6 flex flex-col gap-3 ${
-                    p.isHighlighted
-                      ? "bg-white border-2 shadow-xl"
-                      : "bg-white/80 border"
-                  }`}
-                  style={
-                    p.isHighlighted
-                      ? { borderColor: "var(--color-gold)" }
-                      : undefined
-                  }
-                >
-                  {p.isHighlighted && (
-                    <p className="text-[10px] uppercase tracking-[3px] text-[var(--color-gold)] font-bold">
-                      ⭐ Recommandé
-                    </p>
-                  )}
-                  <h3
-                    className="font-display text-lg tracking-wide"
-                    style={{ color: "var(--color-violet-deep)" }}
-                  >
-                    {p.name}
-                  </h3>
-                  <p
-                    className="font-display text-3xl font-bold"
-                    style={{ color: "var(--color-violet-primary)" }}
-                  >
-                    {p.priceCents === 0 ? "Gratuit" : formatStripeAmount(p.priceCents)}
-                  </p>
-                  {(p.description || p.tagline) && (
-                    <p className="text-xs text-muted-foreground leading-relaxed">
-                      {p.description ?? p.tagline}
-                    </p>
-                  )}
-                </article>
-              ))}
-            </div>
-          )}
+          <OneShotCompareTable plans={oneShotPlans} />
+          <p className="text-xs text-muted-foreground italic text-center mt-4">
+            ✓ inclus &nbsp;·&nbsp; ✗ non inclus &nbsp;·&nbsp; ∞ illimité
+          </p>
         </div>
       </section>
 
@@ -187,63 +147,9 @@ export default async function TarifsPage() {
             tout moment.
           </p>
 
-          {subscriptionPlans.length === 0 ? (
-            <p className="text-center opacity-80 italic">
-              Aucun abonnement actif pour le moment.
-            </p>
-          ) : (
-            <div className="grid gap-5 md:grid-cols-2 max-w-3xl mx-auto">
-              {subscriptionPlans.map((p) => (
-                <article
-                  key={p.id}
-                  id={p.slug}
-                  className={`rounded-2xl p-6 flex flex-col gap-3 ${
-                    p.isHighlighted
-                      ? "border-2 relative"
-                      : "bg-white/5 border border-white/15 backdrop-blur-sm"
-                  }`}
-                  style={
-                    p.isHighlighted
-                      ? {
-                          background: "linear-gradient(160deg, #F59E0B22, #D946EF22)",
-                          borderColor: "var(--color-gold)",
-                        }
-                      : undefined
-                  }
-                >
-                  {p.isHighlighted && (
-                    <span
-                      className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-xs font-bold tracking-wider"
-                      style={{
-                        backgroundColor: "var(--color-gold)",
-                        color: "var(--color-violet-deep)",
-                      }}
-                    >
-                      ⭐ POPULAIRE
-                    </span>
-                  )}
-                  <p className="text-xs uppercase tracking-[2px] text-[var(--color-gold)] font-semibold">
-                    {p.name}
-                  </p>
-                  <p className="font-display text-3xl font-bold">
-                    {formatStripeAmount(p.priceCents)}
-                    <span className="text-base font-normal opacity-70">
-                      {" "}
-                      / {p.interval === "year" ? "an" : "mois"}
-                    </span>
-                  </p>
-                  {p.tagline && (
-                    <p className="text-sm opacity-80 italic">{p.tagline}</p>
-                  )}
-                  {p.description && (
-                    <p className="text-sm opacity-90 leading-relaxed">
-                      {p.description}
-                    </p>
-                  )}
-                </article>
-              ))}
-            </div>
-          )}
+          <div className="bg-white/5 rounded-2xl p-2 md:p-4 backdrop-blur-sm">
+            <SubscriptionCompareTable plans={subscriptionPlans} />
+          </div>
 
           <p className="mt-10 text-center text-sm opacity-80">
             ✓ Sans engagement &nbsp;·&nbsp; ✓ Résiliation libre &nbsp;·&nbsp; ✓
