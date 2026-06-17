@@ -360,16 +360,25 @@ export default async function Home() {
       {/* ============================================ */}
       {/* VIDEO DEMO JOUEUR */}
       {/* ============================================ */}
-      <section className="bg-[var(--color-night)] text-[var(--color-lavender)] py-20">
+      <section
+        className="py-20"
+        style={{
+          background:
+            "linear-gradient(160deg, rgba(167, 139, 250, 0.18) 0%, rgba(245, 240, 255, 0.5) 50%, rgba(196, 181, 253, 0.18) 100%)",
+        }}
+      >
         <div className="max-w-4xl mx-auto px-6">
           <div className="text-center mb-10">
-            <p className="text-xs uppercase tracking-[3px] text-[var(--color-gold)] font-semibold mb-2">
+            <p className="text-xs uppercase tracking-[3px] text-[var(--color-violet-primary)] font-semibold mb-2">
               {t.player_eyebrow ?? "✨ Vu côté joueur"}
             </p>
-            <h2 className="font-display text-3xl md:text-4xl font-bold tracking-wide text-[var(--color-lavender)]">
+            <h2
+              className="font-display text-3xl md:text-4xl font-bold tracking-wide"
+              style={{ color: "var(--color-violet-deep)" }}
+            >
               {t.player_title ?? "L'expérience participants"}
             </h2>
-            <p className="text-[var(--color-lavender-2)] opacity-80 mt-3 max-w-2xl mx-auto">
+            <p className="text-foreground/80 mt-3 max-w-2xl mx-auto">
               {t.player_subtitle ?? ""}
             </p>
           </div>
@@ -462,18 +471,21 @@ export default async function Home() {
         className="py-20"
         style={{
           background:
-            "linear-gradient(160deg, #1F1B3A 0%, #4C1D95 60%, #6B46C1 100%)",
+            "linear-gradient(160deg, rgba(196, 181, 253, 0.15) 0%, rgba(245, 240, 220, 0.4) 50%, rgba(212, 160, 23, 0.08) 100%)",
         }}
       >
-        <div className="max-w-5xl mx-auto px-6 text-[var(--color-lavender)]">
+        <div className="max-w-5xl mx-auto px-6">
           <div className="text-center mb-10">
-            <p className="text-xs uppercase tracking-[3px] text-[var(--color-gold)] font-semibold mb-2">
+            <p className="text-xs uppercase tracking-[3px] text-[var(--color-violet-primary)] font-semibold mb-2">
               {t.pro_eyebrow ?? "✨ Abonnements pros"}
             </p>
-            <h2 className="font-display text-3xl md:text-4xl font-bold tracking-wide mb-3">
+            <h2
+              className="font-display text-3xl md:text-4xl font-bold tracking-wide mb-3"
+              style={{ color: "var(--color-violet-deep)" }}
+            >
               {t.pro_title ?? "Quizz illimités pour ton lieu"}
             </h2>
-            <p className="text-[var(--color-lavender-2)] opacity-90 max-w-2xl mx-auto">
+            <p className="text-foreground/80 max-w-2xl mx-auto">
               {t.pro_subtitle ??
                 "Idéal pour bars, hôtels, restaurants, escape rooms ou tout organisateur d'événements récurrents. Sans engagement, résiliable à tout moment."}
             </p>
@@ -494,17 +506,13 @@ export default async function Home() {
                   key={plan.id}
                   className={
                     plan.isHighlighted
-                      ? "rounded-2xl p-6 flex flex-col gap-4 relative"
-                      : "rounded-2xl bg-white/5 border border-white/15 p-6 flex flex-col gap-4 backdrop-blur-sm"
+                      ? "rounded-2xl bg-white p-6 flex flex-col gap-4 relative shadow-xl"
+                      : "rounded-2xl bg-white p-6 flex flex-col gap-4 shadow-md"
                   }
                   style={
                     plan.isHighlighted
-                      ? {
-                          background:
-                            "linear-gradient(160deg, #F59E0B22, #7C3AED22)",
-                          border: "2px solid var(--color-gold)",
-                        }
-                      : undefined
+                      ? { border: "2px solid var(--color-gold)" }
+                      : { border: "1px solid rgba(167, 139, 250, 0.3)" }
                   }
                 >
                   {plan.isHighlighted && (
@@ -519,10 +527,13 @@ export default async function Home() {
                     </span>
                   )}
                   <div>
-                    <p className="text-xs uppercase tracking-[2px] text-[var(--color-gold)] font-semibold">
+                    <p className="text-xs uppercase tracking-[2px] text-[var(--color-violet-primary)] font-semibold">
                       {plan.name}
                     </p>
-                    <p className="font-display text-3xl font-bold mt-1">
+                    <p
+                      className="font-display text-3xl font-bold mt-1"
+                      style={{ color: "var(--color-violet-deep)" }}
+                    >
                       {formatStripeAmount(plan.priceCents)}
                       <span className="text-base font-normal opacity-70">
                         {" "}
