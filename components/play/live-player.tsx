@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 import {
+  saveProgressAction,
   startParticipationAction,
   submitAnswersAction,
 } from "@/lib/actions/participation";
@@ -77,6 +78,12 @@ export function LivePlayer({
   } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  // Lock + révélation par question. Clé = id de question.
+  const [timerExpiredIdx, setTimerExpiredIdx] = useState<number | null>(null);
+  const [reveal, setReveal] = useState<{
+    correctIndices: number[];
+    correctText: string | null;
+  } | null>(null);
 
   // Abonnement SSE pour recevoir les changements d'état
   const esRef = useRef<EventSource | null>(null);
@@ -87,12 +94,19 @@ export function LivePlayer({
       try {
         const payload = JSON.parse(e.data);
         if (payload.type === "state") {
-          setLiveState({
-            status: payload.status,
-            currentQuestionIndex: payload.currentQuestionIndex,
-            isPaused: payload.isPaused,
-            totalQuestions: payload.totalQuestions,
-            questionStartedAtMs: payload.questionStartedAtMs ?? null,
+          setLiveState((prev) => {
+            // Quand l'index change, on reset reveal + lock
+            if (prev.currentQuestionIndex !== payload.currentQuestionIndex) {
+              setTimerExpiredIdx(null);
+              setReveal(null);
+            }
+            return {
+              status: payload.status,
+              currentQuestionIndex: payload.currentQuestionIndex,
+              isPaused: payload.isPaused,
+              totalQuestions: payload.totalQuestions,
+              questionStartedAtMs: payload.questionStartedAtMs ?? null,
+            };
           });
         }
       } catch {
@@ -126,6 +140,10 @@ export function LivePlayer({
                 prev.isPaused === data.isPaused
               ) {
                 return prev;
+              }
+              if (prev.currentQuestionIndex !== data.currentQuestionIndex) {
+                setTimerExpiredIdx(null);
+                setReveal(null);
               }
               return {
                 status: data.status,
@@ -172,6 +190,70 @@ export function LivePlayer({
       });
     }
   }, [liveState.status, participationId, submitted, code, answers]);
+
+  // Autosave silencieux à chaque modification de réponse en cours de partie.
+  // Comme ça même si on n'arrive pas à "soumettre" (timer trop court ou
+  // déconnexion juste avant la fin), nos choix sont déjà persistés et le
+  // calcul de score final côté serveur (finishLiveInternal) pourra les lire.
+  const autosaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    if (!participationId) return;
+    if (liveState.status !== "RUNNING") return;
+    if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current);
+    autosaveTimerRef.current = setTimeout(async () => {
+      const fd = new FormData();
+      fd.set("code", code);
+      fd.set("participationId", participationId);
+      fd.set("answersJson", JSON.stringify(answers));
+      fd.set("currentQuestionIndex", String(liveState.currentQuestionIndex));
+      try {
+        await saveProgressAction({ ok: false }, fd);
+      } catch {
+        // silencieux
+      }
+    }, 400);
+    return () => {
+      if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current);
+    };
+  }, [
+    answers,
+    code,
+    participationId,
+    liveState.status,
+    liveState.currentQuestionIndex,
+  ]);
+
+  // Quand le timer expire (ou que l'admin avance), fetch la révélation.
+  useEffect(() => {
+    if (timerExpiredIdx === null) return;
+    if (reveal) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(
+          `/api/quiz/${code}/reveal?index=${timerExpiredIdx}`,
+          { cache: "no-store" }
+        );
+        if (!res.ok) return;
+        const data = await res.json();
+        if (cancelled) return;
+        if (data.revealed) {
+          setReveal({
+            correctIndices: Array.isArray(data.correctIndices)
+              ? data.correctIndices
+              : [],
+            correctText:
+              typeof data.correctText === "string" ? data.correctText : null,
+          });
+        }
+      } catch {
+        // silencieux
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [timerExpiredIdx, reveal, code]);
 
   function handleJoin(e: React.FormEvent) {
     e.preventDefault();
@@ -298,6 +380,9 @@ export function LivePlayer({
       );
     }
 
+    const hasTimer = !!question.timerSeconds && question.timerSeconds > 0;
+    const locked = hasTimer && timerExpiredIdx === idx;
+
     return (
       <main
         className="min-h-screen flex flex-col items-center px-4 py-10"
@@ -308,11 +393,12 @@ export function LivePlayer({
             <p className="text-xs uppercase tracking-[3px] text-[var(--color-gold)] font-semibold">
               Question {idx + 1} / {liveState.totalQuestions}
             </p>
-            {question.timerSeconds && question.timerSeconds > 0 && (
+            {hasTimer && (
               <QuestionTimer
-                durationSeconds={question.timerSeconds}
+                durationSeconds={question.timerSeconds!}
                 startedAtMs={liveState.questionStartedAtMs ?? null}
                 mode="live"
+                onExpire={() => setTimerExpiredIdx(idx)}
               />
             )}
           </header>
@@ -322,12 +408,27 @@ export function LivePlayer({
             answer={answers[question.id]}
             onToggleChoice={(i, multi) => toggleChoice(question.id, i, multi)}
             onSetText={(v) => setTextAnswer(question.id, v)}
+            locked={locked}
+            reveal={locked ? reveal : null}
           />
 
-          <p className="text-center text-xs opacity-70 italic">
-            Tu peux changer ta réponse tant que le maître du jeu n'a pas lancé
-            la suivante.
-          </p>
+          {locked ? (
+            <p
+              className="text-center text-sm font-semibold"
+              style={{ color: "var(--color-gold)" }}
+            >
+              ⏱ Temps écoulé — on attend la suivante
+              {reveal ? "" : "…"}
+            </p>
+          ) : !hasTimer ? (
+            <p
+              className="text-center text-xs italic"
+              style={{ color: isLight ? "#4a4a4a" : "#cbb7ff" }}
+            >
+              Tu peux changer ta réponse tant que le maître du jeu n'a pas
+              lancé la suivante.
+            </p>
+          ) : null}
         </div>
       </main>
     );
@@ -510,15 +611,23 @@ function LiveQuestionBlock({
   answer,
   onToggleChoice,
   onSetText,
+  locked,
+  reveal,
 }: {
   question: Question;
   answer: Answer | undefined;
   onToggleChoice: (i: number, multi: boolean) => void;
   onSetText: (v: string) => void;
+  locked: boolean;
+  reveal: {
+    correctIndices: number[];
+    correctText: string | null;
+  } | null;
 }) {
   const selectedSet =
     answer?.type === "choice" ? new Set(answer.selectedIndices) : new Set();
   const isMulti = question.type === "MULTIPLE_CHOICE";
+  const correctSet = new Set(reveal?.correctIndices ?? []);
 
   return (
     <div className="bg-[var(--color-night-2)] rounded-xl overflow-hidden flex flex-col border border-[rgba(167,139,250,0.2)]">
@@ -541,44 +650,105 @@ function LiveQuestionBlock({
             {question.points} pt{question.points > 1 ? "s" : ""}
           </p>
         </div>
-        <h2 className="font-display text-xl leading-snug">{question.text}</h2>
+        {/* Force inline color + clamp pour éviter que la cascade magic-show
+            (qui applique -webkit-text-fill-color: transparent sur les
+            .font-display) ne rende le texte invisible côté joueur. */}
+        <h2
+          className="text-xl leading-snug font-bold"
+          style={{
+            color: "#ffffff",
+            WebkitTextFillColor: "#ffffff",
+            fontFamily: "var(--font-display, inherit)",
+          }}
+        >
+          {question.text}
+        </h2>
 
         {question.type === "TEXT" ? (
-          <Input
-            type="text"
-            value={answer?.type === "text" ? answer.value : ""}
-            onChange={(e) => onSetText(e.target.value)}
-            placeholder="Tape ta réponse…"
-            className="bg-white text-[var(--color-foreground)]"
-          />
+          <div className="flex flex-col gap-2">
+            <Input
+              type="text"
+              value={answer?.type === "text" ? answer.value : ""}
+              onChange={(e) => onSetText(e.target.value)}
+              placeholder="Tape ta réponse…"
+              className="bg-white text-[var(--color-foreground)]"
+              disabled={locked}
+              style={{
+                opacity: locked ? 0.7 : 1,
+              }}
+            />
+            {locked && reveal?.correctText && (
+              <p
+                className="text-sm font-semibold rounded-md px-3 py-2"
+                style={{
+                  backgroundColor: "rgba(16,185,129,0.15)",
+                  color: "#34d399",
+                  border: "1px solid rgba(16,185,129,0.4)",
+                }}
+              >
+                ✅ Bonne réponse : <strong>{reveal.correctText}</strong>
+              </p>
+            )}
+          </div>
         ) : (
           <div className="flex flex-col gap-2">
             {question.options.map((opt, i) => {
               const selected = selectedSet.has(i);
+              const isCorrect = correctSet.has(i);
+              const showCorrect = locked && reveal && isCorrect;
+              const showWrongPicked =
+                locked && reveal && selected && !isCorrect;
+
+              // Couleurs selon état
+              let borderColor = "rgba(167,139,250,0.3)";
+              let backgroundColor = "rgba(255,255,255,0.05)";
+              let color = "var(--color-lavender)";
+              if (showCorrect) {
+                borderColor = "#10B981";
+                backgroundColor = "rgba(16,185,129,0.18)";
+                color = "#ecfdf5";
+              } else if (showWrongPicked) {
+                borderColor = "#EF4444";
+                backgroundColor = "rgba(239,68,68,0.18)";
+                color = "#fee2e2";
+              } else if (selected) {
+                borderColor = "var(--color-gold)";
+                backgroundColor = "rgba(245,158,11,0.15)";
+              }
+
               return (
                 <button
                   type="button"
                   key={i}
-                  onClick={() => onToggleChoice(i, isMulti)}
-                  className="text-left rounded-lg px-4 py-3 transition-colors border"
+                  onClick={() => !locked && onToggleChoice(i, isMulti)}
+                  disabled={locked}
+                  className="text-left rounded-lg px-4 py-3 transition-colors border flex items-center gap-2"
                   style={{
-                    borderColor: selected
-                      ? "var(--color-gold)"
-                      : "rgba(167,139,250,0.3)",
-                    backgroundColor: selected
-                      ? "rgba(245,158,11,0.15)"
-                      : "rgba(255,255,255,0.05)",
-                    color: "var(--color-lavender)",
+                    borderColor,
+                    backgroundColor,
+                    color,
+                    opacity: locked && !showCorrect && !showWrongPicked ? 0.55 : 1,
+                    cursor: locked ? "default" : "pointer",
                   }}
                 >
-                  <span className="font-bold mr-2">
+                  <span className="font-bold">
                     {String.fromCharCode(65 + i)}.
                   </span>
-                  {opt.label}
+                  <span className="flex-1">{opt.label}</span>
+                  {showCorrect && (
+                    <span aria-hidden className="text-lg">
+                      ✅
+                    </span>
+                  )}
+                  {showWrongPicked && (
+                    <span aria-hidden className="text-lg">
+                      ❌
+                    </span>
+                  )}
                 </button>
               );
             })}
-            {isMulti && (
+            {isMulti && !locked && (
               <p className="text-xs text-[var(--color-lavender-2)] opacity-70 italic">
                 Plusieurs réponses possibles
               </p>

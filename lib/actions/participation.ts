@@ -31,13 +31,13 @@ function normalize(s: string): string {
     .trim();
 }
 
-type StoredOption = { label: string; isCorrect: boolean };
+export type StoredOption = { label: string; isCorrect: boolean };
 
-type Answer =
+export type Answer =
   | { type: "choice"; selectedIndices: number[] }
   | { type: "text"; value: string };
 
-function isOptionArray(v: unknown): v is StoredOption[] {
+export function isOptionArray(v: unknown): v is StoredOption[] {
   return (
     Array.isArray(v) &&
     v.every(
@@ -50,7 +50,7 @@ function isOptionArray(v: unknown): v is StoredOption[] {
   );
 }
 
-function scoreAnswer(
+export function scoreAnswer(
   type: string,
   options: StoredOption[],
   answer: Answer | undefined,
@@ -247,15 +247,36 @@ export async function submitAnswersAction(
     },
   });
   if (!quiz) return { ok: false, message: "Quizz introuvable." };
+
+  // Total potentiel (utilisé dans tous les cas)
+  let total = 0;
+  for (const q of quiz.questions) total += q.points;
+
+  // ===========================================================
+  // BUGFIX V22 : si le quizz est FINISHED, l'admin a déjà
+  // déclenché finishLiveInternal qui a calculé tous les scores
+  // et set completedAt. On NE doit PAS rejeter la soumission ici
+  // sinon le player reste bloqué sur "Calcul du score…" à jamais.
+  // On retourne juste le score existant.
+  // ===========================================================
+  if (quiz.status === "FINISHED") {
+    const existing = await prisma.participation.findFirst({
+      where: { id: participationId, quizId: quiz.id },
+      select: { score: true, completedAt: true },
+    });
+    if (!existing) {
+      return { ok: false, message: "Participation introuvable." };
+    }
+    return { ok: true, score: existing.score ?? 0, total };
+  }
+
   if (quiz.status !== "PUBLISHED" && quiz.status !== "RUNNING") {
     return { ok: false, message: "Quizz inactif." };
   }
 
   // Calcul du score
   let score = 0;
-  let total = 0;
   for (const q of quiz.questions) {
-    total += q.points;
     const opts = isOptionArray(q.options) ? q.options : [];
     score += scoreAnswer(q.type, opts, answers[q.id], q.points);
   }

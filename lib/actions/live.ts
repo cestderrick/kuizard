@@ -16,18 +16,36 @@ import {
   parseLiveState,
   type LiveBroadcast,
 } from "@/lib/live/state";
+import {
+  scoreAnswer,
+  isOptionArray,
+  type Answer,
+} from "@/lib/actions/participation";
 
 async function getOwnedQuiz(quizId: string, userId: string) {
   return prisma.quiz.findFirst({
     where: { id: quizId, userId },
     select: {
       id: true,
+      code: true,
       status: true,
       mode: true,
       liveState: true,
       _count: { select: { questions: true } },
     },
   });
+}
+
+/**
+ * Revalidate les pages admin ET joueur. Le bug avant était d'utiliser
+ * quizId au lieu de quizCode pour les pages /q/[code] côté joueur.
+ */
+function revalidateAllForQuiz(quizId: string, code: string) {
+  revalidatePath(`/dashboard/quizzes/${quizId}/live`);
+  revalidatePath(`/dashboard/quizzes/${quizId}/edit`);
+  revalidatePath(`/q/${code}`);
+  revalidatePath(`/q/${code}/classement`);
+  revalidatePath(`/q/${code}/display`);
 }
 
 function broadcastState(
@@ -90,8 +108,7 @@ export async function startLiveAction(formData: FormData) {
     quiz._count.questions,
     startedAt.getTime()
   );
-  revalidatePath(`/dashboard/quizzes/${quizId}/live`);
-  revalidatePath(`/q/${quizId}`);
+  revalidateAllForQuiz(quizId, quiz.code);
 }
 
 // -----------------------------------------------------
@@ -138,7 +155,7 @@ export async function nextQuestionAction(formData: FormData) {
     quiz._count.questions,
     startedAt.getTime()
   );
-  revalidatePath(`/dashboard/quizzes/${quizId}/live`);
+  revalidateAllForQuiz(quizId, quiz.code);
 }
 
 // -----------------------------------------------------
@@ -172,7 +189,7 @@ export async function togglePauseAction(formData: FormData) {
     newState.isPaused,
     quiz._count.questions
   );
-  revalidatePath(`/dashboard/quizzes/${quizId}/live`);
+  revalidateAllForQuiz(quizId, quiz.code);
 }
 
 // -----------------------------------------------------
@@ -180,6 +197,46 @@ export async function togglePauseAction(formData: FormData) {
 // -----------------------------------------------------
 
 async function finishLiveInternal(quizId: string, totalQuestions: number) {
+  // ===========================================================
+  // BUGFIX V22 : on calcule TOUS les scores des participations
+  // non terminées et on les marque completedAt. Sans ça, le
+  // classement reste vide ("personne n'a terminé") après Terminer.
+  // ===========================================================
+
+  // 1. Récupérer les questions avec leurs options (correctIndices)
+  const questions = await prisma.question.findMany({
+    where: { quizId },
+    orderBy: { order: "asc" },
+    select: {
+      id: true,
+      type: true,
+      points: true,
+      options: true,
+    },
+  });
+
+  // 2. Récupérer toutes les participations non encore terminées
+  const participations = await prisma.participation.findMany({
+    where: { quizId, completedAt: null },
+    select: { id: true, answers: true },
+  });
+
+  // 3. Pour chaque participation : score + completedAt
+  const now = new Date();
+  for (const p of participations) {
+    const answers = (p.answers as Record<string, Answer>) ?? {};
+    let score = 0;
+    for (const q of questions) {
+      const opts = isOptionArray(q.options) ? q.options : [];
+      score += scoreAnswer(q.type, opts, answers[q.id], q.points);
+    }
+    await prisma.participation.update({
+      where: { id: p.id },
+      data: { score, completedAt: now },
+    });
+  }
+
+  // 4. Marquer le quizz comme FINISHED
   await prisma.quiz.update({
     where: { id: quizId },
     data: {
@@ -187,10 +244,17 @@ async function finishLiveInternal(quizId: string, totalQuestions: number) {
       liveState: INITIAL_LIVE_STATE as unknown as Prisma.InputJsonValue,
     },
   });
+
+  // 5. Broadcast aux clients SSE
   broadcastState(quizId, "FINISHED", -1, false, totalQuestions);
-  revalidatePath(`/dashboard/quizzes/${quizId}/live`);
-  revalidatePath(`/dashboard/quizzes/${quizId}/edit`);
-  revalidatePath(`/q/${quizId}/classement`);
+
+  // 6. Revalidate les pages côté admin ET joueur (utilise le helper qui
+  // sait que la page joueur utilise le CODE, pas l'ID)
+  const quiz = await prisma.quiz.findUnique({
+    where: { id: quizId },
+    select: { code: true },
+  });
+  if (quiz?.code) revalidateAllForQuiz(quizId, quiz.code);
 }
 
 export async function finishLiveAction(formData: FormData) {
@@ -233,7 +297,5 @@ export async function resetLiveAction(formData: FormData) {
   ]);
 
   broadcastState(quizId, "PUBLISHED", -1, false, quiz._count.questions);
-  revalidatePath(`/dashboard/quizzes/${quizId}/live`);
-  revalidatePath(`/dashboard/quizzes/${quizId}/edit`);
-  revalidatePath(`/q/${quizId}/classement`);
+  revalidateAllForQuiz(quizId, quiz.code);
 }
