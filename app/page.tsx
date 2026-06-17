@@ -175,14 +175,9 @@ export default async function Home() {
       {/* HERO */}
       {/* ============================================ */}
       <section className="relative overflow-hidden">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0"
-          style={{
-            background:
-              "radial-gradient(circle at 20% 30%, rgba(124, 58, 237, 0.22) 0%, transparent 50%), radial-gradient(circle at 80% 70%, rgba(212, 160, 23, 0.12) 0%, transparent 55%)",
-          }}
-        />
+        {/* Halos décoratifs retirés — créaient un dégradé violet/or visible
+            au moment où le hero finissait (un côté de l'écran tirait sur le
+            violet, l'autre sur le crème). Le fond est maintenant uni. */}
         <div className="relative max-w-5xl mx-auto px-6 py-20 md:py-28 text-center flex flex-col items-center">
           <div className="mb-6 flex justify-center">
             <KuizardLogo size={84} />

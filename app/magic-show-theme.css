@@ -83,28 +83,30 @@
 }
 
 /* ====== Transitions douces light → dark ======
-   Ajoute un fade-in au TOP des sections sombres pour éviter le passage
-   brutal d'une zone claire à une zone très sombre. */
+   Ajoute un fade-in au TOP des éléments sombres pour éviter le passage
+   brutal d'une zone claire à une zone très sombre. S'applique aux
+   sections ET aux footers (la home a un footer inline bg-night). */
 section.bg-\[var\(--color-night\)\],
 section[style*="linear-gradient(160deg"],
 section[style*="linear-gradient(135deg, #3D1786"],
-section[style*="bg-gradient-to-br from-[var(--color-violet-deep)]"],
-section.bg-gradient-to-br {
+section.bg-gradient-to-br,
+footer.bg-\[var\(--color-night\)\] {
   position: relative;
 }
 section.bg-\[var\(--color-night\)\]::before,
 section[style*="linear-gradient(160deg"]:not(.no-fade)::before,
-section[style*="linear-gradient(135deg, #3D1786"]::before {
+section[style*="linear-gradient(135deg, #3D1786"]::before,
+footer.bg-\[var\(--color-night\)\]::before {
   content: "";
   position: absolute;
-  top: 0;
+  top: -60px;
   left: 0;
   right: 0;
-  height: 80px;
+  height: 60px;
   background: linear-gradient(
     180deg,
-    var(--color-lavender) 0%,
-    rgba(20, 5, 39, 0) 100%
+    transparent 0%,
+    rgba(20, 5, 39, 0.7) 100%
   );
   pointer-events: none;
   z-index: 1;
