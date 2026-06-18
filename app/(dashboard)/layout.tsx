@@ -14,6 +14,7 @@ import { MobileNav } from "@/components/nav/mobile-nav";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { getActiveWeeklyFeatured } from "@/lib/weekly/featured";
 import { WeeklyFeaturedPill } from "@/components/weekly/weekly-featured-pill";
+import { OnboardingModal } from "@/components/onboarding/onboarding-modal";
 
 // Force le rendu dynamique pour que getLocale() soit ré-évalué à chaque
 // requête au lieu de servir une version cachée.
@@ -37,7 +38,7 @@ export default async function DashboardLayout({
   // si besoin — mais on les force aussi à accepter, par souci de cohérence).
   const me = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { role: true, lastAcceptedTermsVersion: true },
+    select: { role: true, lastAcceptedTermsVersion: true, onboardingCompletedAt: true },
   });
   if (me && needsTermsReacceptance(me.lastAcceptedTermsVersion)) {
     redirect("/accept-terms");
@@ -115,6 +116,9 @@ export default async function DashboardLayout({
           </div>
         </div>
       </header>
+
+      {/* V35 : Modal d'onboarding (1ère fois uniquement) */}
+      <OnboardingModal shouldShow={!me?.onboardingCompletedAt} />
 
       <main className="flex-1 mx-auto max-w-7xl w-full px-4 py-6 md:py-8">
         {children}

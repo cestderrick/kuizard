@@ -49,6 +49,10 @@ model User {
   // Date d'envoi du dernier avertissement "compte sera supprimé dans 30j"
   inactivityWarnedAt DateTime?
 
+  // V35 : timestamp quand l'utilisateur a complété (ou skip) l'onboarding.
+  // Null = jamais fait → on lui montrera le tour au prochain login.
+  onboardingCompletedAt DateTime?
+
   // Dernière version des CGU/CGV acceptée par l'utilisateur. Si différent
   // de CURRENT_TERMS_VERSION (lib/legal/terms-version.ts), on redirige vers
   // /accept-terms à la prochaine action. Format : "YYYY-MM-DD".
