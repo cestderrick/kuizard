@@ -36,7 +36,7 @@ type Answer =
   | { type: "choice"; selectedIndices: number[] }
   | { type: "text"; value: string };
 
-type Phase = "intro" | "playing" | "result";
+type Phase = "intro" | "playing" | "recap" | "result";
 
 type ResumeData = {
   participationId: string;
@@ -44,6 +44,11 @@ type ResumeData = {
   answers: Record<string, Answer>;
   completedAt: Date | null;
   canModify: boolean;
+};
+
+// V23 : ISO string de scheduledCloseAt, transmis pour gating de modification
+type ScheduledWindow = {
+  closeAtIso: string | null;
 };
 
 type PlayerTexts = {
@@ -87,6 +92,8 @@ type Props = {
   resume?: ResumeData | null;
   /** Textes traduits — passés depuis le server component parent. */
   texts: PlayerTexts;
+  /** V23 : créneau pour gating modification post-fermeture */
+  scheduled?: ScheduledWindow;
 };
 
 // Helper pluriel basique : "s" si count > 1 sinon "". Le placeholder {s} dans
@@ -110,9 +117,8 @@ export function QuizPlayer({
   theme,
   resume,
   texts,
+  scheduled,
 }: Props) {
-  // Si on a une session reprise terminée et modifiable (SCHEDULED), on
-  // l'amène directement en phase "playing" en pré-remplissant tout.
   const initialPhase: Phase = resume
     ? resume.completedAt && !resume.canModify
       ? "result"
@@ -127,14 +133,68 @@ export function QuizPlayer({
   const [answers, setAnswers] = useState<Record<string, Answer>>(
     resume?.answers ?? {}
   );
+  // V23 : index de la question affichée
+  const [currentIndex, setCurrentIndex] = useState<number>(0);
+  // V23 : moment où chaque question a été vue pour la première fois
+  const [questionStartedAt, setQuestionStartedAt] = useState<
+    Record<string, number>
+  >(() => {
+    const init: Record<string, number> = {};
+    if (resume?.answers) {
+      const now = Date.now();
+      for (const q of questions) {
+        if (resume.answers[q.id]) init[q.id] = now;
+      }
+    }
+    return init;
+  });
   const [score, setScore] = useState<number | null>(null);
   const [total, setTotal] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [autosaveStatus, setAutosaveStatus] = useState<
     "idle" | "saving" | "saved"
   >("idle");
+  // V23 : tick pour re-render à intervalle régulier (pour lock auto)
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setTick((t) => t + 1), 1000);
+    return () => clearInterval(id);
+  }, []);
 
   const [isPending, startTransition] = useTransition();
+
+  // V23 : helpers de lock
+  const closeAtMs = scheduled?.closeAtIso
+    ? new Date(scheduled.closeAtIso).getTime()
+    : null;
+  const isQuizClosed = closeAtMs ? Date.now() > closeAtMs : false;
+
+  function isQuestionLocked(q: Question): boolean {
+    if (isQuizClosed) return true;
+    if (!q.timerSeconds || q.timerSeconds <= 0) return false;
+    const startedAt = questionStartedAt[q.id];
+    if (!startedAt) return false;
+    return Date.now() - startedAt >= q.timerSeconds * 1000;
+  }
+
+  function isAnswered(q: Question): boolean {
+    const a = answers[q.id];
+    if (!a) return false;
+    if (a.type === "text") return a.value.trim().length > 0;
+    return a.selectedIndices.length > 0;
+  }
+
+  // V23 : enregistre startedAt à l'entrée d'une question avec timer
+  useEffect(() => {
+    if (phase !== "playing") return;
+    const q = questions[currentIndex];
+    if (!q) return;
+    if (!q.timerSeconds || q.timerSeconds <= 0) return;
+    setQuestionStartedAt((prev) => {
+      if (prev[q.id]) return prev;
+      return { ...prev, [q.id]: Date.now() };
+    });
+  }, [phase, currentIndex, questions]);
 
   // ----------------------------------------------------------------
   // AUTOSAVE — debounced à chaque changement de answers
@@ -261,65 +321,126 @@ export function QuizPlayer({
           />
         )}
 
-        {phase === "playing" && (
-          <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-            <header className="text-center mb-2">
-              <h1 className="font-display text-2xl md:text-3xl tracking-wide">
-                {title}
-              </h1>
-              <p className="text-sm text-[var(--color-lavender-2)] opacity-80 mt-1">
-                {pluralize(texts.questions_count, questions.length)} ·{" "}
-                {texts.instructions}
-              </p>
-              {resume?.completedAt && resume.canModify && (
-                <p className="mt-3 inline-block text-xs px-3 py-1.5 rounded-full bg-[rgba(245,158,11,0.15)] border border-[var(--color-gold)] text-[var(--color-gold)]">
-                  {texts.can_modify_hint}
-                </p>
-              )}
-              {participationId && autosaveStatus !== "idle" && (
-                <p className="mt-2 text-[10px] uppercase tracking-wider opacity-50">
-                  {autosaveStatus === "saving" ? texts.saving : texts.saved}
-                </p>
-              )}
-            </header>
+        {phase === "playing" && (() => {
+          const q = questions[currentIndex];
+          if (!q) return null;
+          const locked = isQuestionLocked(q);
+          const answered = isAnswered(q);
+          const canGoNext = answered || locked;
+          const startedAt = questionStartedAt[q.id] ?? null;
 
-            {questions.map((q, idx) => (
+          function goNext() {
+            if (!canGoNext) {
+              setError("Réponds à la question avant de continuer.");
+              return;
+            }
+            setError(null);
+            if (currentIndex >= questions.length - 1) {
+              setPhase("recap");
+            } else {
+              setCurrentIndex((i) => i + 1);
+            }
+          }
+
+          function goBack() {
+            if (currentIndex <= 0) return;
+            setError(null);
+            setCurrentIndex((i) => i - 1);
+          }
+
+          return (
+            <div className="flex flex-col gap-6">
+              <header className="text-center mb-2">
+                <h1 className="font-display text-2xl md:text-3xl tracking-wide">
+                  {title}
+                </h1>
+                <p className="text-sm text-[var(--color-lavender-2)] opacity-80 mt-1">
+                  Question {currentIndex + 1} / {questions.length}
+                </p>
+                {isQuizClosed && (
+                  <p className="mt-3 inline-block text-xs px-3 py-1.5 rounded-full bg-[rgba(245,158,11,0.15)] border border-[var(--color-gold)] text-[var(--color-gold)]">
+                    Créneau fermé — tes réponses sont figées
+                  </p>
+                )}
+                {participationId && autosaveStatus !== "idle" && (
+                  <p className="mt-2 text-[10px] uppercase tracking-wider opacity-50">
+                    {autosaveStatus === "saving" ? texts.saving : texts.saved}
+                  </p>
+                )}
+              </header>
+
               <QuestionBlock
                 key={q.id}
-                index={idx}
+                index={currentIndex}
                 question={q}
                 answer={answers[q.id]}
-                onToggleChoice={(i, multi) => toggleChoice(q.id, i, multi)}
-                onSetText={(v) => setTextAnswer(q.id, v)}
+                onToggleChoice={(i, multi) =>
+                  !locked && toggleChoice(q.id, i, multi)
+                }
+                onSetText={(v) => !locked && setTextAnswer(q.id, v)}
                 texts={texts}
+                locked={locked}
+                startedAtMs={startedAt}
               />
-            ))}
 
-            {error && (
-              <Alert variant="destructive">
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
+              {error && (
+                <Alert variant="destructive">
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
 
-            <div className="flex justify-center pt-2">
-              <Button
-                type="submit"
-                size="lg"
-                disabled={isPending}
-                style={{
-                  backgroundColor: "var(--color-gold)",
-                  color: "var(--color-violet-deep)",
-                }}
-                className="font-bold"
-              >
-                {isPending
-                  ? texts.calculating
-                  : resume?.completedAt && resume.canModify
-                  ? texts.submit_button_modify
-                  : texts.submit_button}
-              </Button>
+              {/* Nav Retour / Suivant */}
+              <div className="flex items-center justify-between gap-3 pt-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={goBack}
+                  disabled={currentIndex === 0}
+                  style={{ color: "var(--color-lavender)" }}
+                >
+                  ← Retour
+                </Button>
+                <Button
+                  type="button"
+                  size="lg"
+                  onClick={goNext}
+                  disabled={!canGoNext}
+                  style={{
+                    backgroundColor: canGoNext
+                      ? "var(--color-gold)"
+                      : "rgba(167,139,250,0.2)",
+                    color: canGoNext
+                      ? "var(--color-violet-deep)"
+                      : "var(--color-lavender)",
+                    opacity: canGoNext ? 1 : 0.6,
+                  }}
+                  className="font-bold"
+                >
+                  {currentIndex >= questions.length - 1
+                    ? "Voir le récap →"
+                    : "Suivant →"}
+                </Button>
+              </div>
             </div>
-          </form>
+          );
+        })()}
+
+        {phase === "recap" && (
+          <RecapCard
+            title={title}
+            questions={questions}
+            answers={answers}
+            isQuestionLocked={isQuestionLocked}
+            onJumpTo={(idx) => {
+              setCurrentIndex(idx);
+              setPhase("playing");
+            }}
+            onSubmit={handleSubmit}
+            isPending={isPending}
+            error={error}
+            isQuizClosed={isQuizClosed}
+            texts={texts}
+          />
         )}
 
         {phase === "result" && score !== null && total !== null && (
@@ -456,6 +577,8 @@ function QuestionBlock({
   onToggleChoice,
   onSetText,
   texts,
+  locked,
+  startedAtMs,
 }: {
   index: number;
   question: Question;
@@ -463,6 +586,8 @@ function QuestionBlock({
   onToggleChoice: (i: number, multi: boolean) => void;
   onSetText: (v: string) => void;
   texts: PlayerTexts;
+  locked?: boolean;
+  startedAtMs?: number | null;
 }) {
   const selectedSet =
     answer?.type === "choice" ? new Set(answer.selectedIndices) : new Set();
@@ -491,6 +616,7 @@ function QuestionBlock({
             <QuestionTimer
               durationSeconds={question.timerSeconds}
               mode="scheduled"
+              startedAtMs={startedAtMs ?? undefined}
             />
           )}
           <p className="text-xs text-[var(--color-lavender-2)] opacity-70">
@@ -499,7 +625,30 @@ function QuestionBlock({
         </div>
       </div>
 
-      <h2 className="font-display text-lg leading-snug">{question.text}</h2>
+      {/* Couleur forcée pour éviter cascade magic-show */}
+      <h2
+        className="text-lg leading-snug font-bold"
+        style={{
+          color: "#ffffff",
+          WebkitTextFillColor: "#ffffff",
+          fontFamily: "var(--font-display, inherit)",
+        }}
+      >
+        {question.text}
+      </h2>
+
+      {locked && (
+        <p
+          className="text-xs font-semibold rounded-md px-3 py-2"
+          style={{
+            backgroundColor: "rgba(245,158,11,0.15)",
+            color: "var(--color-gold)",
+            border: "1px solid rgba(245,158,11,0.4)",
+          }}
+        >
+          ⏱ Cette question est verrouillée — tu ne peux plus la modifier.
+        </p>
+      )}
 
       {question.type === "TEXT" ? (
         <Input
@@ -508,6 +657,8 @@ function QuestionBlock({
           onChange={(e) => onSetText(e.target.value)}
           placeholder={texts.text_answer_placeholder}
           className="bg-white text-[var(--color-foreground)]"
+          disabled={locked}
+          style={{ opacity: locked ? 0.7 : 1 }}
         />
       ) : (
         <div className="flex flex-col gap-2">
@@ -518,6 +669,7 @@ function QuestionBlock({
                 type="button"
                 key={i}
                 onClick={() => onToggleChoice(i, isMulti)}
+                disabled={locked}
                 className="text-left rounded-lg px-4 py-3 transition-colors border"
                 style={{
                   borderColor: selected
@@ -527,6 +679,8 @@ function QuestionBlock({
                     ? "rgba(245,158,11,0.15)"
                     : "rgba(255,255,255,0.05)",
                   color: "var(--color-lavender)",
+                  opacity: locked && !selected ? 0.55 : 1,
+                  cursor: locked ? "default" : "pointer",
                 }}
               >
                 <span className="font-bold mr-2">
@@ -536,7 +690,7 @@ function QuestionBlock({
               </button>
             );
           })}
-          {isMulti && (
+          {isMulti && !locked && (
             <p className="text-xs text-[var(--color-lavender-2)] opacity-70 italic">
               {texts.multi_choice_hint}
             </p>
@@ -545,6 +699,166 @@ function QuestionBlock({
       )}
       </div>
     </div>
+  );
+}
+
+/**
+ * V23 : Page récap finale.
+ */
+function RecapCard({
+  title,
+  questions,
+  answers,
+  isQuestionLocked,
+  onJumpTo,
+  onSubmit,
+  isPending,
+  error,
+  isQuizClosed,
+  texts,
+}: {
+  title: string;
+  questions: Question[];
+  answers: Record<string, Answer>;
+  isQuestionLocked: (q: Question) => boolean;
+  onJumpTo: (idx: number) => void;
+  onSubmit: (e: React.FormEvent) => void;
+  isPending: boolean;
+  error: string | null;
+  isQuizClosed: boolean;
+  texts: PlayerTexts;
+}) {
+  function summarize(q: Question): string {
+    const a = answers[q.id];
+    if (!a) return "— Pas de réponse —";
+    if (a.type === "text") return a.value.trim() || "— Pas de réponse —";
+    if (a.selectedIndices.length === 0) return "— Pas de réponse —";
+    return a.selectedIndices
+      .sort((x, y) => x - y)
+      .map((i) => {
+        const letter = String.fromCharCode(65 + i);
+        const label = q.options[i]?.label ?? "";
+        return `${letter}. ${label}`;
+      })
+      .join(" / ");
+  }
+
+  const unanswered = questions.filter((q) => {
+    const a = answers[q.id];
+    if (!a) return true;
+    if (a.type === "text") return !a.value.trim();
+    return a.selectedIndices.length === 0;
+  });
+
+  return (
+    <form onSubmit={onSubmit} className="flex flex-col gap-5">
+      <header className="text-center">
+        <h1 className="font-display text-2xl md:text-3xl tracking-wide">
+          📋 Récapitulatif
+        </h1>
+        <p className="text-sm text-[var(--color-lavender-2)] opacity-80 mt-1">
+          {title} · {questions.length} questions
+        </p>
+        {isQuizClosed && (
+          <p className="mt-3 inline-block text-xs px-3 py-1.5 rounded-full bg-[rgba(245,158,11,0.15)] border border-[var(--color-gold)] text-[var(--color-gold)]">
+            Créneau fermé — modifications désactivées
+          </p>
+        )}
+      </header>
+
+      <ol className="flex flex-col gap-2">
+        {questions.map((q, idx) => {
+          const locked = isQuestionLocked(q);
+          const a = answers[q.id];
+          const hasAnswer = a
+            ? a.type === "text"
+              ? !!a.value.trim()
+              : a.selectedIndices.length > 0
+            : false;
+          return (
+            <li
+              key={q.id}
+              className="rounded-lg border p-3 flex flex-col gap-2"
+              style={{
+                borderColor: hasAnswer
+                  ? "rgba(167,139,250,0.3)"
+                  : "rgba(239,68,68,0.4)",
+                backgroundColor: hasAnswer
+                  ? "rgba(255,255,255,0.04)"
+                  : "rgba(239,68,68,0.06)",
+              }}
+            >
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs uppercase tracking-wide text-[var(--color-gold)] font-semibold">
+                    Question {idx + 1}
+                    {locked && (
+                      <span className="ml-2 text-[var(--color-lavender-2)] opacity-70 normal-case">
+                        🔒 verrouillée
+                      </span>
+                    )}
+                  </p>
+                  <p className="text-sm font-semibold mt-1">{q.text}</p>
+                  <p className="text-sm mt-1 opacity-90">
+                    <strong>Ta réponse :</strong> {summarize(q)}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => onJumpTo(idx)}
+                  className="text-xs underline whitespace-nowrap"
+                  style={{ color: "var(--color-gold)" }}
+                >
+                  {locked || isQuizClosed ? "Voir" : "Modifier"}
+                </button>
+              </div>
+            </li>
+          );
+        })}
+      </ol>
+
+      {unanswered.length > 0 && (
+        <Alert variant="destructive">
+          <AlertDescription>
+            Il te reste {unanswered.length} question
+            {unanswered.length > 1 ? "s" : ""} sans réponse.
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {error && (
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+
+      <div className="flex items-center justify-between gap-3">
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={() => onJumpTo(0)}
+          style={{ color: "var(--color-lavender)" }}
+        >
+          ← Revenir aux questions
+        </Button>
+        <Button
+          type="submit"
+          size="lg"
+          disabled={isPending || isQuizClosed}
+          style={{
+            backgroundColor: "var(--color-gold)",
+            color: "var(--color-violet-deep)",
+          }}
+          className="font-bold"
+        >
+          {isPending
+            ? texts.calculating
+            : isQuizClosed
+            ? "Quiz fermé"
+            : "✨ Soumettre définitivement"}
+        </Button>
+      </div>
+    </form>
   );
 }
 

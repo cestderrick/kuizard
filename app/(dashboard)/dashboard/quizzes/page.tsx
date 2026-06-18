@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { listMyQuizzes } from "@/lib/actions/quiz";
+import { parseLiveState } from "@/lib/live/state";
 import { getMessages } from "@/lib/i18n/get-locale";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,21 +13,24 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { DeleteQuizButton } from "@/components/quiz/delete-quiz-button";
+import { LiveQuickActions } from "@/components/quiz/live-quick-actions";
+import { UpgradeCTA } from "@/components/marketing/upgrade-cta";
 
 export const metadata: Metadata = {
   title: "Mes quizz",
 };
 
+// V23 : DRAFT est traité comme PUBLISHED côté affichage (notion virée).
 const STATUS_LABEL: Record<string, string> = {
-  DRAFT: "Brouillon",
-  PUBLISHED: "Publié",
+  DRAFT: "Actif",
+  PUBLISHED: "Actif",
   RUNNING: "En direct",
   FINISHED: "Terminé",
   ARCHIVED: "Archivé",
 };
 
 const STATUS_COLOR: Record<string, string> = {
-  DRAFT: "bg-zinc-100 text-zinc-700",
+  DRAFT: "bg-violet-100 text-violet-700",
   PUBLISHED: "bg-violet-100 text-violet-700",
   RUNNING: "bg-green-100 text-green-700",
   FINISHED: "bg-blue-100 text-blue-700",
@@ -58,7 +62,7 @@ export default async function QuizzesPage() {
     create_first: dt?.create_first ?? "Créer mon premier quizz ✨",
     questions_label: t?.questions_label ?? "questions",
     players_label: t?.players_label ?? "joueurs",
-    status_draft: t?.status_draft ?? "Brouillon",
+    status_draft: t?.status_draft ?? "Actif",
     status_published: t?.status_published ?? "Publié",
     status_running: t?.status_running ?? "En direct",
     status_finished: t?.status_finished ?? "Terminé",
@@ -109,6 +113,9 @@ export default async function QuizzesPage() {
           </Button>
         </div>
       </div>
+
+      {/* V24 : CTA paiement à l'unité / abonnement */}
+      <UpgradeCTA variant="subtle" />
 
       {/* Liste ou état vide */}
       {quizzes.length === 0 ? (
@@ -172,6 +179,21 @@ export default async function QuizzesPage() {
                     {quiz._count.participations} {labels.players_label}
                   </span>
                 </div>
+
+                {/* V23 : Panel live inline pour les quiz LIVE_MANUAL */}
+                {quiz.mode === "LIVE_MANUAL" && quiz._count.questions > 0 && (
+                  <LiveQuickActions
+                    quizId={quiz.id}
+                    code={quiz.code}
+                    initialState={{
+                      status: quiz.status,
+                      currentQuestionIndex:
+                        parseLiveState(quiz.liveState).currentQuestionIndex,
+                      isPaused: parseLiveState(quiz.liveState).isPaused,
+                      totalQuestions: quiz._count.questions,
+                    }}
+                  />
+                )}
 
                 <div className="flex flex-wrap gap-2">
                   <Button asChild variant="outline" size="sm">

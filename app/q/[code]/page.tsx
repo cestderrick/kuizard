@@ -271,6 +271,11 @@ export default async function PlayPage({
           : null
       }
       texts={messages.player}
+      scheduled={{
+        closeAtIso: quiz.scheduledCloseAt
+          ? quiz.scheduledCloseAt.toISOString()
+          : null,
+      }}
     />
   );
 }

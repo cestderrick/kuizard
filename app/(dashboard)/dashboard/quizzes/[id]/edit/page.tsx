@@ -5,8 +5,10 @@ import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { getMyQuiz } from "@/lib/actions/quiz";
+import { parseLiveState } from "@/lib/live/state";
 import { QuizLibraryToggle } from "@/components/admin/quiz-library-toggle";
 import { createQuestionAction } from "@/lib/actions/question";
+import { LiveAdminPanel } from "@/components/quiz/live-admin-panel";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -169,8 +171,7 @@ export default async function EditQuizPage({
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
             Code <code className="font-mono">{quiz.code}</code> ·{" "}
-            {quiz.questions.length} question{quiz.questions.length > 1 ? "s" : ""}{" "}
-            · statut {quiz.status.toLowerCase()}
+            {quiz.questions.length} question{quiz.questions.length > 1 ? "s" : ""}
           </p>
         </div>
       </div>
@@ -229,7 +230,31 @@ export default async function EditQuizPage({
         </CardHeader>
       </Card>
 
-      {/* Partage et publication */}
+      {/* V23 : Panel live mis en évidence en haut pour les quiz LIVE_MANUAL */}
+      {quiz.mode === "LIVE_MANUAL" && quiz.questions.length > 0 && (
+        <div className="rounded-2xl border-2 border-[var(--color-gold)] shadow-xl bg-gradient-to-br from-[var(--color-night)] to-[#2a2243] p-1">
+          <LiveAdminPanel
+            quizId={quiz.id}
+            code={quiz.code}
+            title={quiz.title}
+            questions={quiz.questions.map((q) => ({
+              id: q.id,
+              order: q.order,
+              text: q.text,
+              type: q.type,
+            }))}
+            initialState={{
+              status: quiz.status,
+              currentQuestionIndex:
+                parseLiveState(quiz.liveState).currentQuestionIndex,
+              isPaused: parseLiveState(quiz.liveState).isPaused,
+              totalQuestions: quiz.questions.length,
+            }}
+          />
+        </div>
+      )}
+
+      {/* Partage */}
       <ShareSection
         quizId={quiz.id}
         code={quiz.code}

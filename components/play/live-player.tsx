@@ -191,30 +191,24 @@ export function LivePlayer({
     }
   }, [liveState.status, participationId, submitted, code, answers]);
 
-  // Autosave silencieux à chaque modification de réponse en cours de partie.
-  // Comme ça même si on n'arrive pas à "soumettre" (timer trop court ou
-  // déconnexion juste avant la fin), nos choix sont déjà persistés et le
-  // calcul de score final côté serveur (finishLiveInternal) pourra les lire.
-  const autosaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // V23 : autosave IMMÉDIAT (sans debounce) à chaque changement de réponse.
+  // Le debounce 400ms de V22 créait une race condition : quand l'admin
+  // cliquait "Terminer" pile après un clic joueur, la transition
+  // RUNNING→FINISHED annulait le setTimeout en vol → answers jamais
+  // persistées → score final faux (cas reporté : 5 bonnes réponses, 2 pts).
+  // Le save est fire-and-forget. En LIVE les clics sont rares (1/20s),
+  // pas de risque de surcharge.
   useEffect(() => {
     if (!participationId) return;
     if (liveState.status !== "RUNNING") return;
-    if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current);
-    autosaveTimerRef.current = setTimeout(async () => {
-      const fd = new FormData();
-      fd.set("code", code);
-      fd.set("participationId", participationId);
-      fd.set("answersJson", JSON.stringify(answers));
-      fd.set("currentQuestionIndex", String(liveState.currentQuestionIndex));
-      try {
-        await saveProgressAction({ ok: false }, fd);
-      } catch {
-        // silencieux
-      }
-    }, 400);
-    return () => {
-      if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current);
-    };
+    const fd = new FormData();
+    fd.set("code", code);
+    fd.set("participationId", participationId);
+    fd.set("answersJson", JSON.stringify(answers));
+    fd.set("currentQuestionIndex", String(liveState.currentQuestionIndex));
+    saveProgressAction({ ok: false }, fd).catch(() => {
+      // silencieux
+    });
   }, [
     answers,
     code,

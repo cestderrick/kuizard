@@ -189,21 +189,44 @@ export async function submitAnswersAction(
   for (const q of quiz.questions) total += q.points;
 
   // ===========================================================
-  // BUGFIX V22 : si le quizz est FINISHED, l'admin a déjà
-  // déclenché finishLiveInternal qui a calculé tous les scores
-  // et set completedAt. On NE doit PAS rejeter la soumission ici
-  // sinon le player reste bloqué sur "Calcul du score…" à jamais.
-  // On retourne juste le score existant.
+  // BUGFIX V23 : en FINISHED, finishLiveInternal a déjà calculé un score
+  // basé sur les answers en DB à ce moment. Or le client peut avoir des
+  // réponses plus fraîches (autosave en vol annulé par la transition
+  // RUNNING→FINISHED). On RE-persiste les answers reçues et on RECALCULE
+  // le score. (Avant : on retournait le score existant → bug "5 bonnes
+  // réponses, 2 points" reporté par les joueurs.)
   // ===========================================================
   if (quiz.status === "FINISHED") {
     const existing = await prisma.participation.findFirst({
       where: { id: participationId, quizId: quiz.id },
-      select: { score: true, completedAt: true },
+      select: { score: true, completedAt: true, answers: true },
     });
     if (!existing) {
       return { ok: false, message: "Participation introuvable." };
     }
-    return { ok: true, score: existing.score ?? 0, total };
+
+    const dbAnswers =
+      (existing.answers as Record<string, Answer> | null) ?? {};
+    const merged: Record<string, Answer> = { ...dbAnswers, ...answers };
+
+    let recomputedScore = 0;
+    for (const q of quiz.questions) {
+      const opts = isOptionArray(q.options) ? q.options : [];
+      recomputedScore += scoreAnswer(q.type, opts, merged[q.id], q.points);
+    }
+
+    if (recomputedScore !== (existing.score ?? 0)) {
+      await prisma.participation.updateMany({
+        where: { id: participationId, quizId: quiz.id },
+        data: {
+          answers: merged as unknown as Prisma.InputJsonValue,
+          score: recomputedScore,
+          completedAt: existing.completedAt ?? new Date(),
+        },
+      });
+    }
+
+    return { ok: true, score: recomputedScore, total };
   }
 
   if (quiz.status !== "PUBLISHED" && quiz.status !== "RUNNING") {

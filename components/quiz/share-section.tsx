@@ -6,7 +6,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { CopyButton } from "@/components/quiz/copy-button";
-import { PublishButton } from "@/components/quiz/publish-button";
 import { buildQuizPlayUrl, generateQrSvg } from "@/lib/quiz/qrcode";
 
 type Props = {
@@ -17,9 +16,12 @@ type Props = {
   expiresAt: Date | null;
 };
 
+// V23 : on a viré la notion de Brouillon côté user. Un quizz est toujours
+// considéré comme actif/partageable. On garde juste les badges d'état "live"
+// et "terminé" qui restent utiles à voir.
 const STATUS_LABEL: Record<string, string> = {
-  DRAFT: "Brouillon",
-  PUBLISHED: "Publié",
+  DRAFT: "Actif",
+  PUBLISHED: "Actif",
   RUNNING: "En direct",
   FINISHED: "Terminé",
   ARCHIVED: "Archivé",
@@ -29,11 +31,13 @@ export async function ShareSection({
   quizId,
   code,
   status,
-  hasQuestions,
+  hasQuestions: _hasQuestions,
   expiresAt,
 }: Props) {
-  const isPublished =
-    status === "PUBLISHED" || status === "RUNNING" || status === "FINISHED";
+  // Tous les quizz sont partageables (créés en PUBLISHED par défaut). Pas de
+  // PublishButton — on enlève la friction inutile.
+  const isPublished = true;
+  void status;
   const url = buildQuizPlayUrl(code);
   const qrSvg = await generateQrSvg(url, {
     color: "#1F1B3A",
@@ -49,27 +53,16 @@ export async function ShareSection({
     <Card>
       <CardHeader>
         <CardTitle className="font-display tracking-wide">
-          Partage et publication
+          Partage
         </CardTitle>
         <CardDescription>
-          {isPublished
-            ? "Ton quizz est publié ! Voici le lien et le QR code à partager."
-            : "Publie ton quizz pour activer le lien et le QR code."}
+          Voici le lien et le QR code à partager avec tes participants.
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-6">
-        {/* Statut */}
-        <div className="flex flex-wrap items-center gap-3">
-          <span
-            className={`text-xs px-3 py-1 rounded-full font-medium ${
-              isPublished
-                ? "bg-green-100 text-green-700"
-                : "bg-zinc-100 text-zinc-600"
-            }`}
-          >
-            {STATUS_LABEL[status] ?? status}
-          </span>
-          {isPublished && expiresAt && (
+        {/* Bandeau "accessible jusqu'au..." si défini */}
+        {expiresAt && (
+          <div>
             <span className="text-xs text-muted-foreground">
               Accessible jusqu'au{" "}
               {new Intl.DateTimeFormat("fr-FR", {
@@ -78,17 +71,10 @@ export async function ShareSection({
                 year: "numeric",
               }).format(expiresAt)}
             </span>
-          )}
-        </div>
+          </div>
+        )}
 
-        {/* Publish / unpublish */}
-        <PublishButton
-          quizId={quizId}
-          isPublished={isPublished}
-          hasQuestions={hasQuestions}
-        />
-
-        {/* Lien et QR — visibles uniquement si publié */}
+        {/* Lien et QR — toujours visibles */}
         {isPublished && (
           <div className="grid gap-6 md:grid-cols-[1fr_auto] md:items-start pt-2 border-t">
             <div className="flex flex-col gap-4 min-w-0">

@@ -24,10 +24,15 @@ export function QuestionTimer({
   onExpire?: () => void;
 }) {
   const startedAt = useMemo(() => {
-    if (mode === "live" && startedAtMs && Number.isFinite(startedAtMs)) {
+    // V23 : on prend startedAtMs si fourni, peu importe le mode. En scheduled,
+    // ça permet de garder un compte à rebours cohérent quand l'utilisateur
+    // navigue entre les questions (le timer ne se ré-arme pas à chaque mount).
+    if (startedAtMs && Number.isFinite(startedAtMs)) {
       return startedAtMs;
     }
     return Date.now();
+    // mode est conservé pour compat / lisibilité côté appelant
+    void mode;
   }, [mode, startedAtMs]);
 
   const endAt = startedAt + durationSeconds * 1000;

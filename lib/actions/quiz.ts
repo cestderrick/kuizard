@@ -166,6 +166,7 @@ export async function listMyQuizzes() {
       status: true,
       mode: true,
       plan: true,
+      liveState: true,
       createdAt: true,
       _count: { select: { questions: true, participations: true } },
     },
