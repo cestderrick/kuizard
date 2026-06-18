@@ -171,7 +171,7 @@ export function UpgradeCTA({
               style={{ color: isSubtle ? "#525252" : "#e9d5ff" }}
             >
               Paie un quizz à l'unité <strong>dès {minPriceStr}</strong> ou
-              prends un abonnement pour ton bar / ta boîte.
+              prends un abonnement pour ton bar / ton entreprise.
             </p>
           )}
         </div>

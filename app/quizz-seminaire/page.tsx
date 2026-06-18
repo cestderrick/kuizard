@@ -59,7 +59,7 @@ export default function Page() {
           "Aucune installation côté participants : tout le monde joue depuis le navigateur de son téléphone.",
           "Mode live avec pilotage : tu lances chaque question, fais une pause pour commenter la réponse, puis enchaînes.",
           "Affichage TV intégré pour projeter le classement sur grand écran.",
-          "Personnalisation totale aux couleurs de ta boîte (logo, palette, message d'intro).",
+          "Personnalisation totale aux couleurs de ton entreprise (logo, palette, message d'intro).",
           "Export CSV des participations (plan Pro) pour ton compte-rendu de séminaire ou ton CRM RH.",
           "RGPD friendly : pas de pub, pas de tracker, données hébergées en France (OVH).",
           "Idéal aussi pour tes événements clients : showcase de fin d'année, soirée annuelle, kick-off projet.",

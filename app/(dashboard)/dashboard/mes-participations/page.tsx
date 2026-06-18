@@ -86,8 +86,12 @@ export default async function MesParticipationsPage() {
           🕘 Historique
         </p>
         <h1
-          className="font-display text-3xl md:text-4xl font-bold tracking-wide"
-          style={{ color: "var(--color-violet-deep)" }}
+          className="text-3xl md:text-4xl font-bold tracking-wide"
+          style={{
+            color: "var(--color-violet-deep)",
+            WebkitTextFillColor: "var(--color-violet-deep)",
+            fontFamily: "var(--font-display, inherit)",
+          }}
         >
           Mes quizz répondus
         </h1>
@@ -232,8 +236,12 @@ function ParticipationRow({ data }: { data: EnrichedParticipation }) {
           </span>
         </div>
         <p
-          className="font-display text-base font-bold tracking-wide truncate"
-          style={{ color: "var(--color-violet-deep)" }}
+          className="text-base font-bold tracking-wide truncate"
+          style={{
+            color: "var(--color-violet-deep)",
+            WebkitTextFillColor: "var(--color-violet-deep)",
+            fontFamily: "var(--font-display, inherit)",
+          }}
         >
           {p.quiz.title}
         </p>
@@ -243,8 +251,12 @@ function ParticipationRow({ data }: { data: EnrichedParticipation }) {
         {isFinished ? (
           <>
             <p
-              className="font-display font-bold text-2xl leading-none"
-              style={{ color: "var(--color-violet-primary)" }}
+              className="font-bold text-2xl leading-none"
+              style={{
+                color: "var(--color-violet-primary)",
+                WebkitTextFillColor: "var(--color-violet-primary)",
+                fontFamily: "var(--font-display, inherit)",
+              }}
             >
               {p.score}
               <span className="text-sm text-muted-foreground">

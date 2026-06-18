@@ -8,6 +8,7 @@ import { getQuizLeaderboard } from "@/lib/quiz/leaderboard";
 import { parsePrizes, prizesByRank, type Prize } from "@/lib/quiz/prizes";
 import { MyAnswersPanel } from "@/components/play/my-answers-panel";
 import { UpgradeCTA } from "@/components/marketing/upgrade-cta";
+import { getActivePlans } from "@/lib/plans/config";
 
 export async function generateMetadata({
   params,
@@ -97,7 +98,14 @@ export default async function ClassementPage({
                   <p className="text-xs uppercase tracking-[3px] text-[var(--color-gold)] font-semibold">
                     🎯 Tes résultats
                   </p>
-                  <p className="text-lg font-display tracking-wide mt-1">
+                  <p
+                    className="text-lg tracking-wide mt-1"
+                    style={{
+                      color: "var(--color-lavender)",
+                      WebkitTextFillColor: "var(--color-lavender)",
+                      fontFamily: "var(--font-display, inherit)",
+                    }}
+                  >
                     {myEntryScheduled.nickname}
                   </p>
                 </div>
@@ -183,13 +191,20 @@ export default async function ClassementPage({
     return [second, first, third].filter(Boolean);
   })();
 
+  // V36 : prix du plus petit plan one-shot (pour CTA dynamique)
+  const oneShotPlans = await getActivePlans("one_shot");
+  const minOneShotPriceCents = oneShotPlans
+    .filter((p) => p.priceCents > 0)
+    .map((p) => p.priceCents)
+    .reduce<number | null>((min, n) => (min === null || n < min ? n : min), null);
+
   // V24 : participation du joueur courant pour le bloc "Mes résultats"
   const myEntry = myParticipationId
     ? data.entries.find((e) => e.participationId === myParticipationId) ?? null
     : null;
 
   return (
-    <main className="min-h-screen flex flex-col items-center px-4 py-4 sm:py-6 bg-[var(--color-night)] text-[var(--color-lavender)] relative overflow-hidden">
+    <main className="min-h-screen flex flex-col items-center px-3 sm:px-4 py-2 sm:py-6 bg-[var(--color-night)] text-[var(--color-lavender)] relative overflow-hidden">
       {/* Halos magiques */}
       <div
         aria-hidden
@@ -367,7 +382,7 @@ export default async function ClassementPage({
         )}
 
         {/* V24 : CTA paiement / abonnement pour les joueurs séduits */}
-        <UpgradeCTA />
+        <UpgradeCTA minOneShotPriceCents={minOneShotPriceCents} />
 
         {/* Footer */}
         <footer className="text-center pt-3">
