@@ -14,6 +14,10 @@ import {
   OneShotCompareTable,
   SubscriptionCompareTable,
 } from "@/components/pricing/compare-table";
+import {
+  SubscribeButton,
+  BuyOneShotButton,
+} from "@/components/pricing/order-buttons";
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://kuizard.com";
 
@@ -123,6 +127,38 @@ export default async function TarifsPage() {
           <p className="text-xs text-muted-foreground italic text-center mt-4">
             ✓ inclus &nbsp;·&nbsp; ✗ non inclus &nbsp;·&nbsp; ∞ illimité
           </p>
+
+          {/* V25 : Boutons d'achat one-shot */}
+          {oneShotPlans.filter((p) => p.priceCents > 0).length > 0 && (
+            <div className="mt-8 max-w-4xl mx-auto">
+              <p className="text-center text-sm font-semibold mb-3" style={{ color: "var(--color-violet-deep)" }}>
+                💳 Acheter un quizz à l'unité
+              </p>
+              <p className="text-xs text-muted-foreground text-center mb-4">
+                Tu choisiras le quizz à booster juste après.
+              </p>
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {oneShotPlans
+                  .filter((p) => p.priceCents > 0)
+                  .map((p) => (
+                    <div key={p.id} className="rounded-xl border bg-white p-3 flex flex-col gap-2">
+                      <div className="text-center">
+                        <p className="font-display font-bold" style={{ color: "var(--color-violet-deep)" }}>
+                          {p.name}
+                        </p>
+                        <p className="text-lg font-bold" style={{ color: "var(--color-violet-primary)" }}>
+                          {(p.priceCents / 100).toFixed(2).replace(".", ",")} €
+                        </p>
+                      </div>
+                      <BuyOneShotButton
+                        planSlug={p.slug}
+                        isLoggedIn={isLoggedIn}
+                      />
+                    </div>
+                  ))}
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
@@ -153,6 +189,40 @@ export default async function TarifsPage() {
           <div className="bg-white/5 rounded-2xl p-2 md:p-4 backdrop-blur-sm">
             <SubscriptionCompareTable plans={subscriptionPlans} />
           </div>
+
+          {/* V25 : Boutons d'abonnement direct */}
+          {subscriptionPlans.filter((p) => p.priceCents > 0).length > 0 && (
+            <div className="mt-8 max-w-4xl mx-auto">
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {subscriptionPlans
+                  .filter((p) => p.priceCents > 0)
+                  .map((p, idx) => (
+                    <div
+                      key={p.id}
+                      className="rounded-xl bg-white/10 border border-white/20 p-3 flex flex-col gap-2 backdrop-blur-sm"
+                    >
+                      <div className="text-center">
+                        <p className="font-display font-bold text-[var(--color-gold)]">
+                          {p.name}
+                        </p>
+                        <p className="text-lg font-bold">
+                          {(p.priceCents / 100).toFixed(2).replace(".", ",")} €
+                          <span className="text-xs opacity-70">
+                            {" "}
+                            / {p.interval === "year" ? "an" : "mois"}
+                          </span>
+                        </p>
+                      </div>
+                      <SubscribeButton
+                        planSlug={p.slug}
+                        isLoggedIn={isLoggedIn}
+                        variant={idx === 0 ? "primary" : "secondary"}
+                      />
+                    </div>
+                  ))}
+              </div>
+            </div>
+          )}
 
           <p className="mt-10 text-center text-sm opacity-80">
             ✓ Sans engagement &nbsp;·&nbsp; ✓ Résiliation libre &nbsp;·&nbsp; ✓

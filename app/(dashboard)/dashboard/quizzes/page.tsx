@@ -15,6 +15,8 @@ import {
 import { DeleteQuizButton } from "@/components/quiz/delete-quiz-button";
 import { LiveQuickActions } from "@/components/quiz/live-quick-actions";
 import { UpgradeCTA } from "@/components/marketing/upgrade-cta";
+import { getBillingContext } from "@/lib/billing/context";
+import { auth } from "@/auth";
 
 export const metadata: Metadata = {
   title: "Mes quizz",
@@ -43,8 +45,12 @@ const MODE_LABEL: Record<string, string> = {
 };
 
 export default async function QuizzesPage() {
-  const quizzes = await listMyQuizzes();
-  const messages = await getMessages();
+  const [quizzes, messages, session] = await Promise.all([
+    listMyQuizzes(),
+    getMessages(),
+    auth(),
+  ]);
+  const billing = await getBillingContext(session?.user?.id);
   const t = messages.quizzes;
   const dt = messages.dashboard;
 
@@ -115,7 +121,7 @@ export default async function QuizzesPage() {
       </div>
 
       {/* V24 : CTA paiement à l'unité / abonnement */}
-      <UpgradeCTA variant="subtle" />
+      <UpgradeCTA billing={billing} variant="subtle" />
 
       {/* Liste ou état vide */}
       {quizzes.length === 0 ? (

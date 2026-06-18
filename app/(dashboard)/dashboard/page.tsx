@@ -5,6 +5,8 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { listMyQuizzes } from "@/lib/actions/quiz";
 import { countUnreadForUser } from "@/lib/actions/messages";
+import { getBillingContext } from "@/lib/billing/context";
+import { UpgradeCTA } from "@/components/marketing/upgrade-cta";
 import { PublicStats } from "@/components/stats/public-stats";
 import { getMessages } from "@/lib/i18n/get-locale";
 
@@ -46,7 +48,10 @@ export const metadata: Metadata = {
 export default async function DashboardPage() {
   const session = await auth();
   const userName = session?.user?.name ?? "magicien(ne)";
-  const quizzes = await listMyQuizzes();
+  const [quizzes, billing] = await Promise.all([
+    listMyQuizzes(),
+    getBillingContext(session?.user?.id),
+  ]);
   const recent = quizzes.slice(0, 3);
   const messages = await getMessages();
   const t = messages.dashboard;
@@ -132,6 +137,9 @@ export default async function DashboardPage() {
           </div>
         </div>
       </section>
+
+      {/* V25 : CTA paiement / abonnement (contextuel) */}
+      <UpgradeCTA billing={billing} variant="subtle" />
 
       {/* Mes quizz (récents) */}
       <Card>
