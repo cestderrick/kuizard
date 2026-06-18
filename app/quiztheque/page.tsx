@@ -7,6 +7,8 @@ import { TopLocaleBar } from "@/components/i18n/top-locale-bar";
 import { PublicNavbar } from "@/components/nav/public-navbar";
 import { SiteFooter } from "@/components/legal/site-footer";
 import { KuizardLogo } from "@/components/brand/kuizard-logo";
+import { getActiveWeeklyFeatured } from "@/lib/weekly/featured";
+import { WeeklyFeaturedPill } from "@/components/weekly/weekly-featured-pill";
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://kuizard.com";
 
@@ -27,6 +29,7 @@ export default async function PublicQuizthequePage({
   const { tag, access } = await searchParams;
   const session = await auth();
   const isLoggedIn = !!session?.user?.id;
+  const weeklyFeatured = await getActiveWeeklyFeatured();
 
   const where: Record<string, unknown> = {
     isLibrary: true,
@@ -109,6 +112,11 @@ export default async function PublicQuizthequePage({
       </section>
 
       <div className="max-w-6xl mx-auto px-4 pb-16 flex flex-col gap-6">
+        {/* V29.2 : Quizz de la semaine en évidence */}
+        {weeklyFeatured && (
+          <WeeklyFeaturedPill data={weeklyFeatured} variant="banner" />
+        )}
+
         {/* Filtre accès */}
         <section className="flex flex-wrap gap-2 items-center justify-center">
           <span className="text-xs uppercase tracking-[2px] text-muted-foreground font-semibold mr-2">

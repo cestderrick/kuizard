@@ -6,6 +6,8 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { DuplicateButton } from "@/components/library/duplicate-button";
 import { getBillingContext } from "@/lib/billing/context";
+import { getActiveWeeklyFeatured } from "@/lib/weekly/featured";
+import { WeeklyFeaturedPill } from "@/components/weekly/weekly-featured-pill";
 
 export const metadata: Metadata = {
   title: "Quizthèque",
@@ -23,6 +25,7 @@ export default async function LibraryBrowserPage({
 
   const { tag, lang, access } = await searchParams;
   const billing = await getBillingContext(session.user.id);
+  const weeklyFeatured = await getActiveWeeklyFeatured();
 
   const where: Record<string, unknown> = {
     isLibrary: true,
@@ -100,6 +103,11 @@ export default async function LibraryBrowserPage({
           Duplique-les dans ton compte pour les utiliser ou les adapter.
         </p>
       </header>
+
+      {/* V29.2 : Quizz de la semaine en évidence */}
+      {weeklyFeatured && (
+        <WeeklyFeaturedPill data={weeklyFeatured} variant="banner" />
+      )}
 
       {/* V26 : Filtre accès gratuit / premium */}
       <section className="flex flex-wrap gap-2 items-center">

@@ -12,6 +12,8 @@ import { DashboardNavLink } from "@/components/nav/dashboard-nav-link";
 import { UserMenu } from "@/components/nav/user-menu";
 import { MobileNav } from "@/components/nav/mobile-nav";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
+import { getActiveWeeklyFeatured } from "@/lib/weekly/featured";
+import { WeeklyFeaturedPill } from "@/components/weekly/weekly-featured-pill";
 
 // Force le rendu dynamique pour que getLocale() soit ré-évalué à chaque
 // requête au lieu de servir une version cachée.
@@ -45,6 +47,8 @@ export default async function DashboardLayout({
   // Charge les traductions selon la locale active du user
   const messages = await getMessages();
   const navT = messages.nav;
+  // V29.2 : quizz de la semaine (si actif maintenant)
+  const weeklyFeatured = await getActiveWeeklyFeatured();
 
   return (
     <div className="min-h-screen flex flex-col bg-[var(--color-lavender)]">
@@ -88,6 +92,8 @@ export default async function DashboardLayout({
           <div className="flex items-center gap-2">
             <ThemeToggle variant="light" />
             <NotificationBell />
+            {/* V29.2 : pill quizz de la semaine */}
+            {weeklyFeatured && <WeeklyFeaturedPill data={weeklyFeatured} />}
             <UserMenu
               name={session.user.name ?? null}
               email={session.user.email ?? ""}

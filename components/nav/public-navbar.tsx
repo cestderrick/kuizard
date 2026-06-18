@@ -73,6 +73,9 @@ export async function PublicNavbar() {
               subscription: navT.subscription,
               payments: navT.payments,
               promos: navT.promos,
+              messages: navT.messages,
+              suggestions: navT.suggestions,
+              home: navT.home,
               admin: navT.admin,
               logout: navT.logout,
             }}
