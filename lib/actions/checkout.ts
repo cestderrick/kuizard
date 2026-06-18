@@ -146,6 +146,13 @@ export async function createCheckoutSessionAction(
     }
   }
 
+  // V30 : protection contre stripePriceId = "" (vide mais pas null) qui faisait
+  // exploser Stripe avec "No such price: ". On normalise.
+  const safeStripePriceId =
+    plan.stripePriceId && plan.stripePriceId.trim().length > 0
+      ? plan.stripePriceId.trim()
+      : null;
+
   // Construction de la session de paiement
   let stripeSession: { id: string; url: string | null };
   try {
@@ -154,7 +161,7 @@ export async function createCheckoutSessionAction(
       customer: customerId,
       line_items: [
         {
-          price_data: plan.stripePriceId
+          price_data: safeStripePriceId
             ? undefined
             : {
                 currency: "eur",
@@ -164,7 +171,7 @@ export async function createCheckoutSessionAction(
                   description: plan.description ?? undefined,
                 },
               },
-          price: plan.stripePriceId ?? undefined,
+          price: safeStripePriceId ?? undefined,
           quantity: 1,
         },
       ],
@@ -189,10 +196,20 @@ export async function createCheckoutSessionAction(
       },
     });
   } catch (err) {
-    console.error("[Stripe] Erreur création session :", err);
+    // V30 : on log + on PROPAGE le message Stripe pour faciliter le debug
+    console.error("[Stripe] Erreur création session checkout one-shot :", {
+      planSlug: plan.slug,
+      planPriceCents: plan.priceCents,
+      stripePriceId: plan.stripePriceId,
+      hasCoupon: stripeCouponIds.length > 0,
+      customerId,
+      err,
+    });
+    const detail =
+      err instanceof Error ? err.message : "Erreur Stripe inconnue.";
     return {
       ok: false,
-      message: "Impossible de créer la session de paiement.",
+      message: `Stripe : ${detail}`,
     };
   }
 

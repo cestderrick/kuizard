@@ -90,8 +90,16 @@ export async function createSubscriptionCheckoutAction(
       },
     });
   } catch (err) {
-    console.error("[subscription] stripe err:", err);
-    return { ok: false, message: "Erreur Stripe à la création." };
+    // V30 : propage l'erreur Stripe réelle pour faciliter le debug
+    console.error("[subscription] stripe err:", {
+      planSlug: plan.slug,
+      stripePriceId: plan.stripePriceId,
+      customerId,
+      err,
+    });
+    const detail =
+      err instanceof Error ? err.message : "Erreur Stripe inconnue.";
+    return { ok: false, message: `Stripe : ${detail}` };
   }
 
   if (!stripeSession.url) {

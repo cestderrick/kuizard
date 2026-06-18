@@ -112,7 +112,10 @@ export default async function QuizzesPage({
 
         <div className="flex flex-wrap gap-2">
           <Button asChild variant="outline">
-            <Link href="/dashboard/quizzes/library">📚 Banque de quizz</Link>
+            <Link href="/dashboard/mes-participations">🕘 Historique</Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link href="/dashboard/quizzes/library">📚 Quizthèque</Link>
           </Button>
           <Button asChild variant="outline">
             <Link href="/dashboard/quizzes/templates">

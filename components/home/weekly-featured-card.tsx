@@ -43,7 +43,18 @@ export function WeeklyFeaturedCard({ data }: { data: WeeklyFeaturedDTO }) {
 
           <div className="relative z-10 flex flex-col md:flex-row gap-8 items-center">
             <div className="flex-1 min-w-0">
-              <h2 className="font-display text-2xl md:text-4xl font-bold tracking-wide mb-3">
+              {/* V30 : force la couleur blanche pour éviter que le gradient
+                  magic-show (-webkit-text-fill-color: transparent) ne rende
+                  le titre illisible sur fond sombre */}
+              <h2
+                className="text-2xl md:text-4xl font-bold tracking-wide mb-3 leading-tight"
+                style={{
+                  color: "#ffffff",
+                  WebkitTextFillColor: "#ffffff",
+                  fontFamily: "var(--font-display, inherit)",
+                  textShadow: "0 2px 8px rgba(0,0,0,0.3)",
+                }}
+              >
                 {data.title}
               </h2>
               {data.subtitle && (
