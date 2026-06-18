@@ -22,7 +22,7 @@ import {
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://kuizard.com";
 
 export const metadata: Metadata = {
-  title: "Tarifs — quizz à l'unité dès 5 € ou abonnement pour bars",
+  title: "Offres — quizz à l'unité dès 5 € ou abonnement pour bars",
   description:
     "Tous les tarifs Kuizard : quizz à l'unité gratuits ou dès 5 €, abonnements bars/restos illimités à partir de 25 €/mois. Sans engagement, TVA non applicable (art. 293 B CGI).",
   alternates: {
@@ -99,13 +99,38 @@ export default async function TarifsPage() {
           className="font-display text-3xl md:text-5xl font-bold tracking-wide mb-3"
           style={{ color: "var(--color-violet-deep)" }}
         >
-          Simple, sans engagement, sans TVA
+          Nos offres — simple et sans engagement
         </h1>
         <p className="max-w-2xl mx-auto text-muted-foreground">
           Gratuit pour essayer, à l'unité pour un évènement ponctuel, en
           abonnement pour les bars et lieux qui animent toute l'année. Tu
           changes d'avis ? Tu résilies en 1 clic.
         </p>
+
+        {/* V25 : nav rapide vers les 2 grandes sections */}
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+          <a
+            href="#abonnements"
+            className="inline-flex items-center justify-center rounded-lg px-5 py-2.5 text-sm font-bold transition hover:opacity-90"
+            style={{
+              backgroundColor: "var(--color-violet-primary)",
+              color: "white",
+            }}
+          >
+            🔁 Voir les abonnements ↓
+          </a>
+          <a
+            href="#unite"
+            className="inline-flex items-center justify-center rounded-lg px-5 py-2.5 text-sm font-bold transition hover:opacity-90 border-2"
+            style={{
+              backgroundColor: "white",
+              color: "var(--color-violet-primary)",
+              borderColor: "var(--color-violet-primary)",
+            }}
+          >
+            🎩 Voir les achats à l'unité ↓
+          </a>
+        </div>
       </section>
 
       {/* ====== OFFRES À L'UNITÉ ====== */}
@@ -118,47 +143,69 @@ export default async function TarifsPage() {
           >
             🎩 À l'unité — pour un évènement ponctuel
           </h2>
-          <p className="text-center text-sm text-muted-foreground mb-8 max-w-xl mx-auto">
+          <p className="text-center text-sm text-muted-foreground mb-6 max-w-xl mx-auto">
             Tu organises un seul évènement ? Paie une fois, profite à fond.
-            Conservation des données et fonctionnalités au prorata de l'offre.
+            Le quizz à booster sera choisi juste après le clic.
           </p>
 
-          <OneShotCompareTable plans={oneShotPlans} />
-          <p className="text-xs text-muted-foreground italic text-center mt-4">
-            ✓ inclus &nbsp;·&nbsp; ✗ non inclus &nbsp;·&nbsp; ∞ illimité
-          </p>
-
-          {/* V25 : Boutons d'achat one-shot */}
+          {/* V25 : Cards d'achat one-shot directement en haut */}
           {oneShotPlans.filter((p) => p.priceCents > 0).length > 0 && (
-            <div className="mt-8 max-w-4xl mx-auto">
-              <p className="text-center text-sm font-semibold mb-3" style={{ color: "var(--color-violet-deep)" }}>
-                💳 Acheter un quizz à l'unité
-              </p>
-              <p className="text-xs text-muted-foreground text-center mb-4">
-                Tu choisiras le quizz à booster juste après.
-              </p>
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {oneShotPlans
-                  .filter((p) => p.priceCents > 0)
-                  .map((p) => (
-                    <div key={p.id} className="rounded-xl border bg-white p-3 flex flex-col gap-2">
-                      <div className="text-center">
-                        <p className="font-display font-bold" style={{ color: "var(--color-violet-deep)" }}>
-                          {p.name}
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+              {oneShotPlans
+                .filter((p) => p.priceCents > 0)
+                .map((p) => (
+                  <div
+                    key={p.id}
+                    className="rounded-2xl border-2 bg-white p-5 flex flex-col gap-3 hover:shadow-lg transition-shadow"
+                    style={{ borderColor: "rgba(85,35,187,0.2)" }}
+                  >
+                    <div className="text-center flex-1">
+                      <p
+                        className="font-display font-bold text-lg mb-1"
+                        style={{ color: "var(--color-violet-deep)" }}
+                      >
+                        {p.name}
+                      </p>
+                      {p.tagline && (
+                        <p className="text-xs text-muted-foreground mb-2">
+                          {p.tagline}
                         </p>
-                        <p className="text-lg font-bold" style={{ color: "var(--color-violet-primary)" }}>
-                          {(p.priceCents / 100).toFixed(2).replace(".", ",")} €
-                        </p>
-                      </div>
-                      <BuyOneShotButton
-                        planSlug={p.slug}
-                        isLoggedIn={isLoggedIn}
-                      />
+                      )}
+                      <p
+                        className="text-3xl font-bold"
+                        style={{ color: "var(--color-violet-primary)" }}
+                      >
+                        {(p.priceCents / 100).toFixed(2).replace(".", ",")} €
+                      </p>
+                      <p className="text-[10px] text-muted-foreground mt-1">
+                        Paiement unique · TVA non applicable
+                      </p>
                     </div>
-                  ))}
-              </div>
+                    <BuyOneShotButton
+                      planSlug={p.slug}
+                      isLoggedIn={isLoggedIn}
+                    />
+                  </div>
+                ))}
             </div>
           )}
+
+          {/* V25 : Table de comparaison dépliable */}
+          <details className="rounded-xl border bg-white overflow-hidden">
+            <summary
+              className="cursor-pointer px-5 py-3 text-sm font-semibold flex items-center justify-between hover:bg-zinc-50"
+              style={{ color: "var(--color-violet-deep)" }}
+            >
+              <span>📊 Comparer en détail les fonctionnalités</span>
+              <span className="text-xs opacity-60">cliquer pour déplier</span>
+            </summary>
+            <div className="p-4 border-t">
+              <OneShotCompareTable plans={oneShotPlans} />
+              <p className="text-xs text-muted-foreground italic text-center mt-4">
+                ✓ inclus &nbsp;·&nbsp; ✗ non inclus &nbsp;·&nbsp; ∞ illimité
+              </p>
+            </div>
+          </details>
         </div>
       </section>
 
@@ -180,54 +227,88 @@ export default async function TarifsPage() {
           >
             Abonnements bars, restos, lieux événementiels
           </h2>
-          <p className="text-center text-[var(--color-lavender-2)] opacity-90 mb-10 max-w-2xl mx-auto">
+          <p className="text-center text-[var(--color-lavender-2)] opacity-90 mb-8 max-w-2xl mx-auto">
             Quizz illimités, mode live, affichage TV, classements hebdo. Tout
             pour animer ton lieu sans souci. Sans engagement, résiliation à
             tout moment.
           </p>
 
-          <div className="bg-white/5 rounded-2xl p-2 md:p-4 backdrop-blur-sm">
-            <SubscriptionCompareTable plans={subscriptionPlans} />
-          </div>
-
-          {/* V25 : Boutons d'abonnement direct */}
+          {/* V25 : Cards d'abonnement directement en haut */}
           {subscriptionPlans.filter((p) => p.priceCents > 0).length > 0 && (
-            <div className="mt-8 max-w-4xl mx-auto">
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {subscriptionPlans
-                  .filter((p) => p.priceCents > 0)
-                  .map((p, idx) => (
-                    <div
-                      key={p.id}
-                      className="rounded-xl bg-white/10 border border-white/20 p-3 flex flex-col gap-2 backdrop-blur-sm"
-                    >
-                      <div className="text-center">
-                        <p className="font-display font-bold text-[var(--color-gold)]">
-                          {p.name}
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+              {subscriptionPlans
+                .filter((p) => p.priceCents > 0)
+                .map((p, idx) => (
+                  <div
+                    key={p.id}
+                    className="rounded-2xl bg-white/10 border-2 p-5 flex flex-col gap-3 backdrop-blur-sm hover:bg-white/15 transition"
+                    style={{
+                      borderColor:
+                        idx === 0
+                          ? "var(--color-gold)"
+                          : "rgba(255,255,255,0.2)",
+                    }}
+                  >
+                    <div className="text-center flex-1">
+                      <p className="font-display font-bold text-lg text-[var(--color-gold)] mb-1">
+                        {p.name}
+                      </p>
+                      {p.tagline && (
+                        <p className="text-xs text-[var(--color-lavender-2)] opacity-80 mb-2">
+                          {p.tagline}
                         </p>
-                        <p className="text-lg font-bold">
-                          {(p.priceCents / 100).toFixed(2).replace(".", ",")} €
-                          <span className="text-xs opacity-70">
-                            {" "}
-                            / {p.interval === "year" ? "an" : "mois"}
-                          </span>
-                        </p>
-                      </div>
-                      <SubscribeButton
-                        planSlug={p.slug}
-                        isLoggedIn={isLoggedIn}
-                        variant={idx === 0 ? "primary" : "secondary"}
-                      />
+                      )}
+                      <p className="text-3xl font-bold">
+                        {(p.priceCents / 100).toFixed(2).replace(".", ",")} €
+                        <span className="text-xs opacity-70">
+                          {" "}
+                          / {p.interval === "year" ? "an" : "mois"}
+                        </span>
+                      </p>
+                      <p className="text-[10px] text-[var(--color-lavender-2)] opacity-70 mt-1">
+                        Sans engagement · Résiliable à tout moment
+                      </p>
                     </div>
-                  ))}
-              </div>
+                    <SubscribeButton
+                      planSlug={p.slug}
+                      isLoggedIn={isLoggedIn}
+                      variant={idx === 0 ? "primary" : "secondary"}
+                    />
+                  </div>
+                ))}
             </div>
           )}
 
-          <p className="mt-10 text-center text-sm opacity-80">
+          {/* V25 : Table de comparaison dépliable */}
+          <details className="rounded-xl bg-white/5 border border-white/10 overflow-hidden backdrop-blur-sm">
+            <summary className="cursor-pointer px-5 py-3 text-sm font-semibold flex items-center justify-between hover:bg-white/5 text-[var(--color-gold)]">
+              <span>📊 Comparer en détail les fonctionnalités</span>
+              <span className="text-xs opacity-60">cliquer pour déplier</span>
+            </summary>
+            <div className="p-2 md:p-4 border-t border-white/10">
+              <SubscriptionCompareTable plans={subscriptionPlans} />
+            </div>
+          </details>
+
+          <p className="mt-8 text-center text-sm opacity-80">
             ✓ Sans engagement &nbsp;·&nbsp; ✓ Résiliation libre &nbsp;·&nbsp; ✓
             Pas de reconduction tacite
           </p>
+
+          {/* V25 : retour vers à l'unité */}
+          <div className="mt-8 text-center">
+            <a
+              href="#unite"
+              className="inline-flex items-center justify-center rounded-lg px-5 py-2.5 text-sm font-bold transition hover:opacity-90 border-2"
+              style={{
+                backgroundColor: "transparent",
+                color: "#ffffff",
+                borderColor: "rgba(255,255,255,0.4)",
+              }}
+            >
+              🎩 Voir les achats à l'unité ↑
+            </a>
+          </div>
         </div>
       </section>
 
