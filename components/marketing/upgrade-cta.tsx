@@ -14,11 +14,18 @@ export function UpgradeCTA({
   billing,
   variant = "default",
   compact = false,
+  minOneShotPriceCents,
 }: {
   billing?: BillingContext | null;
   variant?: "default" | "subtle";
   compact?: boolean;
+  /** V33 : prix du plus petit plan one-shot, affiché dans le sous-texte */
+  minOneShotPriceCents?: number | null;
 }) {
+  const minPriceStr =
+    typeof minOneShotPriceCents === "number" && minOneShotPriceCents > 0
+      ? `${(minOneShotPriceCents / 100).toFixed(0)} €`
+      : "5 €";
   const tier = billing?.tier ?? "free";
 
   // === Cas 1 : abonné actif → message neutre ===
@@ -163,8 +170,8 @@ export function UpgradeCTA({
               className="text-xs mt-1"
               style={{ color: isSubtle ? "#525252" : "#e9d5ff" }}
             >
-              Paie un quizz à l'unité <strong>dès 5 €</strong> ou prends un
-              abonnement <strong>illimité</strong> pour ton bar / ta boîte.
+              Paie un quizz à l'unité <strong>dès {minPriceStr}</strong> ou
+              prends un abonnement pour ton bar / ta boîte.
             </p>
           )}
         </div>

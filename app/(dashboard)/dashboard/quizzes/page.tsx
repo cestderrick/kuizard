@@ -18,6 +18,8 @@ import { UpgradeCTA } from "@/components/marketing/upgrade-cta";
 import { getBillingContext } from "@/lib/billing/context";
 import { auth } from "@/auth";
 import { getActivePlans } from "@/lib/plans/config";
+import { getUnusedCredits } from "@/lib/billing/credits";
+import { ApplyCreditButton } from "@/components/quiz/apply-credit-button";
 
 export const metadata: Metadata = {
   title: "Mes quizz",
@@ -59,6 +61,13 @@ export default async function QuizzesPage({
     getActivePlans("one_shot"),
   ]);
   const billing = await getBillingContext(session?.user?.id);
+  const credits = await getUnusedCredits(session?.user?.id);
+  const paidOneShotPrices = oneShotPlans
+    .filter((p) => p.priceCents > 0)
+    .map((p) => p.priceCents);
+  const minOneShotPriceCents = paidOneShotPrices.length
+    ? Math.min(...paidOneShotPrices)
+    : null;
   const upgradePlan = upgradeSlug
     ? oneShotPlans.find((p) => p.slug === upgradeSlug) ?? null
     : null;
@@ -183,7 +192,42 @@ export default async function QuizzesPage({
       )}
 
       {/* V24 : CTA paiement à l'unité / abonnement */}
-      <UpgradeCTA billing={billing} variant="subtle" />
+      <UpgradeCTA billing={billing} variant="subtle" minOneShotPriceCents={minOneShotPriceCents} />
+
+      {/* V33 : Banner crédits disponibles */}
+      {credits.length > 0 && (
+        <div
+          className="rounded-2xl border-2 p-4 sm:p-5"
+          style={{
+            borderColor: "var(--color-gold)",
+            background:
+              "linear-gradient(135deg, rgba(245,158,11,0.15), rgba(85,35,187,0.08))",
+          }}
+        >
+          <p
+            className="font-bold text-base mb-1"
+            style={{ color: "var(--color-violet-deep)" }}
+          >
+            ✨ Tu as {credits.length} crédit{credits.length > 1 ? "s" : ""}{" "}
+            non utilisé{credits.length > 1 ? "s" : ""}
+          </p>
+          <p className="text-sm text-muted-foreground">
+            Clique sur <strong>✨ Appliquer mon crédit</strong> sur le quiz à
+            débloquer dans la liste ci-dessous.
+            {credits.length > 0 && (
+              <span className="block mt-1 text-xs">
+                Crédits disponibles :{" "}
+                {credits
+                  .map(
+                    (c) =>
+                      `${c.planName ?? c.planSlug} (${(c.amountCents / 100).toFixed(0)} €)`
+                  )
+                  .join(", ")}
+              </span>
+            )}
+          </p>
+        </div>
+      )}
 
       {/* Liste ou état vide */}
       {quizzes.length === 0 ? (
@@ -264,6 +308,19 @@ export default async function QuizzesPage({
                 )}
 
                 <div className="flex flex-wrap gap-2">
+                  {/* V33 : bouton apply crédit si dispo et quiz pas encore payé */}
+                  {credits.length > 0 && quiz.status !== "FINISHED" && (
+                    <ApplyCreditButton
+                      quizId={quiz.id}
+                      quizTitle={quiz.title}
+                      credits={credits.map((c) => ({
+                        id: c.id,
+                        planName: c.planName,
+                        planSlug: c.planSlug,
+                        amountCents: c.amountCents,
+                      }))}
+                    />
+                  )}
                   {upgradePlan && (
                     <Button
                       asChild

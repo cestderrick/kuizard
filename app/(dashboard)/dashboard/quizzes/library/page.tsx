@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 };
 
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 9;
 
 export default async function LibraryBrowserPage({
   searchParams,
@@ -43,6 +43,7 @@ export default async function LibraryBrowserPage({
 
   const billing = await getBillingContext(userId);
   const weeklyFeatured = await getActiveWeeklyFeatured();
+  const weeklyQuizId = weeklyFeatured?.quizId ?? null;
 
   // V30 : participations du user (pour filtre "déjà utilisé" / "non utilisé"
   // ET pour l'historique en haut de page).
@@ -74,6 +75,9 @@ export default async function LibraryBrowserPage({
   if (lang) where.libraryLanguage = lang;
   if (access === "free") where.libraryIsPremium = false;
   if (access === "premium") where.libraryIsPremium = true;
+  if (access === "new") {
+    where.createdAt = { gte: new Date(Date.now() - THIRTY_DAYS_MS) };
+  }
   if (search) {
     where.OR = [
       { title: { contains: search, mode: "insensitive" } },
@@ -244,6 +248,16 @@ export default async function LibraryBrowserPage({
           >
             🔒 Premium
           </Link>
+          <Link
+            href={buildUrl({ access: "new", page: null })}
+            className={`text-xs px-3 py-1 rounded-full transition ${
+              access === "new"
+                ? "bg-[var(--color-violet-deep)] text-white"
+                : "bg-white border border-violet-100 hover:border-[var(--color-violet-deep)]"
+            }`}
+          >
+            ✨ Nouveau
+          </Link>
         </div>
 
         {/* Déjà utilisé / non utilisé */}
@@ -325,6 +339,7 @@ export default async function LibraryBrowserPage({
                 isSubscriber={billing.hasActiveSubscription}
                 isNew={isNew}
                 alreadyPlayed={alreadyPlayed}
+                isWeeklyFeatured={q.id === weeklyQuizId}
               />
             );
           })}
@@ -377,15 +392,54 @@ function QuizCard({
   isSubscriber,
   isNew,
   alreadyPlayed,
+  isWeeklyFeatured,
 }: {
   q: QuizCardData;
   isSubscriber: boolean;
   isNew?: boolean;
   alreadyPlayed?: boolean;
+  isWeeklyFeatured?: boolean;
 }) {
   const isLocked = q.libraryIsPremium && !isSubscriber;
+  // V33 : si le quiz est actuellement le featured de la semaine, on le grise
+  // pendant tout l'event (l'admin ne doit pas le dupliquer pendant ce temps).
+  const isFeatured = !!isWeeklyFeatured;
+  // V33 : date de publication formattée
+  const dateStr = new Intl.DateTimeFormat("fr-FR", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }).format(q.createdAt);
+
   return (
-    <li className="rounded-2xl bg-white border overflow-hidden flex flex-col relative">
+    <li
+      className="rounded-2xl bg-white border overflow-hidden flex flex-col relative"
+      style={{
+        opacity: isFeatured ? 0.55 : 1,
+        pointerEvents: isFeatured ? "none" : "auto",
+      }}
+    >
+      {isFeatured && (
+        <div
+          className="absolute inset-0 z-20 flex items-center justify-center pointer-events-auto"
+          style={{ background: "rgba(31, 27, 58, 0.7)" }}
+        >
+          <div
+            className="rounded-xl px-4 py-3 text-center max-w-[80%]"
+            style={{
+              background: "var(--color-gold)",
+              color: "var(--color-violet-deep)",
+            }}
+          >
+            <p className="text-xs uppercase tracking-[2px] font-bold">
+              🎁 Quizz de la semaine
+            </p>
+            <p className="text-[10px] mt-1">
+              Indisponible pendant l'event en cours
+            </p>
+          </div>
+        </div>
+      )}
       <div className="absolute top-2 right-2 z-10 flex flex-col gap-1.5 items-end">
         {isNew && (
           <span
@@ -464,7 +518,7 @@ function QuizCard({
         )}
         <p className="text-xs text-muted-foreground">
           {q._count.questions} question
-          {q._count.questions > 1 ? "s" : ""}
+          {q._count.questions > 1 ? "s" : ""} · 📅 publié le {dateStr}
         </p>
         <div className="mt-auto pt-3">
           {isLocked ? (

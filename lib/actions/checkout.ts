@@ -34,24 +34,30 @@ export async function createCheckoutSessionAction(
     return { ok: false, message: "Connexion requise pour payer." };
   }
 
-  const quizId = formData.get("quizId");
+  const quizIdRaw = formData.get("quizId");
   const planSlug = formData.get("planSlug");
   const promoCode = formData.get("promoCode");
 
-  if (typeof quizId !== "string" || !quizId) {
-    return { ok: false, message: "Quizz manquant." };
-  }
+  // V33 : quizId est maintenant OPTIONNEL. Sans quizId, on achète un crédit
+  // générique que l'user peut appliquer à n'importe quel quiz plus tard.
+  const quizId =
+    typeof quizIdRaw === "string" && quizIdRaw ? quizIdRaw : null;
+
   if (typeof planSlug !== "string" || !planSlug) {
     return { ok: false, message: "Plan manquant." };
   }
 
-  // Vérifie que le user possède bien ce quizz
-  const quiz = await prisma.quiz.findUnique({
-    where: { id: quizId },
-    select: { id: true, userId: true, title: true, code: true },
-  });
-  if (!quiz || quiz.userId !== session.user.id) {
-    return { ok: false, message: "Quizz introuvable." };
+  // Si quizId fourni, vérifier qu'il appartient bien au user
+  let quiz: { id: string; userId: string; title: string; code: string } | null =
+    null;
+  if (quizId) {
+    quiz = await prisma.quiz.findUnique({
+      where: { id: quizId },
+      select: { id: true, userId: true, title: true, code: true },
+    });
+    if (!quiz || quiz.userId !== session.user.id) {
+      return { ok: false, message: "Quizz introuvable." };
+    }
   }
 
   const plan = await prisma.planConfig.findUnique({
@@ -152,10 +158,13 @@ export async function createCheckoutSessionAction(
       ? plan.stripePriceId.trim()
       : null;
 
-  // V30.2 : capture non-null pour TS closure narrowing
+  // V30.2 + V33 : capture pour TS closure narrowing
   const planSnapshot = plan;
   const quizSnapshot = quiz;
   function buildLineItems(usePriceId: boolean) {
+    const productName = quizSnapshot
+      ? `Kuizard ${planSnapshot.name} — ${quizSnapshot.title}`
+      : `Crédit Kuizard — ${planSnapshot.name}`;
     return [
       {
         price_data:
@@ -165,7 +174,7 @@ export async function createCheckoutSessionAction(
                 currency: "eur",
                 unit_amount: planSnapshot.priceCents,
                 product_data: {
-                  name: `Kuizard ${planSnapshot.name} — ${quizSnapshot.title}`,
+                  name: productName,
                   description: planSnapshot.description ?? undefined,
                 },
               },
@@ -183,24 +192,28 @@ export async function createCheckoutSessionAction(
       line_items: buildLineItems(true),
       discounts: stripeCouponIds.map((id) => ({ coupon: id })),
       success_url: `${APP_URL}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${APP_URL}/payment/cancel?quiz_id=${quizId}`,
+      cancel_url: quizId
+        ? `${APP_URL}/payment/cancel?quiz_id=${quizId}`
+        : `${APP_URL}/tarifs`,
       // V32 : facture Stripe officielle générée + envoyée par email automatiquement
       invoice_creation: {
         enabled: true,
         invoice_data: {
-          description: `Achat Kuizard — ${plan.name} pour "${quiz.title}"`,
+          description: quiz
+            ? `Achat Kuizard — ${plan.name} pour "${quiz.title}"`
+            : `Crédit Kuizard — ${plan.name} (applicable sur un quiz au choix)`,
           footer:
             "Édité par Projiat — micro-entreprise. TVA non applicable (art. 293 B CGI).",
           metadata: {
             userId: session.user.id,
-            quizId: quiz.id,
+            quizId: quiz?.id ?? "",
             planSlug: plan.slug,
           },
         },
       },
       metadata: {
         userId: session.user.id,
-        quizId: quiz.id,
+        quizId: quiz?.id ?? "",
         planSlug: plan.slug,
         promoCodeId: promoCodeId ?? "",
       },
@@ -210,7 +223,7 @@ export async function createCheckoutSessionAction(
         setup_future_usage: "off_session",
         metadata: {
           userId: session.user.id,
-          quizId: quiz.id,
+          quizId: quiz?.id ?? "",
           planSlug: plan.slug,
         },
       },
@@ -234,7 +247,7 @@ export async function createCheckoutSessionAction(
           cancel_url: `${APP_URL}/payment/cancel?quiz_id=${quizId}`,
           metadata: {
             userId: session.user.id,
-            quizId: quiz.id,
+            quizId: quiz?.id ?? "",
             planSlug: plan.slug,
             promoCodeId: promoCodeId ?? "",
           },
@@ -242,7 +255,7 @@ export async function createCheckoutSessionAction(
             setup_future_usage: "off_session",
             metadata: {
               userId: session.user.id,
-              quizId: quiz.id,
+              quizId: quiz?.id ?? "",
               planSlug: plan.slug,
             },
           },
@@ -268,7 +281,7 @@ export async function createCheckoutSessionAction(
   await prisma.payment.create({
     data: {
       userId: session.user.id,
-      quizId: quiz.id,
+      quizId: quiz?.id ?? null,
       stripeSessionId: stripeSession.id,
       amountCents: plan.priceCents,
       planSlug: plan.slug,
