@@ -5,7 +5,7 @@ import { useActionState, useState } from "react";
 import { createCheckoutSessionAction } from "@/lib/actions/checkout";
 import { useActionToast } from "@/lib/hooks/use-action-toast";
 
-const INITIAL = { ok: false };
+const INITIAL: { ok: boolean; message?: string; url?: string } = { ok: false };
 
 export function CheckoutButton({
   quizId,

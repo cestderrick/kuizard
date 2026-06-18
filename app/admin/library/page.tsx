@@ -8,11 +8,28 @@ export const metadata: Metadata = {
   title: "Admin · Banque de quizz",
 };
 
-export default async function AdminLibraryPage() {
+export default async function AdminLibraryPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ q?: string }>;
+}) {
   await requireAdmin();
 
+  const sp = searchParams ? await searchParams : {};
+  const search = (sp.q ?? "").trim();
+
+  // V32 : filtre par recherche sur titre/description/tags
+  const where: Record<string, unknown> = { isLibrary: true };
+  if (search) {
+    where.OR = [
+      { title: { contains: search, mode: "insensitive" } },
+      { libraryDescription: { contains: search, mode: "insensitive" } },
+      { libraryTags: { has: search.toLowerCase() } },
+    ];
+  }
+
   const libraryQuizzes = await prisma.quiz.findMany({
-    where: { isLibrary: true },
+    where,
     orderBy: { createdAt: "desc" },
     include: {
       _count: { select: { questions: true } },
@@ -50,6 +67,41 @@ export default async function AdminLibraryPage() {
           📥 Import CSV
         </Link>
       </header>
+
+      {/* V32 : barre de recherche */}
+      <form
+        action="/admin/library"
+        method="get"
+        className="flex gap-2 items-center"
+      >
+        <input
+          type="search"
+          name="q"
+          defaultValue={search}
+          placeholder="🔍 Rechercher dans la banque (titre, description, tag)…"
+          className="flex-1 rounded-lg px-3 py-2 text-sm bg-[var(--color-night-2)] border border-[var(--color-gold)]/20 text-[var(--color-lavender)] placeholder:text-[var(--color-lavender-2)]/50 focus:outline-none focus:border-[var(--color-gold)]"
+        />
+        <button
+          type="submit"
+          className="px-4 py-2 rounded-lg bg-[var(--color-violet-primary)] text-white text-sm font-bold"
+        >
+          Rechercher
+        </button>
+        {search && (
+          <Link
+            href="/admin/library"
+            className="text-xs underline text-[var(--color-lavender-2)] opacity-80"
+          >
+            Effacer
+          </Link>
+        )}
+      </form>
+      {search && (
+        <p className="text-xs text-[var(--color-lavender-2)] opacity-80 -mt-2">
+          {libraryQuizzes.length} résultat{libraryQuizzes.length > 1 ? "s" : ""}{" "}
+          pour <strong>{search}</strong>
+        </p>
+      )}
 
       <section className="rounded-2xl bg-[var(--color-night-2)] border border-[var(--color-gold)]/30 p-5">
         <h2 className="font-display text-lg tracking-wide text-[var(--color-lavender)] mb-3">
@@ -112,7 +164,7 @@ export default async function AdminLibraryPage() {
                   )}
                   {q.libraryTags.length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-2">
-                      {q.libraryTags.map((tag) => (
+                      {q.libraryTags.map((tag: string) => (
                         <span
                           key={tag}
                           className="text-[10px] uppercase tracking-[1.5px] px-2 py-0.5 rounded-full bg-[var(--color-gold)]/10 text-[var(--color-gold-light)]"

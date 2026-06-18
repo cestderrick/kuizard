@@ -45,19 +45,19 @@ export function QuizLibraryToggle({
         </span>
       </label>
 
-      {/* V26 : flag premium → réservé abonnés */}
+      {/* V26 : flag premium → réservé abonnés (V32 : coché par défaut) */}
       <label className="flex items-start gap-2 cursor-pointer pl-6 border-l-2 border-[var(--color-gold)]">
         <input
           type="checkbox"
           name="libraryIsPremium"
-          defaultChecked={libraryIsPremium}
+          defaultChecked={libraryIsPremium ?? true}
           className="size-4 cursor-pointer accent-[var(--color-gold)] mt-0.5"
         />
         <span className="text-sm">
-          <span className="font-semibold">🔒 Réservé aux abonnés</span>
+          <span className="font-semibold">🔒 Réservé aux abonnés (recommandé)</span>
           <span className="block text-xs text-muted-foreground">
-            Si coché, seuls les users avec un abonnement actif pourront
-            dupliquer ce quizz. Sinon le quizz est gratuit pour tous.
+            Coché par défaut : seuls les abonnés peuvent dupliquer. Décoche
+            pour rendre ce quizz gratuit accessible à tous.
           </span>
         </span>
       </label>

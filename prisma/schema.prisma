@@ -265,8 +265,10 @@ model Quiz {
   // ou le modifier. Géré côté admin via /admin/quizzes ou le dashboard normal.
   isLibrary         Boolean    @default(false)
   // V26 : un quiz library "premium" n'est duplicable que par un user abonné.
-  // false = quiz gratuit accessible à tous (comportement par défaut).
-  libraryIsPremium  Boolean    @default(false)
+  // V32 : default = true. Volonté produit : la quasi-totalité de la banque
+  // est réservée aux abonnés, l'admin choisit explicitement ceux qui doivent
+  // être gratuits en cochant la case (faux = gratuit).
+  libraryIsPremium  Boolean    @default(true)
   // Description courte pour le browser library côté user
   libraryDescription String?   @db.Text
   // Tags pour le filtre côté user (array de string)

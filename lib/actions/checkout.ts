@@ -184,6 +184,20 @@ export async function createCheckoutSessionAction(
       discounts: stripeCouponIds.map((id) => ({ coupon: id })),
       success_url: `${APP_URL}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${APP_URL}/payment/cancel?quiz_id=${quizId}`,
+      // V32 : facture Stripe officielle générée + envoyée par email automatiquement
+      invoice_creation: {
+        enabled: true,
+        invoice_data: {
+          description: `Achat Kuizard — ${plan.name} pour "${quiz.title}"`,
+          footer:
+            "Édité par Projiat — micro-entreprise. TVA non applicable (art. 293 B CGI).",
+          metadata: {
+            userId: session.user.id,
+            quizId: quiz.id,
+            planSlug: plan.slug,
+          },
+        },
+      },
       metadata: {
         userId: session.user.id,
         quizId: quiz.id,
