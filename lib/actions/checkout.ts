@@ -146,35 +146,41 @@ export async function createCheckoutSessionAction(
     }
   }
 
-  // V30 : protection contre stripePriceId = "" (vide mais pas null) qui faisait
-  // exploser Stripe avec "No such price: ". On normalise.
+  // V30 : protection contre stripePriceId vide
   const safeStripePriceId =
     plan.stripePriceId && plan.stripePriceId.trim().length > 0
       ? plan.stripePriceId.trim()
       : null;
 
-  // Construction de la session de paiement
+  // V30.2 : capture non-null pour TS closure narrowing
+  const planSnapshot = plan;
+  const quizSnapshot = quiz;
+  function buildLineItems(usePriceId: boolean) {
+    return [
+      {
+        price_data:
+          usePriceId && safeStripePriceId
+            ? undefined
+            : {
+                currency: "eur",
+                unit_amount: planSnapshot.priceCents,
+                product_data: {
+                  name: `Kuizard ${planSnapshot.name} — ${quizSnapshot.title}`,
+                  description: planSnapshot.description ?? undefined,
+                },
+              },
+        price: usePriceId ? safeStripePriceId ?? undefined : undefined,
+        quantity: 1,
+      },
+    ];
+  }
+
   let stripeSession: { id: string; url: string | null };
   try {
     stripeSession = await stripe.checkout.sessions.create({
       mode: "payment",
       customer: customerId,
-      line_items: [
-        {
-          price_data: safeStripePriceId
-            ? undefined
-            : {
-                currency: "eur",
-                unit_amount: plan.priceCents,
-                product_data: {
-                  name: `Kuizard ${plan.name} — ${quiz.title}`,
-                  description: plan.description ?? undefined,
-                },
-              },
-          price: safeStripePriceId ?? undefined,
-          quantity: 1,
-        },
-      ],
+      line_items: buildLineItems(true),
       discounts: stripeCouponIds.map((id) => ({ coupon: id })),
       success_url: `${APP_URL}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${APP_URL}/payment/cancel?quiz_id=${quizId}`,
@@ -196,21 +202,52 @@ export async function createCheckoutSessionAction(
       },
     });
   } catch (err) {
-    // V30 : on log + on PROPAGE le message Stripe pour faciliter le debug
-    console.error("[Stripe] Erreur création session checkout one-shot :", {
-      planSlug: plan.slug,
-      planPriceCents: plan.priceCents,
-      stripePriceId: plan.stripePriceId,
-      hasCoupon: stripeCouponIds.length > 0,
-      customerId,
-      err,
-    });
-    const detail =
-      err instanceof Error ? err.message : "Erreur Stripe inconnue.";
-    return {
-      ok: false,
-      message: `Stripe : ${detail}`,
-    };
+    // V30.2 : retry automatique si "No such price" → fallback price_data
+    const isMissingPrice =
+      err instanceof Error &&
+      /No such price|resource_missing/i.test(err.message);
+    if (isMissingPrice && safeStripePriceId) {
+      console.warn(
+        `[Stripe] price ${safeStripePriceId} introuvable — retry avec price_data`
+      );
+      try {
+        stripeSession = await stripe.checkout.sessions.create({
+          mode: "payment",
+          customer: customerId,
+          line_items: buildLineItems(false),
+          discounts: stripeCouponIds.map((id) => ({ coupon: id })),
+          success_url: `${APP_URL}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
+          cancel_url: `${APP_URL}/payment/cancel?quiz_id=${quizId}`,
+          metadata: {
+            userId: session.user.id,
+            quizId: quiz.id,
+            planSlug: plan.slug,
+            promoCodeId: promoCodeId ?? "",
+          },
+          payment_intent_data: {
+            setup_future_usage: "off_session",
+            metadata: {
+              userId: session.user.id,
+              quizId: quiz.id,
+              planSlug: plan.slug,
+            },
+          },
+        });
+      } catch (retryErr) {
+        console.error("[Stripe] retry price_data échoue :", retryErr);
+        const d = retryErr instanceof Error ? retryErr.message : "Erreur inconnue.";
+        return { ok: false, message: `Stripe : ${d}` };
+      }
+    } else {
+      console.error("[Stripe] Erreur création session :", {
+        planSlug: plan.slug,
+        stripePriceId: plan.stripePriceId,
+        customerId,
+        err,
+      });
+      const d = err instanceof Error ? err.message : "Erreur inconnue.";
+      return { ok: false, message: `Stripe : ${d}` };
+    }
   }
 
   // Trace de la tentative en BDD (status "pending")

@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -80,6 +81,16 @@ export function QuizMetaForm({
     updateQuizMetaAction,
     initialState
   );
+
+  // V30.3 : router.refresh() après save ok pour forcer le re-render serveur
+  // (sinon defaultMode reste figé sur l'ancienne valeur et le useEffect ci-dessus
+  // remet le mode local à l'ancien — bug "passe en SCHEDULED puis revient LIVE")
+  const router = useRouter();
+  useEffect(() => {
+    if (state.ok) {
+      router.refresh();
+    }
+  }, [state.ok, router]);
   useActionToast(state);
 
   return (

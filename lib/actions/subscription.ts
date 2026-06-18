@@ -90,7 +90,6 @@ export async function createSubscriptionCheckoutAction(
       },
     });
   } catch (err) {
-    // V30 : propage l'erreur Stripe réelle pour faciliter le debug
     console.error("[subscription] stripe err:", {
       planSlug: plan.slug,
       stripePriceId: plan.stripePriceId,
@@ -99,7 +98,11 @@ export async function createSubscriptionCheckoutAction(
     });
     const detail =
       err instanceof Error ? err.message : "Erreur Stripe inconnue.";
-    return { ok: false, message: `Stripe : ${detail}` };
+    const hint =
+      /No such price|resource_missing/i.test(detail)
+        ? " — vérifie que le stripePriceId dans /admin/plans correspond au même mode (test/live) que ta clé STRIPE_SECRET_KEY."
+        : "";
+    return { ok: false, message: `Stripe : ${detail}${hint}` };
   }
 
   if (!stripeSession.url) {

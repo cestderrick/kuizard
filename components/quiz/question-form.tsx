@@ -163,9 +163,26 @@ export function QuestionForm({ quizId, question }: Props) {
         >
           <option value="SINGLE_CHOICE">QCM — choix unique</option>
           <option value="MULTIPLE_CHOICE">QCM — choix multiples</option>
-          <option value="TRUE_FALSE">Vrai / Faux</option>
-          <option value="TEXT">Réponse texte libre</option>
+          <option value="TRUE_FALSE" disabled>
+            Vrai / Faux — fonctionnalité à venir
+          </option>
+          <option value="TEXT" disabled>
+            Réponse texte libre — fonctionnalité à venir
+          </option>
         </select>
+        {type === "MULTIPLE_CHOICE" && (
+          <p
+            className="text-xs mt-1 rounded-md px-2 py-1.5"
+            style={{
+              backgroundColor: "rgba(245,158,11,0.1)",
+              color: "var(--color-violet-deep)",
+            }}
+          >
+            ⚠️ <strong>QCM choix multiples</strong> : le joueur doit cocher
+            <strong> exactement</strong> toutes les bonnes réponses (ni plus,
+            ni moins) pour gagner les points. Pas de score partiel.
+          </p>
+        )}
       </div>
 
       {/* Image (optionnelle) */}
