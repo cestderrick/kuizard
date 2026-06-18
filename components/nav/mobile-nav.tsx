@@ -9,9 +9,9 @@ type Item = { href: string; label: string; icon: string; exact?: boolean };
 const ITEMS: Item[] = [
   { href: "/dashboard", label: "Tableau de bord", icon: "📊", exact: true },
   { href: "/dashboard/quizzes", label: "Mes quizz", icon: "🎩" },
+  { href: "/dashboard/quizzes/library", label: "Quizthèque", icon: "📚" },
   { href: "/dashboard/stats", label: "Stats", icon: "📈" },
-  { href: "/dashboard/messages", label: "Messages", icon: "✉️" },
-  { href: "/dashboard/suggestions", label: "Suggestions", icon: "💬" },
+  { href: "/tarifs", label: "Tarifs", icon: "💳" },
   { href: "/", label: "Page d'accueil", icon: "🏠" },
 ];
 
@@ -131,6 +131,16 @@ export function MobileNav() {
                 href="/dashboard/promos"
                 icon="🎟️"
                 label="Mes codes promos"
+              />
+              <MobileLink
+                href="/dashboard/messages"
+                icon="✉️"
+                label="Messages"
+              />
+              <MobileLink
+                href="/dashboard/suggestions"
+                icon="💡"
+                label="Suggestions"
               />
             </div>
           </aside>

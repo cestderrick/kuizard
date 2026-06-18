@@ -11,6 +11,7 @@ import { z } from "zod";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { getEffectivePlan } from "@/lib/plans/gating";
+import { assertQuizUnlocked } from "@/lib/quiz/lock";
 
 // -----------------------------------------------------
 // Vérifie qu'un quizz appartient bien à l'utilisateur connecté.
@@ -38,6 +39,9 @@ export async function createQuestionAction(formData: FormData) {
 
   const quiz = await assertOwnQuiz(quizId, session.user.id);
   if (!quiz) throw new Error("Quizz introuvable.");
+
+  // V29 : empêche l'ajout de questions sur un quizz déjà joué (sauf abonnés)
+  await assertQuizUnlocked(quizId);
 
   // Gating : check du nombre max de questions du plan en cours.
   // On NE THROW PAS (Next.js 16 montrerait une page d'erreur générique
@@ -148,6 +152,16 @@ export async function updateQuestionAction(
   const quiz = await assertOwnQuiz(quizId, session.user.id);
   if (!quiz) return { ok: false, message: "Quizz introuvable." };
 
+  // V29 : empêche la modification sur un quizz déjà joué (sauf abonnés)
+  try {
+    await assertQuizUnlocked(quizId);
+  } catch (e) {
+    return {
+      ok: false,
+      message: e instanceof Error ? e.message : "Quizz verrouillé.",
+    };
+  }
+
   // Parser les options
   let options: { label: string; isCorrect: boolean }[];
   try {
@@ -233,6 +247,9 @@ export async function deleteQuestionAction(formData: FormData) {
 
   const quiz = await assertOwnQuiz(quizId, session.user.id);
   if (!quiz) throw new Error("Quizz introuvable.");
+
+  // V29 : empêche la suppression de question sur un quizz déjà joué
+  await assertQuizUnlocked(quizId);
 
   await prisma.question.deleteMany({
     where: { id: questionId, quizId },

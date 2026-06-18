@@ -56,13 +56,18 @@ export default async function ClassementPage({
       timeStyle: "short",
     }).format(quizMeta.scheduledCloseAt);
 
+    // V29 : participation du joueur courant (visible même avant clôture)
+    const myEntryScheduled = myParticipationId
+      ? data.entries.find((e) => e.participationId === myParticipationId) ?? null
+      : null;
+
     // Stats anonymisées pour donner un aperçu sans permettre la triche
     const completedCount = data.entries.length;
     const topScore = completedCount > 0 ? data.entries[0].score : 0;
 
     return (
       <main className="min-h-screen flex items-center justify-center px-4 py-12 bg-[var(--color-night)] text-[var(--color-lavender)]">
-        <div className="max-w-lg text-center w-full">
+        <div className="max-w-xl text-center w-full">
           <div className="text-6xl mb-4" aria-hidden>
             🤫
           </div>
@@ -76,6 +81,51 @@ export default async function ClassementPage({
             Le classement et les pseudos seront dévoilés à la clôture du
             quizz, le <strong>{closeStr}</strong>.
           </p>
+
+          {/* V29 : Bloc "Mes résultats" même avant clôture */}
+          {myEntryScheduled && myParticipationId && (
+            <section
+              className="rounded-2xl p-4 mb-5 border-2 text-left"
+              style={{
+                borderColor: "var(--color-gold)",
+                background:
+                  "linear-gradient(135deg, rgba(245,158,11,0.18), rgba(124,58,237,0.18))",
+              }}
+            >
+              <div className="flex items-start justify-between gap-3 flex-wrap mb-3">
+                <div>
+                  <p className="text-xs uppercase tracking-[3px] text-[var(--color-gold)] font-semibold">
+                    🎯 Tes résultats
+                  </p>
+                  <p className="text-lg font-display tracking-wide mt-1">
+                    {myEntryScheduled.nickname}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p
+                    className="font-display font-bold text-3xl leading-none"
+                    style={{ color: "var(--color-gold-light)" }}
+                  >
+                    {myEntryScheduled.score}
+                    <span className="text-base text-[var(--color-lavender-2)] opacity-70">
+                      {" "}
+                      / {data.totalPoints}
+                    </span>
+                  </p>
+                </div>
+              </div>
+              <p className="text-xs text-[var(--color-lavender-2)] opacity-80">
+                Ton score est enregistré. Le classement complet et les pseudos
+                des autres joueurs seront dévoilés à la clôture.
+              </p>
+              <div className="mt-3">
+                <MyAnswersPanel
+                  code={data.code}
+                  participationId={myParticipationId}
+                />
+              </div>
+            </section>
+          )}
 
           {/* Stats anonymisées */}
           {completedCount > 0 && (

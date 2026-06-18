@@ -7,6 +7,8 @@ import { listMyQuizzes } from "@/lib/actions/quiz";
 import { countUnreadForUser } from "@/lib/actions/messages";
 import { getBillingContext } from "@/lib/billing/context";
 import { UpgradeCTA } from "@/components/marketing/upgrade-cta";
+import { getActiveWeeklyFeatured } from "@/lib/weekly/featured";
+import { WeeklyFeaturedCard } from "@/components/home/weekly-featured-card";
 import { PublicStats } from "@/components/stats/public-stats";
 import { getMessages } from "@/lib/i18n/get-locale";
 
@@ -48,9 +50,10 @@ export const metadata: Metadata = {
 export default async function DashboardPage() {
   const session = await auth();
   const userName = session?.user?.name ?? "magicien(ne)";
-  const [quizzes, billing] = await Promise.all([
+  const [quizzes, billing, weeklyFeatured] = await Promise.all([
     listMyQuizzes(),
     getBillingContext(session?.user?.id),
+    getActiveWeeklyFeatured(),
   ]);
   const recent = quizzes.slice(0, 3);
   const messages = await getMessages();
@@ -140,6 +143,13 @@ export default async function DashboardPage() {
 
       {/* V25 : CTA paiement / abonnement (contextuel) */}
       <UpgradeCTA billing={billing} variant="subtle" />
+
+      {/* V29 : Quizz de la semaine en évidence */}
+      {weeklyFeatured && (
+        <div className="-mx-4 sm:-mx-0">
+          <WeeklyFeaturedCard data={weeklyFeatured} />
+        </div>
+      )}
 
       {/* Mes quizz (récents) */}
       <Card>

@@ -74,17 +74,13 @@ export default async function DashboardLayout({
                 href="/dashboard/quizzes"
                 label={navT.quizzes}
               />
+              {/* V26 : Quizthèque visible dans la navbar principale */}
+              <DashboardNavLink
+                href="/dashboard/quizzes/library"
+                label="📚 Quizthèque"
+              />
               <DashboardNavLink href="/dashboard/stats" label={navT.stats} />
-              <DashboardNavLink
-                href="/dashboard/messages"
-                label={navT.messages}
-              />
-              <DashboardNavLink
-                href="/dashboard/suggestions"
-                label={navT.suggestions}
-              />
               <DashboardNavLink href="/tarifs" label="💳 Tarifs" />
-              <DashboardNavLink href="/" label={navT.home} />
             </nav>
           </div>
 
@@ -101,6 +97,9 @@ export default async function DashboardLayout({
                 subscription: navT.subscription,
                 payments: navT.payments,
                 promos: navT.promos,
+                messages: navT.messages,
+                suggestions: navT.suggestions,
+                home: navT.home,
                 admin: navT.admin,
                 logout: navT.logout,
               }}

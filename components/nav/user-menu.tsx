@@ -24,6 +24,9 @@ export function UserMenu({
     subscription: string;
     payments: string;
     promos: string;
+    messages: string;
+    suggestions: string;
+    home: string;
     admin: string;
     logout: string;
   };
@@ -106,7 +109,7 @@ export function UserMenu({
             <MenuLink
               href="/"
               icon="🏠"
-              label="Page d'accueil"
+              label={labels.home}
               onClick={() => setOpen(false)}
             />
             <MenuLink
@@ -131,6 +134,22 @@ export function UserMenu({
               href="/dashboard/promos"
               icon="🎟️"
               label={labels.promos}
+              onClick={() => setOpen(false)}
+            />
+          </div>
+
+          {/* V29 : Messages + Suggestions déplacés ici depuis la navbar */}
+          <div className="py-1.5 border-t border-violet-100">
+            <MenuLink
+              href="/dashboard/messages"
+              icon="✉️"
+              label={labels.messages}
+              onClick={() => setOpen(false)}
+            />
+            <MenuLink
+              href="/dashboard/suggestions"
+              icon="💡"
+              label={labels.suggestions}
               onClick={() => setOpen(false)}
             />
           </div>

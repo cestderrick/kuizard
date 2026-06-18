@@ -33,6 +33,7 @@ import {
 import { parsePrizes } from "@/lib/quiz/prizes";
 import { parseTheme } from "@/lib/quiz/theme";
 import { getEffectivePlan } from "@/lib/plans/gating";
+import { getQuizLockState } from "@/lib/quiz/lock";
 
 export const metadata: Metadata = {
   title: "Éditer un quizz",
@@ -64,6 +65,8 @@ export default async function EditQuizPage({
 
   // Plan effectif (sert à afficher les limites + features verrouillées)
   const plan = await getEffectivePlan(quiz.id);
+  // V29 : état de verrouillage (quizz déjà utilisé)
+  const lock = await getQuizLockState(quiz.id);
   const limits = plan.limits;
   const usedQuestions = quiz.questions.length;
   const maxQuestions = limits.maxQuestions ?? 5;
@@ -151,6 +154,50 @@ export default async function EditQuizPage({
           </div>
         </div>
       )}
+      {/* V29 : Banner verrouillage si quizz déjà utilisé */}
+      {lock.isLocked && (
+        <div
+          className="rounded-2xl border-2 p-4 sm:p-5"
+          style={{
+            borderColor: "rgba(245,158,11,0.6)",
+            background:
+              "linear-gradient(135deg, rgba(245,158,11,0.12), rgba(85,35,187,0.06))",
+          }}
+        >
+          <div className="flex items-start gap-3">
+            <div className="text-2xl shrink-0">🔒</div>
+            <div className="flex-1 min-w-0">
+              <p
+                className="font-bold text-base mb-1"
+                style={{ color: "var(--color-violet-deep)" }}
+              >
+                Ce quizz a déjà été utilisé — questions verrouillées
+              </p>
+              <p className="text-sm text-muted-foreground mb-3">
+                {lock.reason === "finished"
+                  ? "Tu as terminé une session live de ce quizz. Pour modifier les questions / le mode / les dates, "
+                  : "Au moins un participant a complété ce quizz. Pour modifier les questions / le mode / les dates, "}
+                duplique-le ou prends un abonnement illimité.
+                <br />
+                <strong>Le titre, la description, le thème et les lots restent modifiables.</strong>
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <Link
+                  href="/tarifs#abonnements"
+                  className="inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-bold transition hover:opacity-90"
+                  style={{
+                    backgroundColor: "var(--color-gold)",
+                    color: "var(--color-violet-deep)",
+                  }}
+                >
+                  🔁 Voir les abos
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <Link
