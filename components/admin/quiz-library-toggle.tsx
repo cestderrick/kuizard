@@ -12,12 +12,14 @@ const INITIAL: LibraryToggleState = { ok: false };
 export function QuizLibraryToggle({
   quizId,
   isLibrary,
+  libraryIsPremium,
   libraryDescription,
   libraryTags,
   libraryLanguage,
 }: {
   quizId: string;
   isLibrary: boolean;
+  libraryIsPremium: boolean;
   libraryDescription: string | null;
   libraryTags: string[];
   libraryLanguage: string | null;
@@ -40,6 +42,23 @@ export function QuizLibraryToggle({
         />
         <span className="text-sm font-semibold">
           Ajouter à la banque de quizz publique
+        </span>
+      </label>
+
+      {/* V26 : flag premium → réservé abonnés */}
+      <label className="flex items-start gap-2 cursor-pointer pl-6 border-l-2 border-[var(--color-gold)]">
+        <input
+          type="checkbox"
+          name="libraryIsPremium"
+          defaultChecked={libraryIsPremium}
+          className="size-4 cursor-pointer accent-[var(--color-gold)] mt-0.5"
+        />
+        <span className="text-sm">
+          <span className="font-semibold">🔒 Réservé aux abonnés</span>
+          <span className="block text-xs text-muted-foreground">
+            Si coché, seuls les users avec un abonnement actif pourront
+            dupliquer ce quizz. Sinon le quizz est gratuit pour tous.
+          </span>
         </span>
       </label>
 

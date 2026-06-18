@@ -264,6 +264,9 @@ model Quiz {
   // qu'un user peut DUPLIQUER dans son propre compte pour l'utiliser tel quel
   // ou le modifier. Géré côté admin via /admin/quizzes ou le dashboard normal.
   isLibrary         Boolean    @default(false)
+  // V26 : un quiz library "premium" n'est duplicable que par un user abonné.
+  // false = quiz gratuit accessible à tous (comportement par défaut).
+  libraryIsPremium  Boolean    @default(false)
   // Description courte pour le browser library côté user
   libraryDescription String?   @db.Text
   // Tags pour le filtre côté user (array de string)

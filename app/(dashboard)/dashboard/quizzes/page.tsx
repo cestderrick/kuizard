@@ -17,6 +17,7 @@ import { LiveQuickActions } from "@/components/quiz/live-quick-actions";
 import { UpgradeCTA } from "@/components/marketing/upgrade-cta";
 import { getBillingContext } from "@/lib/billing/context";
 import { auth } from "@/auth";
+import { getActivePlans } from "@/lib/plans/config";
 
 export const metadata: Metadata = {
   title: "Mes quizz",
@@ -44,13 +45,23 @@ const MODE_LABEL: Record<string, string> = {
   SCHEDULED: "Créneau horaire",
 };
 
-export default async function QuizzesPage() {
-  const [quizzes, messages, session] = await Promise.all([
+export default async function QuizzesPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ upgrade?: string }>;
+}) {
+  const sp = searchParams ? await searchParams : {};
+  const upgradeSlug = sp.upgrade ?? null;
+  const [quizzes, messages, session, oneShotPlans] = await Promise.all([
     listMyQuizzes(),
     getMessages(),
     auth(),
+    getActivePlans("one_shot"),
   ]);
   const billing = await getBillingContext(session?.user?.id);
+  const upgradePlan = upgradeSlug
+    ? oneShotPlans.find((p) => p.slug === upgradeSlug) ?? null
+    : null;
   const t = messages.quizzes;
   const dt = messages.dashboard;
 
@@ -119,6 +130,54 @@ export default async function QuizzesPage() {
           </Button>
         </div>
       </div>
+
+      {/* V27 : Bandeau d'invite quand on arrive depuis /tarifs?upgrade=... */}
+      {upgradePlan && quizzes.length > 0 && (
+        <div
+          className="rounded-2xl border-2 p-4 sm:p-5"
+          style={{
+            borderColor: "var(--color-gold)",
+            background:
+              "linear-gradient(135deg, rgba(245,158,11,0.12), rgba(85,35,187,0.06))",
+          }}
+        >
+          <p
+            className="font-bold text-base mb-1"
+            style={{ color: "var(--color-violet-deep)" }}
+          >
+            ✨ Tu as choisi le plan{" "}
+            <span style={{ color: "var(--color-violet-primary)" }}>
+              {upgradePlan.name}
+            </span>{" "}
+            ({(upgradePlan.priceCents / 100).toFixed(2).replace(".", ",")} €)
+          </p>
+          <p className="text-sm text-muted-foreground">
+            Clique sur <strong>✨ Booster avec {upgradePlan.name}</strong> du
+            quizz à upgrader ci-dessous. Tu paieras avec Stripe sur la page
+            suivante.
+          </p>
+        </div>
+      )}
+      {upgradePlan && quizzes.length === 0 && (
+        <div
+          className="rounded-2xl border-2 p-4 sm:p-5"
+          style={{
+            borderColor: "var(--color-gold)",
+            background:
+              "linear-gradient(135deg, rgba(245,158,11,0.12), rgba(85,35,187,0.06))",
+          }}
+        >
+          <p
+            className="font-bold text-base mb-1"
+            style={{ color: "var(--color-violet-deep)" }}
+          >
+            ✨ Tu as choisi le plan {upgradePlan.name}
+          </p>
+          <p className="text-sm text-muted-foreground mb-3">
+            Crée d'abord un quizz, tu pourras l'upgrader ensuite.
+          </p>
+        </div>
+      )}
 
       {/* V24 : CTA paiement à l'unité / abonnement */}
       <UpgradeCTA billing={billing} variant="subtle" />
@@ -202,6 +261,23 @@ export default async function QuizzesPage() {
                 )}
 
                 <div className="flex flex-wrap gap-2">
+                  {upgradePlan && (
+                    <Button
+                      asChild
+                      size="sm"
+                      style={{
+                        backgroundColor: "var(--color-gold)",
+                        color: "var(--color-violet-deep)",
+                      }}
+                      className="font-bold"
+                    >
+                      <Link
+                        href={`/dashboard/quizzes/${quiz.id}/upgrade?plan=${upgradePlan.slug}`}
+                      >
+                        ✨ Booster avec {upgradePlan.name}
+                      </Link>
+                    </Button>
+                  )}
                   <Button asChild variant="outline" size="sm">
                     <Link href={`/dashboard/quizzes/${quiz.id}/edit`}>
                       Éditer

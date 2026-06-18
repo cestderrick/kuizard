@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { generateUniqueQuizCode } from "@/lib/quiz/generate-code";
+import { getBillingContext } from "@/lib/billing/context";
 
 export type DuplicateState = {
   ok: boolean;
@@ -47,6 +48,18 @@ export async function duplicateLibraryQuizAction(
   });
   if (!source || !source.isLibrary) {
     return { ok: false, message: "Ce quiz n'est pas disponible dans la banque." };
+  }
+
+  // V26 : gating premium → uniquement abonnés actifs
+  if (source.libraryIsPremium) {
+    const billing = await getBillingContext(userId);
+    if (!billing.hasActiveSubscription) {
+      return {
+        ok: false,
+        message:
+          "Ce quizz est réservé aux abonnés. Souscris à un abonnement pour le dupliquer.",
+      };
+    }
   }
 
   // 2. Crée le nouveau quiz dans le compte du user

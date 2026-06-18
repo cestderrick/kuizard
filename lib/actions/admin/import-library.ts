@@ -102,6 +102,7 @@ export async function importLibraryCsvAction(
       language: string;
       libraryDescription: string;
       libraryTags: string[];
+      libraryIsPremium: boolean;
       questions: Row[];
     }
   >();
@@ -124,6 +125,10 @@ export async function importLibraryCsvAction(
         language: row.quiz_language || "fr",
         libraryDescription: row.library_description ?? "",
         libraryTags: parseTags(row.library_tags ?? ""),
+        // V26 : "1", "true", "yes", "premium" → premium ; sinon gratuit
+        libraryIsPremium: ["1", "true", "yes", "premium"].includes(
+          (row.library_is_premium ?? "").toString().trim().toLowerCase()
+        ),
         questions: [],
       });
     }
@@ -153,6 +158,7 @@ export async function importLibraryCsvAction(
             settings: {} as object,
             mode: group.mode,
             isLibrary: true,
+            libraryIsPremium: group.libraryIsPremium,
             libraryDescription: group.libraryDescription || null,
             libraryTags: group.libraryTags,
             libraryLanguage: group.language,

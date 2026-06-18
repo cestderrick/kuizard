@@ -17,6 +17,10 @@ const schema = z.object({
     (v) => v === "on" || v === "true" || v === true,
     z.boolean()
   ),
+  libraryIsPremium: z.preprocess(
+    (v) => v === "on" || v === "true" || v === true,
+    z.boolean()
+  ),
   libraryDescription: z.string().max(500).optional(),
   libraryTags: z.string().max(500).optional(),
   libraryLanguage: z.string().max(8).optional(),
@@ -31,6 +35,7 @@ export async function toggleLibraryQuizAction(
   const parsed = schema.safeParse({
     quizId: formData.get("quizId"),
     isLibrary: formData.get("isLibrary"),
+    libraryIsPremium: formData.get("libraryIsPremium"),
     libraryDescription: formData.get("libraryDescription") || undefined,
     libraryTags: formData.get("libraryTags") || undefined,
     libraryLanguage: formData.get("libraryLanguage") || undefined,
@@ -53,6 +58,7 @@ export async function toggleLibraryQuizAction(
     where: { id: parsed.data.quizId },
     data: {
       isLibrary: parsed.data.isLibrary,
+      libraryIsPremium: parsed.data.libraryIsPremium,
       libraryDescription: parsed.data.libraryDescription ?? null,
       libraryTags: uniqueTags,
       libraryLanguage: parsed.data.libraryLanguage || null,

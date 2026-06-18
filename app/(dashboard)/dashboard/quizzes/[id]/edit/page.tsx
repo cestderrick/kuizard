@@ -73,6 +73,7 @@ export default async function EditQuizPage({
   let isAdmin = false;
   let libraryFields = {
     isLibrary: false,
+    libraryIsPremium: false,
     libraryDescription: null as string | null,
     libraryTags: [] as string[],
     libraryLanguage: null as string | null,
@@ -88,6 +89,7 @@ export default async function EditQuizPage({
         where: { id: quiz.id },
         select: {
           isLibrary: true,
+          libraryIsPremium: true,
           libraryDescription: true,
           libraryTags: true,
           libraryLanguage: true,
@@ -96,6 +98,7 @@ export default async function EditQuizPage({
       if (fullQuiz) {
         libraryFields = {
           isLibrary: fullQuiz.isLibrary,
+          libraryIsPremium: fullQuiz.libraryIsPremium,
           libraryDescription: fullQuiz.libraryDescription,
           libraryTags: fullQuiz.libraryTags,
           libraryLanguage: fullQuiz.libraryLanguage,
@@ -429,6 +432,7 @@ export default async function EditQuizPage({
             <QuizLibraryToggle
               quizId={quiz.id}
               isLibrary={libraryFields.isLibrary}
+              libraryIsPremium={libraryFields.libraryIsPremium}
               libraryDescription={libraryFields.libraryDescription}
               libraryTags={libraryFields.libraryTags}
               libraryLanguage={libraryFields.libraryLanguage}
