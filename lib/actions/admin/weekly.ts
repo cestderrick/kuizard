@@ -88,9 +88,27 @@ export async function setWeeklyFeaturedAction(
     },
   });
 
+  // V31 : on force le quiz en mode SCHEDULED avec les dates du featured.
+  // Sinon, le quiz peut tourner en LIVE_MANUAL et nécessiter un admin pour
+  // lancer chaque question — pas ce qu'on veut pour un quiz hebdo en libre
+  // accès. SCHEDULED + dates = ouvert/fermé automatiquement.
+  await prisma.quiz.update({
+    where: { id: parsed.data.quizId },
+    data: {
+      mode: "SCHEDULED",
+      scheduledOpenAt: weekStart,
+      scheduledCloseAt: weekEnd,
+    },
+  });
+
   revalidatePath("/admin/weekly");
   revalidatePath("/");
-  return { ok: true, message: "Quizz de la semaine enregistré." };
+  revalidatePath(`/dashboard/quizzes/${parsed.data.quizId}/edit`);
+  return {
+    ok: true,
+    message:
+      "Quizz de la semaine enregistré. Le quiz a été basculé en mode Créneau horaire avec les dates choisies.",
+  };
 }
 
 const removeSchema = z.object({ id: z.string().min(1) });

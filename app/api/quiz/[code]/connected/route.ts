@@ -1,14 +1,14 @@
-// =============================================
-// Endpoint — Nombre de participants connectés au flux SSE
-// =============================================
+// V31 : Endpoint nombre de participants connectés au flux SSE
 // GET /api/quiz/[code]/connected → { count: number }
-// Utilisé par le panel admin pour afficher en temps réel le nombre de
-// participants présents.
+// Compte les VRAIS participants (Participation actifs) et non plus les
+// SSE subscribers (ce qui incluait les admins ouvrant /edit ou /live).
 
 import { prisma } from "@/lib/db";
-import { activeSubscriberCount } from "@/lib/live/broadcaster";
 
 export const dynamic = "force-dynamic";
+
+// Fenêtre d'activité considérée comme "connecté" (en ms)
+const ACTIVITY_WINDOW_MS = 60 * 1000;
 
 export async function GET(
   _request: Request,
@@ -25,10 +25,15 @@ export async function GET(
       headers: { "Content-Type": "application/json" },
     });
   }
-  return new Response(
-    JSON.stringify({ count: activeSubscriberCount(quiz.id) }),
-    {
-      headers: { "Content-Type": "application/json" },
-    }
-  );
+
+  const cutoff = new Date(Date.now() - ACTIVITY_WINDOW_MS);
+  const count = await prisma.participation.count({
+    where: {
+      quizId: quiz.id,
+      lastActivityAt: { gte: cutoff },
+    },
+  });
+  return new Response(JSON.stringify({ count }), {
+    headers: { "Content-Type": "application/json" },
+  });
 }

@@ -83,14 +83,14 @@ export function QuizMetaForm({
   );
 
   // V30.3 : router.refresh() après save ok pour forcer le re-render serveur
-  // (sinon defaultMode reste figé sur l'ancienne valeur et le useEffect ci-dessus
-  // remet le mode local à l'ancien — bug "passe en SCHEDULED puis revient LIVE")
+  // (sinon defaultMode reste figé et le useEffect remet le mode local à l'ancien)
   const router = useRouter();
   useEffect(() => {
     if (state.ok) {
       router.refresh();
     }
   }, [state.ok, router]);
+
   useActionToast(state);
 
   return (

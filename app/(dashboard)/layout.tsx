@@ -73,12 +73,13 @@ export default async function DashboardLayout({
 
             {/* Nav principale — visible md+ uniquement */}
             <nav className="hidden md:flex items-center gap-1">
+              {/* V31 : Accueil en premier (avant le dashboard) */}
+              <DashboardNavLink href="/" label={`🏠 ${navT.home}`} exact />
               <DashboardNavLink href="/dashboard" label={navT.dashboard} exact />
               <DashboardNavLink
                 href="/dashboard/quizzes"
                 label={navT.quizzes}
               />
-              {/* V26 : Quizthèque visible dans la navbar principale */}
               <DashboardNavLink
                 href="/dashboard/quizzes/library"
                 label="📚 Quizthèque"

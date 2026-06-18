@@ -150,6 +150,8 @@ export default async function UpgradePage({ params }: { params: Params }) {
                 <CheckoutButton
                   quizId={quiz.id}
                   planSlug={plan.slug}
+                  planName={plan.name}
+                  priceCents={plan.priceCents}
                   label={`Débloquer ${plan.name}`}
                   primary={plan.isHighlighted}
                 />
