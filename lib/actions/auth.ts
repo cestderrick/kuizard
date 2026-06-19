@@ -5,6 +5,7 @@
 // =============================================
 // Appelées depuis les formulaires de /signup et /login.
 
+import { headers } from "next/headers";
 import { z } from "zod";
 import { AuthError } from "next-auth";
 
@@ -12,6 +13,7 @@ import { prisma } from "@/lib/db";
 import { hashPassword } from "@/lib/password";
 import { signIn, signOut } from "@/auth";
 import { recordTermsAcceptance } from "@/lib/legal/acceptance";
+import { rateLimitWithCleanup, getClientIp } from "@/lib/security/rate-limit";
 
 // -----------------------------------------------------
 // SIGNUP
@@ -44,6 +46,17 @@ export async function signupAction(
   _prevState: SignupState,
   formData: FormData
 ): Promise<SignupState> {
+  // V38 : Rate limit anti-spam — 5 inscriptions / IP / heure
+  const h = await headers();
+  const ip = getClientIp(h);
+  const rl = rateLimitWithCleanup(`signup:${ip}`, 5, 60 * 60 * 1000);
+  if (!rl.ok) {
+    return {
+      ok: false,
+      message: `Trop de tentatives d'inscription depuis cette adresse. Réessaie dans ${Math.ceil(rl.retryAfterSec / 60)} min.`,
+    };
+  }
+
   // 1. Validation des inputs
   const parsed = signupSchema.safeParse({
     name: formData.get("name"),
@@ -150,6 +163,17 @@ export async function signinAction(
   _prevState: SigninState,
   formData: FormData
 ): Promise<SigninState> {
+  // V38 : Rate limit anti brute-force — 10 tentatives / IP / 15 min
+  const h = await headers();
+  const ip = getClientIp(h);
+  const rl = rateLimitWithCleanup(`signin:${ip}`, 10, 15 * 60 * 1000);
+  if (!rl.ok) {
+    return {
+      ok: false,
+      message: `Trop de tentatives de connexion. Réessaie dans ${Math.ceil(rl.retryAfterSec / 60)} min.`,
+    };
+  }
+
   const parsed = signinSchema.safeParse({
     email: formData.get("email"),
     password: formData.get("password"),

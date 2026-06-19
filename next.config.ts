@@ -43,6 +43,25 @@ const nextConfig: NextConfig = {
             value:
               "camera=(), microphone=(), geolocation=(), interest-cohort=()",
           },
+          // V38 — CSP de base. unsafe-inline sur style et script est nécessaire
+          // pour Next.js hydration scripts + styles inline JSX, mais on serre
+          // sur les autres directives.
+          {
+            key: "Content-Security-Policy",
+            value: [
+              "default-src 'self'",
+              "img-src 'self' data: blob: https:",
+              "font-src 'self' data:",
+              "style-src 'self' 'unsafe-inline'",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com",
+              "connect-src 'self' https://api.stripe.com",
+              "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://checkout.stripe.com",
+              "frame-ancestors 'self'",
+              "base-uri 'self'",
+              "form-action 'self' https://checkout.stripe.com",
+              "object-src 'none'",
+            ].join("; "),
+          },
         ],
       },
     ];

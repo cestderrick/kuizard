@@ -23,6 +23,23 @@ import {
 
 const COOKIE_PREFIX = "kz_play_"; // un cookie par quizId
 
+// =============================================
+// V38 — Garde anti-IDOR
+// =============================================
+// Vérifie que le participationId fourni dans le formulaire correspond bien
+// au cookie kz_play_<quizId> stocké dans le navigateur. Sans ça, n'importe
+// qui peut écraser les réponses d'un autre joueur s'il devine/intercepte
+// son participationId. Le cookie est httpOnly donc non récupérable en JS,
+// ce qui rend la session participation effectivement liée au navigateur.
+async function assertOwnParticipation(
+  quizId: string,
+  participationId: string
+): Promise<boolean> {
+  const cookieStore = await cookies();
+  const cookieValue = cookieStore.get(COOKIE_PREFIX + quizId)?.value;
+  return cookieValue === participationId;
+}
+
 // -----------------------------------------------------
 // CREATE PARTICIPATION (entrée joueur)
 // -----------------------------------------------------
@@ -184,6 +201,14 @@ export async function submitAnswersAction(
   });
   if (!quiz) return { ok: false, message: "Quizz introuvable." };
 
+  // V38 : anti-IDOR — refuse si le participationId ne correspond pas au cookie
+  if (!(await assertOwnParticipation(quiz.id, participationId))) {
+    return {
+      ok: false,
+      message: "Session de participation invalide. Recharge la page.",
+    };
+  }
+
   // Total potentiel (utilisé dans tous les cas)
   let total = 0;
   for (const q of quiz.questions) total += q.points;
@@ -310,6 +335,14 @@ export async function saveProgressAction(
     },
   });
   if (!quiz) return { ok: false, message: "Quizz introuvable." };
+
+  // V38 : anti-IDOR — refuse si le participationId ne correspond pas au cookie
+  if (!(await assertOwnParticipation(quiz.id, participationId))) {
+    return {
+      ok: false,
+      message: "Session de participation invalide.",
+    };
+  }
 
   // Si SCHEDULED fermé, on bloque l'écriture
   if (
