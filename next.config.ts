@@ -55,7 +55,7 @@ const nextConfig: NextConfig = {
               "style-src 'self' 'unsafe-inline'",
               "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com",
               "connect-src 'self' https://api.stripe.com",
-              "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://checkout.stripe.com",
+              "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://checkout.stripe.com https://www.youtube.com https://www.youtube-nocookie.com",
               "frame-ancestors 'self'",
               "base-uri 'self'",
               "form-action 'self' https://checkout.stripe.com",

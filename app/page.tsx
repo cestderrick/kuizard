@@ -22,7 +22,8 @@ import { PlayerCodeCTA } from "@/components/home/player-code-cta";
 // embed, Vimeo, ou .mp4 direct). Exemples :
 //   - "https://www.youtube.com/embed/dQw4w9WgXcQ"
 //   - "/videos/intro.mp4"
-const VIDEO_INTRO: string | null = null;
+// V40 : vidéo de présentation Kuizard (YouTube Shorts vertical 9:16)
+const VIDEO_INTRO: string | null = "https://youtube.com/shorts/lsISJqYt8EQ";
 const VIDEO_CREATION: string | null = null;
 const VIDEO_JOUEUR: string | null = null;
 
@@ -249,7 +250,8 @@ export default async function Home() {
             <VideoEmbed
               src={VIDEO_INTRO}
               title="Découvre Kuizard en 1 minute"
-              caption="Une vidéo de présentation arrive bientôt"
+              aspectRatio="9:16"
+              caption="✨ Kuizard, l'essentiel en moins d'une minute"
             />
           </div>
         </div>

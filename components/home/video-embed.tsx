@@ -1,8 +1,11 @@
 // =============================================
 // VideoEmbed — placeholder ou vidéo réelle
 // =============================================
-// Tu pourras remplir `src` plus tard avec un lien YouTube/Vimeo embed
-// (ex : "https://www.youtube.com/embed/XXXX") ou un MP4 direct.
+// V40 : si la src est une URL YouTube (n'importe quel format), on utilise
+// LiteYouTube (vignette + iframe au clic) pour économiser ~500ko au load.
+// Sinon fallback sur iframe direct (Vimeo) ou <video> (mp4).
+
+import { LiteYouTube, extractYouTubeId } from "@/components/home/lite-youtube";
 
 type Props = {
   src?: string | null;
@@ -17,6 +20,21 @@ export function VideoEmbed({
   aspectRatio = "16:9",
   caption,
 }: Props) {
+  // V40 : route auto vers LiteYouTube si on détecte une URL YouTube
+  if (src) {
+    const ytId = extractYouTubeId(src);
+    if (ytId) {
+      return (
+        <LiteYouTube
+          videoId={ytId}
+          title={title}
+          aspectRatio={aspectRatio === "9:16" ? "9:16" : "16:9"}
+          caption={caption}
+        />
+      );
+    }
+  }
+
   const ratioClass =
     aspectRatio === "9:16"
       ? "aspect-[9/16]"
@@ -24,14 +42,17 @@ export function VideoEmbed({
       ? "aspect-[4/3]"
       : "aspect-video";
 
+  // En vertical (Shorts), on limite la largeur pour ne pas écraser la page
+  const containerClass =
+    aspectRatio === "9:16" ? "max-w-[360px] mx-auto" : "w-full";
+
   return (
-    <figure className="flex flex-col gap-2">
+    <figure className={`flex flex-col gap-2 ${containerClass}`}>
       <div
         className={`${ratioClass} rounded-2xl overflow-hidden border border-[rgba(167,139,250,0.3)] bg-[var(--color-night-2)]`}
       >
         {src ? (
-          // Si c'est une URL d'iframe (YouTube embed, Vimeo embed), on iframe
-          /(youtube\.com\/embed|vimeo\.com\/video|player\.vimeo)/.test(src) ? (
+          /(vimeo\.com\/video|player\.vimeo)/.test(src) ? (
             <iframe
               src={src}
               title={title}
@@ -41,7 +62,7 @@ export function VideoEmbed({
               className="w-full h-full"
             />
           ) : (
-            // Sinon (fichier .mp4 par exemple), on utilise <video>
+            // Fichier .mp4 par exemple
             <video
               src={src}
               controls
