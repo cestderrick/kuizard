@@ -20,6 +20,7 @@ import { auth } from "@/auth";
 import { getActivePlans } from "@/lib/plans/config";
 import { getUnusedCredits } from "@/lib/billing/credits";
 import { ApplyCreditButton } from "@/components/quiz/apply-credit-button";
+import { InstantSearchInput } from "@/components/search/instant-search-input";
 
 export const metadata: Metadata = {
   title: "Mes quizz",
@@ -144,42 +145,21 @@ export default async function QuizzesPage({
         </div>
       </div>
 
-      {/* V37 : Barre de recherche */}
-      <form
-        action="/dashboard/quizzes"
-        method="get"
-        className="flex flex-wrap items-center gap-2 bg-white rounded-2xl border p-3"
-      >
-        <input
-          type="search"
-          name="q"
-          defaultValue={searchQuery}
+      {/* V39 : Barre de recherche LIVE (debounce 300ms, pas de submit) */}
+      <div className="flex flex-wrap items-center gap-2 bg-white rounded-2xl border p-3">
+        <span className="text-lg shrink-0" aria-hidden>🔎</span>
+        <InstantSearchInput
           placeholder="Rechercher un quiz (titre, description, code…)"
-          className="flex-1 min-w-[200px] px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2"
-          style={{ borderColor: "var(--color-violet-primary)" }}
+          className="w-full px-3 py-2 pr-10 border rounded-lg text-sm focus:outline-none focus:ring-2"
+          inputStyle={{ borderColor: "var(--color-violet-primary)" }}
         />
-        <button
-          type="submit"
-          className="px-4 py-2 rounded-lg text-sm font-semibold text-white"
-          style={{ backgroundColor: "var(--color-violet-primary)" }}
-        >
-          🔎 Rechercher
-        </button>
-        {searchQuery && (
-          <Link
-            href="/dashboard/quizzes"
-            className="px-3 py-2 rounded-lg text-xs underline-offset-2 hover:underline text-muted-foreground"
-          >
-            Réinitialiser
-          </Link>
-        )}
         {searchQuery && (
           <span className="w-full text-xs text-muted-foreground">
             {quizzes.length} résultat{quizzes.length > 1 ? "s" : ""} pour «{" "}
             <strong>{searchQuery}</strong> »
           </span>
         )}
-      </form>
+      </div>
 
       {/* V27 : Bandeau d'invite quand on arrive depuis /tarifs?upgrade=... */}
       {upgradePlan && quizzes.length > 0 && (

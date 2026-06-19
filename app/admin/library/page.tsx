@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { prisma } from "@/lib/db";
 import { requireAdmin } from "@/lib/auth/require-admin";
+import { InstantSearchInput } from "@/components/search/instant-search-input";
 
 export const metadata: Metadata = {
   title: "Admin · Banque de quizz",
@@ -68,34 +69,14 @@ export default async function AdminLibraryPage({
         </Link>
       </header>
 
-      {/* V32 : barre de recherche */}
-      <form
-        action="/admin/library"
-        method="get"
-        className="flex gap-2 items-center"
-      >
-        <input
-          type="search"
-          name="q"
-          defaultValue={search}
-          placeholder="🔍 Rechercher dans la banque (titre, description, tag)…"
-          className="flex-1 rounded-lg px-3 py-2 text-sm bg-[var(--color-night-2)] border border-[var(--color-gold)]/20 text-[var(--color-lavender)] placeholder:text-[var(--color-lavender-2)]/50 focus:outline-none focus:border-[var(--color-gold)]"
+      {/* V39 : Barre de recherche LIVE (debounce 300ms) */}
+      <div className="flex gap-2 items-center">
+        <span className="text-lg shrink-0" aria-hidden>🔍</span>
+        <InstantSearchInput
+          placeholder="Rechercher dans la banque (titre, description, tag)…"
+          className="w-full rounded-lg px-3 py-2 pr-10 text-sm bg-[var(--color-night-2)] border border-[var(--color-gold)]/20 text-[var(--color-lavender)] placeholder:text-[var(--color-lavender-2)]/50 focus:outline-none focus:border-[var(--color-gold)]"
         />
-        <button
-          type="submit"
-          className="px-4 py-2 rounded-lg bg-[var(--color-violet-primary)] text-white text-sm font-bold"
-        >
-          Rechercher
-        </button>
-        {search && (
-          <Link
-            href="/admin/library"
-            className="text-xs underline text-[var(--color-lavender-2)] opacity-80"
-          >
-            Effacer
-          </Link>
-        )}
-      </form>
+      </div>
       {search && (
         <p className="text-xs text-[var(--color-lavender-2)] opacity-80 -mt-2">
           {libraryQuizzes.length} résultat{libraryQuizzes.length > 1 ? "s" : ""}{" "}

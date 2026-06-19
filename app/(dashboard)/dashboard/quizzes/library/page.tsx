@@ -9,6 +9,7 @@ import { DuplicateButton } from "@/components/library/duplicate-button";
 import { getBillingContext } from "@/lib/billing/context";
 import { getActiveWeeklyFeatured } from "@/lib/weekly/featured";
 import { WeeklyFeaturedPill } from "@/components/weekly/weekly-featured-pill";
+import { InstantSearchInput } from "@/components/search/instant-search-input";
 
 export const metadata: Metadata = {
   title: "Quizthèque",
@@ -173,43 +174,14 @@ export default async function LibraryBrowserPage({
         <WeeklyFeaturedPill data={weeklyFeatured} variant="banner" />
       )}
 
-      {/* V30 : Barre de recherche + filtres compacts */}
-      <form
-        action="/dashboard/quizzes/library"
-        method="get"
-        className="flex flex-wrap items-center gap-2 bg-white rounded-2xl border p-3"
-      >
-        {/* Preserve filters via hidden inputs */}
-        {access && <input type="hidden" name="access" value={access} />}
-        {tag && <input type="hidden" name="tag" value={tag} />}
-        {usedFilter && <input type="hidden" name="used" value={usedFilter} />}
-
-        <input
-          type="search"
-          name="q"
-          placeholder="🔍 Rechercher un quizz par titre ou description…"
-          defaultValue={search}
-          className="flex-1 min-w-[200px] rounded-lg border px-3 py-2 text-sm focus:outline-none focus:border-[var(--color-violet-primary)]"
+      {/* V39 : Barre de recherche LIVE (debounce 300ms, pas de submit) */}
+      <div className="flex flex-wrap items-center gap-2 bg-white rounded-2xl border p-3">
+        <span className="text-lg shrink-0" aria-hidden>🔍</span>
+        <InstantSearchInput
+          placeholder="Rechercher un quizz par titre ou description…"
+          className="w-full rounded-lg border px-3 py-2 pr-10 text-sm focus:outline-none focus:border-[var(--color-violet-primary)]"
         />
-        <button
-          type="submit"
-          className="rounded-lg px-4 py-2 text-sm font-bold whitespace-nowrap"
-          style={{
-            backgroundColor: "var(--color-violet-primary)",
-            color: "white",
-          }}
-        >
-          Rechercher
-        </button>
-        {search && (
-          <Link
-            href={buildUrl({ q: null, page: null })}
-            className="text-xs underline text-muted-foreground"
-          >
-            Effacer
-          </Link>
-        )}
-      </form>
+      </div>
 
       {/* Filtres rapides */}
       <section className="flex flex-wrap gap-2 items-center">
