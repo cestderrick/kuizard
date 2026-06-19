@@ -151,12 +151,25 @@ export async function createFromTemplateAction(formData: FormData) {
 // LIST MY QUIZZES (helper appelable depuis les pages)
 // -----------------------------------------------------
 
-export async function listMyQuizzes() {
+export async function listMyQuizzes(search?: string | null) {
   const session = await auth();
   if (!session?.user?.id) return [];
 
+  // V37 : recherche optionnelle par titre/description/code (insensible casse)
+  const trimmed = search?.trim();
+  const where = trimmed
+    ? {
+        userId: session.user.id,
+        OR: [
+          { title: { contains: trimmed, mode: "insensitive" as const } },
+          { description: { contains: trimmed, mode: "insensitive" as const } },
+          { code: { contains: trimmed, mode: "insensitive" as const } },
+        ],
+      }
+    : { userId: session.user.id };
+
   return prisma.quiz.findMany({
-    where: { userId: session.user.id },
+    where,
     orderBy: { createdAt: "desc" },
     select: {
       id: true,

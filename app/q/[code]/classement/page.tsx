@@ -75,7 +75,14 @@ export default async function ClassementPage({
           <p className="text-xs uppercase tracking-[3px] text-[var(--color-gold)] font-semibold mb-2">
             Surprise en préparation
           </p>
-          <h1 className="font-display text-2xl tracking-wide mb-3">
+          <h1
+            className="text-2xl tracking-wide mb-3 font-bold"
+            style={{
+              color: "var(--color-lavender)",
+              WebkitTextFillColor: "var(--color-lavender)",
+              fontFamily: "var(--font-display, inherit)",
+            }}
+          >
             {data.title}
           </h1>
           <p className="text-[var(--color-lavender-2)] opacity-80 mb-6">
@@ -111,11 +118,22 @@ export default async function ClassementPage({
                 </div>
                 <div className="text-right">
                   <p
-                    className="font-display font-bold text-3xl leading-none"
-                    style={{ color: "var(--color-gold-light)" }}
+                    className="font-bold text-3xl leading-none"
+                    style={{
+                      color: "var(--color-gold-light)",
+                      WebkitTextFillColor: "var(--color-gold-light)",
+                      fontFamily: "var(--font-display, inherit)",
+                    }}
                   >
                     {myEntryScheduled.score}
-                    <span className="text-base text-[var(--color-lavender-2)] opacity-70">
+                    <span
+                      className="text-base opacity-70"
+                      style={{
+                        color: "var(--color-lavender-2)",
+                        WebkitTextFillColor: "var(--color-lavender-2)",
+                        fontFamily: "inherit",
+                      }}
+                    >
                       {" "}
                       / {data.totalPoints}
                     </span>
@@ -139,7 +157,14 @@ export default async function ClassementPage({
           {completedCount > 0 && (
             <div className="grid grid-cols-2 gap-3 mb-6">
               <div className="rounded-xl bg-[var(--color-night-2)] border border-[rgba(167,139,250,0.2)] p-4">
-                <p className="text-3xl font-display font-bold text-[var(--color-gold-light)]">
+                <p
+                  className="text-3xl font-bold"
+                  style={{
+                    color: "var(--color-gold-light)",
+                    WebkitTextFillColor: "var(--color-gold-light)",
+                    fontFamily: "var(--font-display, inherit)",
+                  }}
+                >
                   {completedCount}
                 </p>
                 <p className="text-xs uppercase tracking-wide opacity-70 mt-1">
@@ -147,7 +172,14 @@ export default async function ClassementPage({
                 </p>
               </div>
               <div className="rounded-xl bg-[var(--color-night-2)] border border-[rgba(167,139,250,0.2)] p-4">
-                <p className="text-3xl font-display font-bold text-[var(--color-gold-light)]">
+                <p
+                  className="text-3xl font-bold"
+                  style={{
+                    color: "var(--color-gold-light)",
+                    WebkitTextFillColor: "var(--color-gold-light)",
+                    fontFamily: "var(--font-display, inherit)",
+                  }}
+                >
                   {topScore}
                 </p>
                 <p className="text-xs uppercase tracking-wide opacity-70 mt-1">
@@ -223,16 +255,23 @@ export default async function ClassementPage({
         }}
       />
 
-      <div className="relative z-10 w-full max-w-3xl flex flex-col gap-5">
-        {/* Header */}
+      <div className="relative z-10 w-full max-w-3xl flex flex-col gap-3 sm:gap-5">
+        {/* Header — compact sur mobile pour voir les résultats sans scroll */}
         <header className="text-center">
-          <p className="text-xs uppercase tracking-[3px] text-[var(--color-gold)] font-semibold mb-1">
+          <p className="text-[10px] sm:text-xs uppercase tracking-[3px] text-[var(--color-gold)] font-semibold mb-0.5">
             ✨ Classement ✨
           </p>
-          <h1 className="font-display text-2xl md:text-3xl tracking-wide mb-1">
+          <h1
+            className="text-base sm:text-2xl md:text-3xl tracking-wide mb-0.5 font-bold line-clamp-2"
+            style={{
+              color: "var(--color-lavender)",
+              WebkitTextFillColor: "var(--color-lavender)",
+              fontFamily: "var(--font-display, inherit)",
+            }}
+          >
             {data.title}
           </h1>
-          <p className="text-sm text-[var(--color-lavender-2)] opacity-80">
+          <p className="text-xs sm:text-sm text-[var(--color-lavender-2)] opacity-80">
             {data.entries.length} participant{data.entries.length > 1 ? "s" : ""}{" "}
             · sur {data.totalPoints} point{data.totalPoints > 1 ? "s" : ""}
           </p>
@@ -250,20 +289,44 @@ export default async function ClassementPage({
           >
             <div className="flex items-start justify-between gap-3 flex-wrap mb-3">
               <div>
-                <p className="text-xs uppercase tracking-[3px] text-[var(--color-gold)] font-semibold">
+                <p
+                  className="text-xs uppercase tracking-[3px] font-semibold"
+                  style={{
+                    color: "var(--color-gold)",
+                    WebkitTextFillColor: "var(--color-gold)",
+                  }}
+                >
                   🎯 Tes résultats
                 </p>
-                <p className="text-lg font-display tracking-wide mt-1">
+                <p
+                  className="text-lg tracking-wide mt-1"
+                  style={{
+                    color: "var(--color-lavender)",
+                    WebkitTextFillColor: "var(--color-lavender)",
+                    fontFamily: "var(--font-display, inherit)",
+                  }}
+                >
                   {myEntry.nickname}
                 </p>
               </div>
               <div className="text-right">
                 <p
-                  className="font-display font-bold text-3xl leading-none"
-                  style={{ color: "var(--color-gold-light)" }}
+                  className="font-bold text-3xl leading-none"
+                  style={{
+                    color: "var(--color-gold-light)",
+                    WebkitTextFillColor: "var(--color-gold-light)",
+                    fontFamily: "var(--font-display, inherit)",
+                  }}
                 >
                   {myEntry.score}
-                  <span className="text-base text-[var(--color-lavender-2)] opacity-70">
+                  <span
+                    className="text-base opacity-70"
+                    style={{
+                      color: "var(--color-lavender-2)",
+                      WebkitTextFillColor: "var(--color-lavender-2)",
+                      fontFamily: "inherit",
+                    }}
+                  >
                     {" "}
                     / {data.totalPoints}
                   </span>
@@ -317,7 +380,14 @@ export default async function ClassementPage({
         {rest.length > 0 && (
           <section className="bg-[var(--color-night-2)] rounded-2xl border border-[rgba(167,139,250,0.2)] overflow-hidden">
             <div className="px-5 py-3 border-b border-[rgba(167,139,250,0.15)]">
-              <h2 className="font-display text-sm tracking-[2px] uppercase text-[var(--color-lavender-2)] opacity-80">
+              <h2
+                className="text-sm tracking-[2px] uppercase opacity-80"
+                style={{
+                  color: "var(--color-lavender-2)",
+                  WebkitTextFillColor: "var(--color-lavender-2)",
+                  fontFamily: "var(--font-display, inherit)",
+                }}
+              >
                 Et les autres
               </h2>
             </div>
@@ -339,8 +409,12 @@ export default async function ClassementPage({
                     }
                   >
                     <span
-                      className="font-display text-base font-bold"
-                      style={{ color: "var(--color-lavender-2)" }}
+                      className="text-base font-bold"
+                      style={{
+                        color: "var(--color-lavender-2)",
+                        WebkitTextFillColor: "var(--color-lavender-2)",
+                        fontFamily: "var(--font-display, inherit)",
+                      }}
                     >
                       {entry.rank}
                     </span>
@@ -365,11 +439,22 @@ export default async function ClassementPage({
                       )}
                     </div>
                     <span
-                      className="font-display font-bold text-base"
-                      style={{ color: "var(--color-gold-light)" }}
+                      className="font-bold text-base"
+                      style={{
+                        color: "var(--color-gold-light)",
+                        WebkitTextFillColor: "var(--color-gold-light)",
+                        fontFamily: "var(--font-display, inherit)",
+                      }}
                     >
                       {entry.score}
-                      <span className="text-xs text-[var(--color-lavender-2)] opacity-70">
+                      <span
+                        className="text-xs opacity-70"
+                        style={{
+                          color: "var(--color-lavender-2)",
+                          WebkitTextFillColor: "var(--color-lavender-2)",
+                          fontFamily: "inherit",
+                        }}
+                      >
                         {" "}
                         pts
                       </span>
@@ -385,7 +470,21 @@ export default async function ClassementPage({
         <UpgradeCTA minOneShotPriceCents={minOneShotPriceCents} />
 
         {/* Footer */}
-        <footer className="text-center pt-3">
+        <footer className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-5 pt-3">
+          {/* V37 : Retour au tableau de bord (nouvel onglet pour ne pas perdre le classement) */}
+          <a
+            href="/dashboard"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition hover:opacity-90"
+            style={{
+              backgroundColor: "var(--color-gold)",
+              color: "var(--color-violet-deep)",
+            }}
+          >
+            ← Retour au tableau de bord
+            <span className="text-xs opacity-70" aria-hidden>↗</span>
+          </a>
           <Link
             href="/"
             className="inline-block text-sm underline-offset-4 hover:underline"
@@ -455,7 +554,14 @@ function PodiumStep({
       <div className="text-2xl" aria-hidden>
         {medal}
       </div>
-      <div className="font-display font-bold text-3xl" style={{ color: rankColor }}>
+      <div
+        className="font-bold text-3xl"
+        style={{
+          color: rankColor,
+          WebkitTextFillColor: rankColor,
+          fontFamily: "var(--font-display, inherit)",
+        }}
+      >
         {entry.rank}
       </div>
       <div
@@ -469,12 +575,23 @@ function PodiumStep({
       >
         {initial}
       </div>
-      <div className="font-display text-sm tracking-wide truncate max-w-full">
+      <div
+        className="text-sm tracking-wide truncate max-w-full"
+        style={{
+          color: "var(--color-lavender)",
+          WebkitTextFillColor: "var(--color-lavender)",
+          fontFamily: "var(--font-display, inherit)",
+        }}
+      >
         {entry.nickname}
       </div>
       <div
         className="text-xs"
-        style={{ color: "var(--color-lavender-2)", opacity: 0.85 }}
+        style={{
+          color: "var(--color-lavender-2)",
+          WebkitTextFillColor: "var(--color-lavender-2)",
+          opacity: 0.85,
+        }}
       >
         {entry.score} pt{entry.score > 1 ? "s" : ""}
       </div>

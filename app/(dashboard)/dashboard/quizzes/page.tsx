@@ -50,12 +50,13 @@ const MODE_LABEL: Record<string, string> = {
 export default async function QuizzesPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ upgrade?: string }>;
+  searchParams?: Promise<{ upgrade?: string; q?: string }>;
 }) {
   const sp = searchParams ? await searchParams : {};
   const upgradeSlug = sp.upgrade ?? null;
+  const searchQuery = sp.q?.trim() ?? "";
   const [quizzes, messages, session, oneShotPlans] = await Promise.all([
-    listMyQuizzes(),
+    listMyQuizzes(searchQuery || null),
     getMessages(),
     auth(),
     getActivePlans("one_shot"),
@@ -142,6 +143,43 @@ export default async function QuizzesPage({
           </Button>
         </div>
       </div>
+
+      {/* V37 : Barre de recherche */}
+      <form
+        action="/dashboard/quizzes"
+        method="get"
+        className="flex flex-wrap items-center gap-2 bg-white rounded-2xl border p-3"
+      >
+        <input
+          type="search"
+          name="q"
+          defaultValue={searchQuery}
+          placeholder="Rechercher un quiz (titre, description, code…)"
+          className="flex-1 min-w-[200px] px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2"
+          style={{ borderColor: "var(--color-violet-primary)" }}
+        />
+        <button
+          type="submit"
+          className="px-4 py-2 rounded-lg text-sm font-semibold text-white"
+          style={{ backgroundColor: "var(--color-violet-primary)" }}
+        >
+          🔎 Rechercher
+        </button>
+        {searchQuery && (
+          <Link
+            href="/dashboard/quizzes"
+            className="px-3 py-2 rounded-lg text-xs underline-offset-2 hover:underline text-muted-foreground"
+          >
+            Réinitialiser
+          </Link>
+        )}
+        {searchQuery && (
+          <span className="w-full text-xs text-muted-foreground">
+            {quizzes.length} résultat{quizzes.length > 1 ? "s" : ""} pour «{" "}
+            <strong>{searchQuery}</strong> »
+          </span>
+        )}
+      </form>
 
       {/* V27 : Bandeau d'invite quand on arrive depuis /tarifs?upgrade=... */}
       {upgradePlan && quizzes.length > 0 && (

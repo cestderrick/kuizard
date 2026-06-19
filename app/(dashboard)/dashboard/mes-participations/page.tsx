@@ -126,8 +126,12 @@ export default async function MesParticipationsPage() {
           {finished.length > 0 && (
             <section>
               <h2
-                className="font-display text-xl font-bold tracking-wide mb-3"
-                style={{ color: "var(--color-violet-deep)" }}
+                className="text-xl font-bold tracking-wide mb-3"
+                style={{
+                  color: "var(--color-violet-deep)",
+                  WebkitTextFillColor: "var(--color-violet-deep)",
+                  fontFamily: "var(--font-display, inherit)",
+                }}
               >
                 ✓ Quizz terminés ({finished.length})
               </h2>
@@ -142,8 +146,12 @@ export default async function MesParticipationsPage() {
           {inProgress.length > 0 && (
             <section>
               <h2
-                className="font-display text-xl font-bold tracking-wide mb-3"
-                style={{ color: "var(--color-violet-deep)" }}
+                className="text-xl font-bold tracking-wide mb-3"
+                style={{
+                  color: "var(--color-violet-deep)",
+                  WebkitTextFillColor: "var(--color-violet-deep)",
+                  fontFamily: "var(--font-display, inherit)",
+                }}
               >
                 ⏳ En cours / non terminés ({inProgress.length})
               </h2>
