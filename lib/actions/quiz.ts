@@ -665,9 +665,16 @@ export async function duplicateOwnQuizAction(
           status: "DRAFT",
         },
       });
-      if (source.questions.length > 0) {
+      // V47.4 : slice selon le plan du user pour ne pas créer un quiz
+      // qui dépasse sa limite (sinon nouvel utilisateur free clone un
+      // quiz 20Q sans rien payer).
+      const { getPlanLimitsForUser: getLimits } = await import("@/lib/plans/user-limits");
+      const limitsForCopy = await getLimits(userId);
+      const maxQDupe = limitsForCopy.maxQuestions ?? 5;
+      const dupeQuestions = source.questions.slice(0, maxQDupe);
+      if (dupeQuestions.length > 0) {
         await tx.question.createMany({
-          data: source.questions.map((q2) => ({
+          data: dupeQuestions.map((q2) => ({
             quizId: q.id,
             order: q2.order,
             type: q2.type,

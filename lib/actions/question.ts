@@ -162,6 +162,25 @@ export async function updateQuestionAction(
     };
   }
 
+  // V47.4 : refuse l'édition d'une question hors limite du plan effectif.
+  // Empêche les users free qui dupliqueraient un quiz library de 20Q
+  // d'avoir effectivement 20Q éditables gratuitement.
+  const planForUpdate = await getEffectivePlan(quizId);
+  const maxQForUpdate = planForUpdate.limits.maxQuestions ?? 5;
+  const targetQuestion = await prisma.question.findFirst({
+    where: { id: questionId, quizId },
+    select: { order: true },
+  });
+  if (!targetQuestion) {
+    return { ok: false, message: "Question introuvable." };
+  }
+  if (targetQuestion.order > maxQForUpdate) {
+    return {
+      ok: false,
+      message: `Cette question (#${targetQuestion.order}) est au-delà de la limite de ton plan « ${planForUpdate.name} » (${maxQForUpdate} questions max). Passe à un plan supérieur pour la modifier.`,
+    };
+  }
+
   // Parser les options
   let options: { label: string; isCorrect: boolean }[];
   try {
@@ -250,6 +269,19 @@ export async function deleteQuestionAction(formData: FormData) {
 
   // V29 : empêche la suppression de question sur un quizz déjà joué
   await assertQuizUnlocked(quizId);
+
+  // V47.4 : refuse la suppression d'une question hors limite du plan effectif
+  const planForDelete = await getEffectivePlan(quizId);
+  const maxQForDelete = planForDelete.limits.maxQuestions ?? 5;
+  const targetQ = await prisma.question.findFirst({
+    where: { id: questionId, quizId },
+    select: { order: true },
+  });
+  if (targetQ && targetQ.order > maxQForDelete) {
+    throw new Error(
+      `Cette question (#${targetQ.order}) est au-delà de la limite de ton plan (${maxQForDelete} questions max). Upgrade pour pouvoir la supprimer.`
+    );
+  }
 
   await prisma.question.deleteMany({
     where: { id: questionId, quizId },

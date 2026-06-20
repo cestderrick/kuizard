@@ -37,11 +37,16 @@ type Props = {
     timerSeconds: number | null;
     options: unknown; // venant de Prisma JSONB
     imageUrl: string | null;
+    order?: number;
   };
   /** V43 : si le plan ne permet pas les images, on grise la zone + CTA upgrade */
   allowImages?: boolean;
   /** Nom du plan courant pour le message de gating */
   planName?: string;
+  /** V47.4 : true si la question est hors limite du plan (ex: 6e sur free=5max) */
+  isBeyondPlanLimit?: boolean;
+  /** Limite du plan courant */
+  maxQuestions?: number;
 };
 
 const initialState: UpdateQuestionState = { ok: false };
@@ -59,7 +64,14 @@ function parseInitialOptions(raw: unknown): Option[] {
     .map((o) => ({ label: o.label, isCorrect: o.isCorrect }));
 }
 
-export function QuestionForm({ quizId, question, allowImages = true, planName }: Props) {
+export function QuestionForm({
+  quizId,
+  question,
+  allowImages = true,
+  planName,
+  isBeyondPlanLimit = false,
+  maxQuestions,
+}: Props) {
   const [type, setType] = useState<QuestionType>(question.type as QuestionType);
 
   // Options gérées en state pour le côté dynamique (ajout/suppression)
@@ -149,6 +161,41 @@ export function QuestionForm({ quizId, question, allowImages = true, planName }:
       <input type="hidden" name="quizId" value={quizId} />
       <input type="hidden" name="questionId" value={question.id} />
       <input type="hidden" name="optionsJson" value={JSON.stringify(options)} />
+
+      {/* V47.4 : Bandeau si question hors limite du plan */}
+      {isBeyondPlanLimit && (
+        <div
+          className="rounded-xl border-2 p-4 flex items-start gap-3"
+          style={{
+            borderColor: "rgba(245,158,11,0.4)",
+            backgroundColor: "rgba(245,158,11,0.08)",
+          }}
+        >
+          <span className="text-2xl shrink-0" aria-hidden>🔒</span>
+          <div className="flex-1 min-w-0">
+            <p
+              className="font-bold text-sm mb-1"
+              style={{ color: "var(--color-violet-deep)" }}
+            >
+              Question hors limite de ton plan
+            </p>
+            <p className="text-xs text-muted-foreground mb-2 leading-relaxed">
+              Cette question est la #{question.order ?? "?"}
+              {maxQuestions ? ` sur les ${maxQuestions} autorisées` : ""} par
+              ton plan{planName ? ` « ${planName} »` : ""}.{" "}
+              <strong>Tu peux la visualiser mais pas l\'enregistrer.</strong>{" "}
+              Pour la débloquer, passe à un plan supérieur.
+            </p>
+            <a
+              href="/tarifs"
+              className="inline-block text-xs font-bold underline-offset-2 hover:underline"
+              style={{ color: "var(--color-violet-primary)" }}
+            >
+              Voir les plans qui débloquent les questions au-delà →
+            </a>
+          </div>
+        </div>
+      )}
 
       {state.message && (
         <Alert variant={state.ok ? "default" : "destructive"}>
@@ -377,13 +424,25 @@ export function QuestionForm({ quizId, question, allowImages = true, planName }:
       <div className="flex justify-end gap-2 pt-2">
         <Button
           type="submit"
-          disabled={isPending}
+          disabled={isPending || isBeyondPlanLimit}
           style={{
-            backgroundColor: "var(--color-violet-primary)",
+            backgroundColor: isBeyondPlanLimit
+              ? "var(--color-muted, #94a3b8)"
+              : "var(--color-violet-primary)",
             color: "white",
+            cursor: isBeyondPlanLimit ? "not-allowed" : undefined,
           }}
+          title={
+            isBeyondPlanLimit
+              ? "Question hors limite de ton plan — upgrade requis"
+              : undefined
+          }
         >
-          {isPending ? "Enregistrement…" : "Enregistrer la question ✨"}
+          {isBeyondPlanLimit
+            ? "🔒 Hors limite plan"
+            : isPending
+            ? "Enregistrement…"
+            : "Enregistrer la question ✨"}
         </Button>
       </div>
     </form>

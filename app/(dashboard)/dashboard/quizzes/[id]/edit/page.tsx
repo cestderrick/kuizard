@@ -370,36 +370,87 @@ export default async function EditQuizPage({
             </div>
           ) : (
             <ol className="flex flex-col gap-2">
-              {quiz.questions.map((q, index) => (
-                <li
-                  key={q.id}
-                  className="flex items-center gap-3 rounded-lg border bg-white p-3 hover:shadow-sm transition-shadow"
-                >
-                  <span className="flex-shrink-0 w-8 h-8 rounded-md bg-[var(--color-lavender)] text-[var(--color-violet-primary)] flex items-center justify-center text-sm font-bold">
-                    {index + 1}
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium truncate">{q.text}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {QUESTION_TYPE_LABEL[q.type] ?? q.type} · {q.points} pt
-                      {q.points > 1 ? "s" : ""}
-                      {q.timerSeconds ? ` · ${q.timerSeconds}s` : ""}
-                    </p>
-                  </div>
-                  <Button asChild variant="outline" size="sm">
-                    <Link
-                      href={`/dashboard/quizzes/${quiz.id}/questions/${q.id}/edit`}
+              {quiz.questions.map((q, index) => {
+                // V47.4 : flag les questions hors limite plan
+                const isBeyondPlan =
+                  (q.order ?? index + 1) > (plan.limits.maxQuestions ?? 5);
+                return (
+                  <li
+                    key={q.id}
+                    className="flex items-center gap-3 rounded-lg border bg-white p-3 hover:shadow-sm transition-shadow"
+                    style={
+                      isBeyondPlan
+                        ? {
+                            backgroundColor: "rgba(245,158,11,0.06)",
+                            borderColor: "rgba(245,158,11,0.3)",
+                          }
+                        : undefined
+                    }
+                  >
+                    <span
+                      className="flex-shrink-0 w-8 h-8 rounded-md flex items-center justify-center text-sm font-bold"
+                      style={
+                        isBeyondPlan
+                          ? {
+                              backgroundColor: "rgba(245,158,11,0.15)",
+                              color: "var(--color-gold-light, #f59e0b)",
+                            }
+                          : {
+                              backgroundColor: "var(--color-lavender)",
+                              color: "var(--color-violet-primary)",
+                            }
+                      }
                     >
-                      Éditer
-                    </Link>
-                  </Button>
-                  <DeleteQuestionButton
-                    quizId={quiz.id}
-                    questionId={q.id}
-                    questionPreview={q.text}
-                  />
-                </li>
-              ))}
+                      {isBeyondPlan ? "🔒" : index + 1}
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium truncate">
+                        {q.text}
+                        {isBeyondPlan && (
+                          <span
+                            className="ml-2 text-[10px] uppercase tracking-[1.5px] px-1.5 py-0.5 rounded-full font-bold align-middle"
+                            style={{
+                              backgroundColor: "rgba(245,158,11,0.2)",
+                              color: "var(--color-violet-deep)",
+                            }}
+                          >
+                            🔒 Hors plan
+                          </span>
+                        )}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {QUESTION_TYPE_LABEL[q.type] ?? q.type} · {q.points} pt
+                        {q.points > 1 ? "s" : ""}
+                        {q.timerSeconds ? ` · ${q.timerSeconds}s` : ""}
+                        {isBeyondPlan && (
+                          <>
+                            {" · "}
+                            <a
+                              href="/tarifs"
+                              className="underline"
+                              style={{ color: "var(--color-violet-primary)" }}
+                            >
+                              Débloquer
+                            </a>
+                          </>
+                        )}
+                      </p>
+                    </div>
+                    <Button asChild variant="outline" size="sm">
+                      <Link
+                        href={`/dashboard/quizzes/${quiz.id}/questions/${q.id}/edit`}
+                      >
+                        {isBeyondPlan ? "Voir" : "Éditer"}
+                      </Link>
+                    </Button>
+                    <DeleteQuestionButton
+                      quizId={quiz.id}
+                      questionId={q.id}
+                      questionPreview={q.text}
+                    />
+                  </li>
+                );
+              })}
             </ol>
           )}
         </div>

@@ -6,6 +6,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { generateUniqueQuizCode } from "@/lib/quiz/generate-code";
 import { getBillingContext } from "@/lib/billing/context";
+import { getPlanLimitsForUser } from "@/lib/plans/user-limits";
 
 export type DuplicateState = {
   ok: boolean;
@@ -88,10 +89,16 @@ export async function duplicateLibraryQuizAction(
         },
       });
 
-      // 3. Copie toutes les questions
-      if (source.questions.length > 0) {
+      // 3. Copie les questions, sliced selon le plan du user destinataire.
+      // V47.4 : un user free qui copie un quiz library de 20Q n'en garde
+      // que les 5 premières (sa limite). Sinon il bénéficierait gratos
+      // d'un quiz 20Q. Subscriber → toutes les questions.
+      const userLimits = await getPlanLimitsForUser(userId);
+      const maxQ = userLimits.maxQuestions ?? 5;
+      const slicedQuestions = source.questions.slice(0, maxQ);
+      if (slicedQuestions.length > 0) {
         await tx.question.createMany({
-          data: source.questions.map((q) => ({
+          data: slicedQuestions.map((q) => ({
             quizId: created.id,
             order: q.order,
             type: q.type,

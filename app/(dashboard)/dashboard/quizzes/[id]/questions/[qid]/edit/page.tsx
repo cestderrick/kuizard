@@ -59,6 +59,9 @@ export default async function EditQuestionPage({
   // V43 : on charge le plan effectif pour griser/débloquer l'upload d'image
   const plan = await getEffectivePlan(quizId);
   const allowImages = plan.limits.questionImages !== false;
+  // V47.4 : verrouille les questions au-delà de maxQuestions du plan
+  const maxQuestions = plan.limits.maxQuestions ?? 5;
+  const isBeyondPlanLimit = question.order > maxQuestions;
 
   return (
     <div className="max-w-3xl mx-auto flex flex-col gap-6">
@@ -98,6 +101,8 @@ export default async function EditQuestionPage({
             question={question}
             allowImages={allowImages}
             planName={plan.name}
+            isBeyondPlanLimit={isBeyondPlanLimit}
+            maxQuestions={maxQuestions}
           />
         </CardContent>
       </Card>
