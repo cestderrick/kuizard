@@ -129,12 +129,14 @@ export default async function AdminLibraryPage({
         ) : (
           <div className="grid gap-3">
             {libraryQuizzes.map((q) => (
-              <Link
+              /* V47.2 : plus de <Link> qui wrap toute la card car ça
+                 swallowait le click du toggle Premium. Bouton "Éditer"
+                 séparé à droite. */
+              <div
                 key={q.id}
-                href={`/dashboard/quizzes/${q.id}/edit`}
-                className="rounded-xl bg-[var(--color-night-2)] border border-[rgba(167,139,250,0.15)] p-4 hover:border-[var(--color-gold)]/50 transition flex items-center justify-between gap-3"
+                className="rounded-xl bg-[var(--color-night-2)] border border-[rgba(167,139,250,0.15)] p-4 hover:border-[var(--color-gold)]/50 transition flex items-start justify-between gap-3"
               >
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 flex-wrap mb-1">
                     <p className="font-semibold truncate">{q.title}</p>
                     <PremiumQuickToggle
@@ -165,8 +167,17 @@ export default async function AdminLibraryPage({
                     </div>
                   )}
                 </div>
-                <span className="text-xs opacity-50 shrink-0">→ éditer</span>
-              </Link>
+                <Link
+                  href={`/dashboard/quizzes/${q.id}/edit`}
+                  className="text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap shrink-0 transition hover:opacity-90"
+                  style={{
+                    backgroundColor: "var(--color-violet-primary)",
+                    color: "white",
+                  }}
+                >
+                  ✏️ Éditer
+                </Link>
+              </div>
             ))}
           </div>
         )}
