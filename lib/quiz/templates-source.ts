@@ -11,7 +11,7 @@
 // pourra être retiré.
 
 import { prisma } from "@/lib/db";
-import { QUIZ_TEMPLATES, type QuizTemplate } from "@/lib/quiz/templates";
+import type { QuizTemplate } from "@/lib/quiz/templates";
 
 const FALLBACK_EMOJIS: Record<string, string> = {
   mariage: "💍",
@@ -85,32 +85,12 @@ function fromDB(t: {
   };
 }
 
-function fromHardcoded(t: QuizTemplate): UnifiedTemplate {
-  // Catégorie déduite du slug pour les hardcoded
-  const category = t.slug;
-  return {
-    slug: t.slug,
-    emoji: t.emoji,
-    title: t.title,
-    description: t.description,
-    themeColor: t.themeColor,
-    theme: null,
-    category,
-    language: "fr", // les hardcoded étaient tous en français
-    tags: [],
-    questionsCount: t.questions.length,
-    popularity: 0,
-    quizTitle: t.quizTitle,
-    quizDescription: t.quizDescription,
-    coverImageUrl: null,
-    questions: t.questions,
-    source: "hardcoded",
-  };
-}
-
 /**
- * Renvoie tous les templates disponibles, BDD prioritaire.
- * En cas de slug en doublon, la version BDD écrase la hardcoded.
+ * V47.9 — Renvoie UNIQUEMENT les templates BDD (les hardcodés sont
+ * désormais cachés des utilisateurs pour donner à l'admin la liberté de
+ * choisir lesquels exposer via /admin/templates → bouton « Cloner en BDD »).
+ *
+ * Les fallback hardcodés restent disponibles côté admin uniquement.
  */
 export async function listAllTemplates(): Promise<UnifiedTemplate[]> {
   const [dbTemplates, popularity] = await Promise.all([
@@ -130,14 +110,9 @@ export async function listAllTemplates(): Promise<UnifiedTemplate[]> {
     popularity.map((p) => [p.fromTemplateSlug as string, p._count])
   );
 
-  const dbSlugs = new Set(dbTemplates.map((t) => t.slug));
-  const merged: UnifiedTemplate[] = [
-    ...dbTemplates.map(fromDB),
-    ...QUIZ_TEMPLATES.filter((t) => !dbSlugs.has(t.slug)).map(fromHardcoded),
-  ];
-
-  // Injecter la popularité
-  return merged.map((t) => ({ ...t, popularity: popMap.get(t.slug) ?? 0 }));
+  return dbTemplates
+    .map(fromDB)
+    .map((t) => ({ ...t, popularity: popMap.get(t.slug) ?? 0 }));
 }
 
 /**
@@ -152,6 +127,11 @@ export async function getUsedTemplateSlugs(userId: string): Promise<Set<string>>
   return new Set(used.map((q) => q.fromTemplateSlug!).filter(Boolean));
 }
 
+/**
+ * V47.9 : seuls les templates BDD (et actifs) sont exposés aux utilisateurs.
+ * Si tu as besoin du fallback hardcoded (ex: admin clonage), passe par
+ * QUIZ_TEMPLATES directement.
+ */
 export async function getTemplateBySlugUnified(
   slug: string
 ): Promise<UnifiedTemplate | null> {
@@ -159,9 +139,5 @@ export async function getTemplateBySlugUnified(
     where: { slug },
   });
   if (fromDb && fromDb.isActive) return fromDB(fromDb);
-
-  const hard = QUIZ_TEMPLATES.find((t) => t.slug === slug);
-  if (hard) return fromHardcoded(hard);
-
   return null;
 }
