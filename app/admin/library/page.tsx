@@ -36,7 +36,8 @@ export default async function AdminLibraryPage({
     include: {
       _count: { select: { questions: true } },
       user: { select: { name: true, email: true } },
-      libraryIsPremium: true,
+      // V46 : libraryIsPremium est un scalar — déjà inclus par défaut avec
+      // Prisma `include`. Le lister explicitement lève une erreur TS.
     },
   });
 
