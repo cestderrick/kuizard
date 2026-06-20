@@ -73,47 +73,50 @@ export async function createCheckoutSessionAction(
     return { ok: false, message: "Plan gratuit — pas de checkout nécessaire." };
   }
 
-  // Code promo optionnel
-  let stripeCouponIds: string[] = [];
+  // Code promo optionnel — V47.12 : on calcule la réduction NOUS-MÊMES et on
+  // envoie le prix déjà réduit à Stripe via price_data. Plus de coupon Stripe
+  // (qui n'est pas éditable après création → désynchros garanties si admin
+  // modifie le promo en BDD).
   let promoCodeId: string | undefined;
-  let hasCoupon = false;
+  let promoDiscountCents = 0;
+  let promoLabel = "";
   if (typeof promoCode === "string" && promoCode.trim()) {
     const code = promoCode.trim().toUpperCase();
     const promo = await prisma.promoCode.findUnique({ where: { code } });
-    if (
-      promo &&
+    if (!promo) {
+      return { ok: false, message: "Code promo inconnu." };
+    }
+    const valid =
       promo.isActive &&
       (!promo.expiresAt || promo.expiresAt > new Date()) &&
       (!promo.maxRedemptions || promo.redemptions < promo.maxRedemptions) &&
-      (!promo.planSlug || promo.planSlug === plan.slug) &&
-      promo.stripeCouponId
-    ) {
-      // V47.11 : pre-check que le total restant après réduction soit >= 50cts
-      // (minimum Stripe). On compare au priceCents BDD (source de vérité).
-      if (
-        promo.amountOffCents &&
-        promo.amountOffCents > 0 &&
-        plan.priceCents - promo.amountOffCents < 50
-      ) {
-        return {
-          ok: false,
-          message: `Le code promo réduit le total en dessous du minimum Stripe (0,50 €). Prix : ${(plan.priceCents / 100).toFixed(2)} € · Réduction : ${(promo.amountOffCents / 100).toFixed(2)} €.`,
-        };
-      }
-      stripeCouponIds = [promo.stripeCouponId];
-      promoCodeId = promo.id;
-      hasCoupon = true;
-    } else if (promo) {
-      // Le user a tapé un code MAIS il est invalide/expiré/exhausted
+      (!promo.planSlug || promo.planSlug === plan.slug);
+    if (!valid) {
       return {
         ok: false,
         message:
           "Ce code promo n'est pas applicable (expiré, épuisé, ou pas pour ce plan).",
       };
-    } else {
-      return { ok: false, message: "Code promo inconnu." };
     }
+    // Calcul du discount
+    if (promo.percentOff && promo.percentOff > 0) {
+      promoDiscountCents = Math.round((plan.priceCents * promo.percentOff) / 100);
+      promoLabel = `-${promo.percentOff}%`;
+    } else if (promo.amountOffCents && promo.amountOffCents > 0) {
+      promoDiscountCents = Math.min(promo.amountOffCents, plan.priceCents);
+      promoLabel = `-${(promo.amountOffCents / 100).toFixed(2)} €`;
+    }
+    // Pre-check minimum Stripe (50 centimes)
+    if (plan.priceCents - promoDiscountCents < 50) {
+      return {
+        ok: false,
+        message: `Le code promo réduit le total en dessous du minimum Stripe (0,50 €). Prix : ${(plan.priceCents / 100).toFixed(2)} € · Réduction : ${(promoDiscountCents / 100).toFixed(2)} €.`,
+      };
+    }
+    promoCodeId = promo.id;
   }
+  const finalPriceCents = plan.priceCents - promoDiscountCents;
+  const hasCoupon = promoCodeId !== undefined;
 
   // Récupère ou crée le Customer Stripe pour ce user (utile pour l'historique
   // côté Stripe ; pas obligatoire mais pratique pour le portail client futur)
@@ -181,13 +184,20 @@ export async function createCheckoutSessionAction(
       ? plan.stripePriceId.trim()
       : null;
 
-  // V30.2 + V33 : capture pour TS closure narrowing
+  // V30.2 + V33 + V47.12 : capture pour TS closure narrowing
   const planSnapshot = plan;
   const quizSnapshot = quiz;
+  const finalPriceSnap = finalPriceCents;
+  const promoLabelSnap = promoLabel;
   function buildLineItems(usePriceId: boolean) {
-    const productName = quizSnapshot
+    const baseName = quizSnapshot
       ? `Kuizard ${planSnapshot.name} — ${quizSnapshot.title}`
       : `Crédit Kuizard — ${planSnapshot.name}`;
+    // V47.12 : si promo, on suffixe le nom pour que ça apparaisse sur la
+    // facture Stripe + dans le checkout.
+    const productName = promoLabelSnap
+      ? `${baseName} (promo ${promoLabelSnap})`
+      : baseName;
     return [
       {
         price_data:
@@ -195,7 +205,9 @@ export async function createCheckoutSessionAction(
             ? undefined
             : {
                 currency: "eur",
-                unit_amount: planSnapshot.priceCents,
+                // V47.12 : on envoie le prix DÉJÀ réduit (ne dépend plus du
+                // coupon Stripe, plus de désynchro possible)
+                unit_amount: finalPriceSnap,
                 product_data: {
                   name: productName,
                   description: planSnapshot.description ?? undefined,
@@ -217,7 +229,8 @@ export async function createCheckoutSessionAction(
       mode: "payment",
       customer: customerId,
       line_items: buildLineItems(usePriceId),
-      discounts: stripeCouponIds.map((id) => ({ coupon: id })),
+      // V47.12 : plus de discounts Stripe — la réduction est appliquée
+      // directement dans unit_amount via price_data.
       success_url: `${APP_URL}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: quizId
         ? `${APP_URL}/payment/cancel?quiz_id=${quizId}`
@@ -269,7 +282,7 @@ export async function createCheckoutSessionAction(
           mode: "payment",
           customer: customerId,
           line_items: buildLineItems(false),
-          discounts: stripeCouponIds.map((id) => ({ coupon: id })),
+          // V47.12 : plus de discounts Stripe — réduction dans unit_amount
           success_url: `${APP_URL}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
           cancel_url: `${APP_URL}/payment/cancel?quiz_id=${quizId}`,
           metadata: {
