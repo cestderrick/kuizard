@@ -210,7 +210,9 @@ export async function createCheckoutSessionAction(
                 unit_amount: finalPriceSnap,
                 product_data: {
                   name: productName,
-                  description: planSnapshot.description ?? undefined,
+                  // V47.18 : on ne passe PLUS la description complète du plan
+                  // (Stripe affichait toute la liste features "10 questions,
+                  // 50 participants, etc." sous le nom). Le nom suffit.
                 },
               },
         price: usePriceId ? safeStripePriceId ?? undefined : undefined,
