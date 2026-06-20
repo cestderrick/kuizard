@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { prisma } from "@/lib/db";
 import { SendDigestNowButton } from "@/components/admin/send-digest-now-button";
+import { EmailDebugButton } from "@/components/admin/email-debug-button";
 
 export const metadata: Metadata = {
   title: "Admin · Tableau de bord",
@@ -65,7 +66,10 @@ export default async function AdminDashboardPage() {
             Vue d'ensemble de l'activité Kuizard
           </p>
         </div>
-        <SendDigestNowButton />
+        <div className="flex flex-col gap-3 items-end">
+          <SendDigestNowButton />
+          <EmailDebugButton />
+        </div>
       </header>
 
       {/* Cartes de stats */}
