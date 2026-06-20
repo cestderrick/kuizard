@@ -13,7 +13,7 @@ export function SendDigestNowButton() {
     setLoading(true);
     setFeedback(null);
     try {
-      const res = await fetch("/api/admin/daily-digest", {
+      const res = await fetch("/api/admin/daily-digest?range=today", {
         method: "GET",
         cache: "no-store",
       });

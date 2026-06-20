@@ -51,7 +51,13 @@ export async function GET(req: Request) {
   }
 
   try {
-    // Fenêtre = J-1 00:00 → J-1 23:59:59 (UTC)
+    // V47.16 : par défaut = J-1 (le cron à 6h envoie le récap d'hier).
+    // Mais si ?range=today (utilisé par le bouton "Envoyer maintenant" du
+    // admin), on calcule sur le jour COURANT — pratique pour voir le
+    // résultat d'une action qu'on vient de faire.
+    const url = new URL(req.url);
+    const isToday = url.searchParams.get("range") === "today";
+
     const now = new Date();
     const todayUtcMidnight = new Date(
       Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
@@ -59,13 +65,20 @@ export async function GET(req: Request) {
     const yesterdayStart = new Date(
       todayUtcMidnight.getTime() - 24 * 60 * 60 * 1000
     );
-    const yesterdayEnd = todayUtcMidnight; // exclusif
 
-    const dateLabel = new Intl.DateTimeFormat("fr-FR", {
-      day: "2-digit",
-      month: "long",
-      year: "numeric",
-    }).format(yesterdayStart);
+    // Fenêtre selon le mode
+    const windowStart = isToday ? todayUtcMidnight : yesterdayStart;
+    const windowEnd = isToday
+      ? new Date(todayUtcMidnight.getTime() + 24 * 60 * 60 * 1000)
+      : todayUtcMidnight;
+
+    const dateLabel =
+      (isToday ? "AUJOURD'HUI — " : "") +
+      new Intl.DateTimeFormat("fr-FR", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+      }).format(windowStart);
 
     const [
       newUsersToday,
@@ -82,47 +95,47 @@ export async function GET(req: Request) {
       topQuizAgg,
     ] = await Promise.all([
       prisma.user.count({
-        where: { createdAt: { gte: yesterdayStart, lt: yesterdayEnd } },
+        where: { createdAt: { gte: windowStart, lt: windowEnd } },
       }),
       prisma.user.count(),
       prisma.quiz.count({
-        where: { createdAt: { gte: yesterdayStart, lt: yesterdayEnd } },
+        where: { createdAt: { gte: windowStart, lt: windowEnd } },
       }),
       prisma.quiz.count(),
       prisma.message.count({
         where: {
-          createdAt: { gte: yesterdayStart, lt: yesterdayEnd },
+          createdAt: { gte: windowStart, lt: windowEnd },
           senderRole: "USER",
         },
       }),
       prisma.conversation.count({ where: { unreadByAdmin: true } }),
       prisma.participation.count({
         where: {
-          completedAt: { gte: yesterdayStart, lt: yesterdayEnd, not: null },
+          completedAt: { gte: windowStart, lt: windowEnd, not: null },
         },
       }),
       prisma.payment.count({
         where: {
-          createdAt: { gte: yesterdayStart, lt: yesterdayEnd },
+          createdAt: { gte: windowStart, lt: windowEnd },
           status: "succeeded",
         },
       }),
       prisma.payment.aggregate({
         where: {
-          createdAt: { gte: yesterdayStart, lt: yesterdayEnd },
+          createdAt: { gte: windowStart, lt: windowEnd },
           status: "succeeded",
         },
         _sum: { amountCents: true },
       }),
       prisma.subscription.count({
         where: {
-          createdAt: { gte: yesterdayStart, lt: yesterdayEnd },
+          createdAt: { gte: windowStart, lt: windowEnd },
           status: { in: ["active", "trialing"] },
         },
       }),
       prisma.quiz.count({
         where: {
-          createdAt: { gte: yesterdayStart, lt: yesterdayEnd },
+          createdAt: { gte: windowStart, lt: windowEnd },
           fromTemplateSlug: { not: null },
         },
       }),
@@ -130,7 +143,7 @@ export async function GET(req: Request) {
       prisma.participation.groupBy({
         by: ["quizId"],
         where: {
-          completedAt: { gte: yesterdayStart, lt: yesterdayEnd, not: null },
+          completedAt: { gte: windowStart, lt: windowEnd, not: null },
         },
         _count: true,
         orderBy: { _count: { quizId: "desc" } },

@@ -128,7 +128,12 @@ async function handleCheckoutCompleted(
     });
   }
 
-  // Marque le quizz comme payé + applique le plan
+  // V47.17 : on envoie le mail dans 2 cas distincts maintenant :
+  //   1. Paiement quiz spécifique (quizId + planSlug)
+  //   2. Achat de crédit one-shot (planSlug, pas de quizId)
+  // Avant, seul le cas 1 était traité → aucun mail pour les crédits.
+
+  // Cas 1 : paiement pour un quiz spécifique
   if (quizId && planSlug) {
     await prisma.quiz.update({
       where: { id: quizId },
@@ -137,7 +142,6 @@ async function handleCheckoutCompleted(
       },
     });
 
-    // Envoi du reçu par email (fire and forget)
     try {
       const [user, plan, quiz] = await Promise.all([
         userId
@@ -164,16 +168,65 @@ async function handleCheckoutCompleted(
           quizTitle: quiz.title,
           quizCode: quiz.code,
         });
-        void sendEmail({
+        const r = await sendEmail({
           to: user.email,
           subject: tpl.subject,
           html: tpl.html,
           text: tpl.text,
         });
+        console.log("[stripe webhook] receipt email (quiz) sent:", r);
       }
     } catch (err) {
-      console.error("[stripe webhook] receipt email failed:", err);
+      console.error("[stripe webhook] receipt email (quiz) failed:", err);
     }
+  } else if (planSlug && !quizId && userId) {
+    // Cas 2 : achat de crédit one-shot (non lié à un quiz)
+    try {
+      const [user, plan] = await Promise.all([
+        prisma.user.findUnique({
+          where: { id: userId },
+          select: { email: true, name: true },
+        }),
+        prisma.planConfig.findUnique({
+          where: { slug: planSlug },
+          select: { name: true },
+        }),
+      ]);
+      if (user?.email && plan) {
+        // On utilise le même template, avec des libellés "crédit" plutôt
+        // que "quiz X"
+        const tpl = paymentReceiptEmail({
+          name: user.name,
+          amountCents: session.amount_total ?? 0,
+          planSlug,
+          planName: plan.name,
+          quizTitle: `Crédit ${plan.name}`,
+          quizCode: "(à appliquer)",
+        });
+        const r = await sendEmail({
+          to: user.email,
+          subject: `Reçu Kuizard — Crédit ${plan.name} acheté`,
+          html: tpl.html.replace(
+            "Ton quizz <strong>Crédit",
+            "Ton crédit <strong>"
+          ),
+          text: tpl.text,
+        });
+        console.log("[stripe webhook] receipt email (credit) sent:", r);
+      } else {
+        console.warn(
+          "[stripe webhook] credit email skipped — user.email or plan missing",
+          { hasUser: !!user, hasEmail: !!user?.email, hasPlan: !!plan }
+        );
+      }
+    } catch (err) {
+      console.error("[stripe webhook] receipt email (credit) failed:", err);
+    }
+  } else {
+    console.warn(
+      "[stripe webhook] checkout.session.completed sans quizId ni cas crédit",
+      { quizId, planSlug, userId }
+    );
   }
 
   // Si pas trouvé via stripeSessionId (cas rare où on a perdu le pending),
