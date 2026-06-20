@@ -20,7 +20,10 @@ export function canModifyAnswers(
 
   if (mode === "SCHEDULED") {
     if (scheduledCloseAt && new Date() > scheduledCloseAt) return false;
-    return true; // tant que c'est ouvert, on peut modifier (même après "fin")
+    // V47.20 : une fois soumis (completedAt set), la participation est
+    // DÉFINITIVE — plus de modif possible. Le user a 1 chance par créneau.
+    if (completedAt !== null) return false;
+    return true;
   }
 
   // LIVE_MANUAL ou autre

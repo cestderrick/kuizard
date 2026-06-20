@@ -454,6 +454,19 @@ export function QuizPlayer({
             onModify={() => setPhase("playing")}
             texts={texts}
             participationId={participationId}
+            // V47.20 : si SCHEDULED + créneau encore ouvert → cache le score
+            hideScore={
+              !!scheduled?.closeAtIso &&
+              new Date(scheduled.closeAtIso).getTime() > Date.now()
+            }
+            closeAtLabel={
+              scheduled?.closeAtIso
+                ? new Intl.DateTimeFormat("fr-FR", {
+                    dateStyle: "long",
+                    timeStyle: "short",
+                  }).format(new Date(scheduled.closeAtIso))
+                : null
+            }
           />
         )}
       </div>
@@ -872,6 +885,8 @@ function ResultCard({
   onModify,
   texts,
   participationId,
+  hideScore,
+  closeAtLabel,
 }: {
   code: string;
   title: string;
@@ -882,6 +897,10 @@ function ResultCard({
   onModify: () => void;
   texts: PlayerTexts;
   participationId: string | null;
+  /** V47.20 : true en SCHEDULED ouvert → on cache le score chiffré */
+  hideScore?: boolean;
+  /** Date FR formatée de clôture pour le message d'attente */
+  closeAtLabel?: string | null;
 }) {
   const ratio = total > 0 ? Math.round((score / total) * 100) : 0;
   const message =
@@ -909,19 +928,43 @@ function ResultCard({
       </h1>
 
       <div className="my-2">
-        <p
-          className="font-display text-6xl font-bold"
-          style={{ color: "var(--quiz-primary, var(--color-violet-primary))" }}
-        >
-          {score}
-          <span className="text-2xl text-muted-foreground"> / {total}</span>
-        </p>
-        <p className="text-sm text-muted-foreground mt-1">
-          {texts.score_correct.replace("{ratio}", String(ratio))}
-        </p>
+        {hideScore ? (
+          // V47.20 : SCHEDULED ouvert → score scellé (suspense préservé,
+          // même pour le joueur lui-même)
+          <>
+            <p
+              className="font-display text-6xl"
+              style={{ color: "var(--quiz-primary, var(--color-violet-primary))" }}
+              aria-hidden
+            >
+              🤫
+            </p>
+            <p className="text-sm font-bold mt-3" style={{ color: "var(--color-violet-deep)" }}>
+              Score scellé
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Ton score et le classement seront dévoilés à tous à la clôture
+              du créneau
+              {closeAtLabel ? <> ({closeAtLabel})</> : null}.
+            </p>
+          </>
+        ) : (
+          <>
+            <p
+              className="font-display text-6xl font-bold"
+              style={{ color: "var(--quiz-primary, var(--color-violet-primary))" }}
+            >
+              {score}
+              <span className="text-2xl text-muted-foreground"> / {total}</span>
+            </p>
+            <p className="text-sm text-muted-foreground mt-1">
+              {texts.score_correct.replace("{ratio}", String(ratio))}
+            </p>
+          </>
+        )}
       </div>
 
-      <p className="italic">{message}</p>
+      {!hideScore && <p className="italic">{message}</p>}
 
       <div className="flex flex-col gap-2 pt-2">
         {canModify && (

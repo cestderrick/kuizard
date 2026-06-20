@@ -215,8 +215,28 @@ export default async function ClassementPage({
                     <span className="text-sm opacity-80 italic">
                       Joueur anonyme
                     </span>
-                    <span className="text-xs opacity-50 italic">
-                      score scellé
+                    {/* V47.20 : on affiche le SCORE (chiffre) — les pseudos
+                        restent cachés jusqu'à la clôture, mais le suspense
+                        autour du chiffre est plus motivant. */}
+                    <span
+                      className="text-sm font-bold"
+                      style={{
+                        color: "var(--color-gold-light)",
+                        WebkitTextFillColor: "var(--color-gold-light)",
+                        fontFamily: "var(--font-display, inherit)",
+                      }}
+                    >
+                      {e.score}
+                      <span
+                        className="text-xs opacity-70 ml-0.5"
+                        style={{
+                          color: "var(--color-lavender-2)",
+                          WebkitTextFillColor: "var(--color-lavender-2)",
+                          fontFamily: "inherit",
+                        }}
+                      >
+                        pts
+                      </span>
                     </span>
                   </li>
                 ))}
