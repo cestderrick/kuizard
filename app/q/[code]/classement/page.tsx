@@ -325,7 +325,7 @@ export default async function ClassementPage({
         }}
       />
 
-      <div className="relative z-10 w-full max-w-3xl flex flex-col gap-2 sm:gap-5">
+      <div className="relative z-10 w-full max-w-3xl flex flex-col gap-2 sm:gap-3">
         {/* Header — compact sur mobile pour voir les résultats sans scroll */}
         <header className="text-center">
           <p className="text-[10px] sm:text-xs uppercase tracking-[3px] text-[var(--color-gold)] font-semibold mb-0.5">
@@ -347,29 +347,30 @@ export default async function ClassementPage({
           </p>
         </header>
 
-        {/* V24 : Bloc "Mes résultats" en évidence pour le joueur identifié */}
+        {/* V47.24 : Bandeau "Tes resultats" ULTRA compact (1 ligne) pour que le podium
+            soit visible en first-fold. Le panel "Voir mes reponses" est replie. */}
         {myEntry && myParticipationId && (
           <section
-            className="rounded-2xl p-3 sm:p-5 border-2"
+            className="rounded-xl px-3 py-2 sm:px-4 sm:py-2.5 border"
             style={{
               borderColor: "var(--color-gold)",
               background:
-                "linear-gradient(135deg, rgba(245,158,11,0.18), rgba(124,58,237,0.18))",
+                "linear-gradient(135deg, rgba(245,158,11,0.15), rgba(124,58,237,0.15))",
             }}
           >
-            <div className="flex items-start justify-between gap-3 flex-wrap mb-2 sm:mb-3">
-              <div>
-                <p
-                  className="text-xs uppercase tracking-[3px] font-semibold"
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                <span
+                  className="text-[10px] uppercase tracking-[2px] font-bold px-2 py-0.5 rounded shrink-0"
                   style={{
-                    color: "var(--color-gold)",
-                    WebkitTextFillColor: "var(--color-gold)",
+                    backgroundColor: "var(--color-gold)",
+                    color: "var(--color-violet-deep)",
                   }}
                 >
-                  🎯 Tes résultats
-                </p>
+                  🎯 TOI
+                </span>
                 <p
-                  className="text-lg tracking-wide mt-1"
+                  className="text-sm sm:text-base font-semibold truncate"
                   style={{
                     color: "var(--color-lavender)",
                     WebkitTextFillColor: "var(--color-lavender)",
@@ -379,9 +380,9 @@ export default async function ClassementPage({
                   {myEntry.nickname}
                 </p>
               </div>
-              <div className="text-right">
-                <p
-                  className="font-bold text-2xl sm:text-3xl leading-none"
+              <div className="flex items-center gap-3 sm:gap-4 shrink-0">
+                <span
+                  className="font-bold text-xl sm:text-2xl leading-none"
                   style={{
                     color: "var(--color-gold-light)",
                     WebkitTextFillColor: "var(--color-gold-light)",
@@ -389,31 +390,23 @@ export default async function ClassementPage({
                   }}
                 >
                   {myEntry.score}
-                  <span
-                    className="text-base opacity-70"
-                    style={{
-                      color: "var(--color-lavender-2)",
-                      WebkitTextFillColor: "var(--color-lavender-2)",
-                      fontFamily: "inherit",
-                    }}
-                  >
-                    {" "}
-                    / {data.totalPoints}
-                  </span>
-                </p>
-                <p className="text-xs text-[var(--color-lavender-2)] opacity-80 mt-1">
-                  Rang #{myEntry.rank} · ⏱ {formatDuration(myEntry.durationMs)}
-                </p>
+                  <span className="text-sm opacity-70">/{data.totalPoints}</span>
+                </span>
+                <span className="text-[11px] sm:text-xs text-[var(--color-lavender-2)] opacity-90 whitespace-nowrap">
+                  #{myEntry.rank} · ⏱ {formatDuration(myEntry.durationMs)}
+                </span>
               </div>
             </div>
-            <MyAnswersPanel
-              code={data.code}
-              participationId={myParticipationId}
-            />
+            <div className="mt-1.5">
+              <MyAnswersPanel
+                code={data.code}
+                participationId={myParticipationId}
+              />
+            </div>
             {/* V47.23 : bouton "Rejouer" visible directement dans le bloc resultats
                 (en plus du footer) pour qu'on n'ait pas a scroller. */}
             {!isWeeklyFeatured && (
-              <div className="mt-4 flex justify-center">
+              <div className="mt-2 flex justify-center">
                 <ReplayQuizButton code={data.code} />
               </div>
             )}

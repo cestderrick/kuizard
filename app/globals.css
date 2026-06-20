@@ -165,6 +165,18 @@
 }
 
 .dark {
+  /* V47.24 : VRAI dark mode pages marketing/dashboard.
+     On inverse les couleurs marque pales utilisees comme FOND
+     (lavender, lavender-2 deviennent sombres) et les couleurs sombres
+     utilisees comme TEXTE (violet-deep devient clair). Les sections
+     always-dark (player, TV, 404) utilisent --color-night, non touche. */
+  --color-lavender: #0f0a2e;
+  --color-lavender-2: #1f1b3a;
+  --color-violet-deep: #e9d5ff;
+  --color-violet-primary: #c4b5fd;
+  --color-violet-darker: #a78bfa;
+  --color-gold-pale: #4a2f0a;
+
   --background: oklch(0.165 0.025 280);
   --foreground: oklch(0.97 0.015 295);
   --card: oklch(0.21 0.03 280);
@@ -304,6 +316,128 @@
 }
 .dark header[data-theme="light"] .text-muted-foreground {
   color: #71717a !important;
+}
+
+/* ============================================
+   V47.24 — VRAI dark mode pages marketing/dashboard
+   ============================================
+   On force les fonds blancs des cartes a devenir sombres, les bordures
+   pales a devenir sombres, et les textes violet-deep a etre claires.
+   But : tout reste lisible en dark mode. */
+
+/* Body / sections principales */
+.dark body {
+  background-color: #0f0a2e !important;
+  color: #f5f0ff !important;
+}
+.dark main {
+  background-color: transparent !important;
+  color: #f5f0ff;
+}
+
+/* Toutes les cards bg-white -> sombres */
+.dark .bg-white,
+.dark .bg-zinc-50,
+.dark .bg-slate-50,
+.dark .bg-gray-50,
+.dark .bg-neutral-50,
+.dark .bg-violet-50,
+.dark .bg-amber-50,
+.dark .bg-green-50,
+.dark .bg-red-50,
+.dark .bg-blue-50 {
+  background-color: #1f1b3a !important;
+  color: #f5f0ff !important;
+}
+
+/* Inputs et form fields */
+.dark input,
+.dark textarea,
+.dark select {
+  background-color: #1f1b3a !important;
+  color: #f5f0ff !important;
+  border-color: rgba(167, 139, 250, 0.3) !important;
+}
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: rgba(229, 220, 245, 0.5) !important;
+}
+
+/* Bordures pales -> sombres */
+.dark .border-zinc-100,
+.dark .border-zinc-200,
+.dark .border-slate-100,
+.dark .border-slate-200,
+.dark .border-violet-100,
+.dark .border-violet-200,
+.dark .border-amber-200,
+.dark .border-green-200,
+.dark .border-green-300,
+.dark .border-red-200 {
+  border-color: rgba(167, 139, 250, 0.2) !important;
+}
+
+/* Texte sombre -> clair (sauf les boutons or qui ont fond gold) */
+.dark .text-zinc-600,
+.dark .text-zinc-700,
+.dark .text-zinc-800,
+.dark .text-zinc-900,
+.dark .text-slate-600,
+.dark .text-slate-700,
+.dark .text-slate-800,
+.dark .text-slate-900,
+.dark .text-foreground,
+.dark .text-gray-700,
+.dark .text-gray-800,
+.dark .text-gray-900 {
+  color: #f5f0ff !important;
+}
+
+/* Texte secondaire */
+.dark .text-zinc-500,
+.dark .text-slate-500,
+.dark .text-gray-500,
+.dark .text-gray-600 {
+  color: rgba(229, 220, 245, 0.7) !important;
+}
+
+/* Titres font-display avec gradient magic-show -> garder en clair en dark */
+.dark .font-display,
+.dark h1.font-display,
+.dark h2.font-display,
+.dark h3.font-display {
+  background: none !important;
+  -webkit-text-fill-color: #f5f0ff !important;
+  color: #f5f0ff !important;
+}
+
+/* Liens visites bg-violet hover */
+.dark a:hover {
+  opacity: 0.9;
+}
+
+/* Tables */
+.dark thead {
+  background-color: rgba(167, 139, 250, 0.08) !important;
+}
+.dark th,
+.dark td {
+  border-color: rgba(167, 139, 250, 0.15) !important;
+}
+
+/* Garder le navbar light intact malgre les regles plus haut */
+.dark header[data-theme="light"] .bg-white,
+.dark header[data-theme="light"] {
+  background-color: #ffffff !important;
+  color: #0a0a0a !important;
+}
+.dark header[data-theme="light"] .text-zinc-600,
+.dark header[data-theme="light"] .text-foreground {
+  color: #0a0a0a !important;
+}
+.dark header[data-theme="light"] input {
+  background-color: #ffffff !important;
+  color: #0a0a0a !important;
 }
 
 @layer base {
