@@ -87,7 +87,7 @@ export default async function ClassementPage({
     const topScore = completedCount > 0 ? data.entries[0].score : 0;
 
     return (
-      <main className="min-h-screen flex flex-col items-center px-4 pt-6 pb-12 bg-[var(--color-night)] text-[var(--color-lavender)]">
+      <main className="flex flex-col items-center px-4 pt-4 pb-12 bg-[var(--color-night)] text-[var(--color-lavender)]">
         <div className="max-w-xl text-center w-full">
           <div className="text-6xl mb-4" aria-hidden>
             🤫
@@ -306,7 +306,7 @@ export default async function ClassementPage({
     : null;
 
   return (
-    <main className="min-h-[100dvh] flex flex-col items-center px-3 sm:px-4 py-1 sm:py-6 bg-[var(--color-night)] text-[var(--color-lavender)] relative overflow-hidden">
+    <main className="flex flex-col items-center px-3 sm:px-4 pt-3 pb-8 sm:pt-4 sm:pb-12 bg-[var(--color-night)] text-[var(--color-lavender)] relative overflow-hidden">
       {/* Halos magiques */}
       <div
         aria-hidden

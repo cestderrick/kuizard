@@ -425,19 +425,34 @@
   border-color: rgba(167, 139, 250, 0.15) !important;
 }
 
-/* Garder le navbar light intact malgre les regles plus haut */
-.dark header[data-theme="light"] .bg-white,
+/* V47.25 : le navbar passe DARK aussi en dark mode (avant on le forcait
+   light, mais ca cassait la coherence visuelle). On garde un bg legerement
+   plus clair que le body pour le distinguer. */
 .dark header[data-theme="light"] {
-  background-color: #ffffff !important;
-  color: #0a0a0a !important;
+  background-color: #1f1b3a !important;
+  border-color: rgba(167, 139, 250, 0.2) !important;
+  color: #f5f0ff !important;
+}
+.dark header[data-theme="light"] .bg-white {
+  background-color: transparent !important;
+}
+.dark header[data-theme="light"] a,
+.dark header[data-theme="light"] button {
+  color: #f5f0ff !important;
 }
 .dark header[data-theme="light"] .text-zinc-600,
-.dark header[data-theme="light"] .text-foreground {
-  color: #0a0a0a !important;
+.dark header[data-theme="light"] .text-foreground,
+.dark header[data-theme="light"] .text-muted-foreground {
+  color: rgba(229, 220, 245, 0.85) !important;
 }
 .dark header[data-theme="light"] input {
-  background-color: #ffffff !important;
-  color: #0a0a0a !important;
+  background-color: #0f0a2e !important;
+  color: #f5f0ff !important;
+  border-color: rgba(167, 139, 250, 0.3) !important;
+}
+/* Bouton "Se connecter" / "Creer un compte" : conservent leurs couleurs marque */
+.dark header[data-theme="light"] [style*="var(--color-violet-primary)"] {
+  background-color: var(--color-violet-primary) !important;
 }
 
 @layer base {

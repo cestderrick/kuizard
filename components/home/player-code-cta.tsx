@@ -35,9 +35,11 @@ export function PlayerCodeCTA() {
         <div
           className="rounded-3xl p-6 md:p-8 shadow-2xl border-2 relative overflow-hidden"
           style={{
+            // V47.25 : couleurs HARDCODEES (pas de var()) pour rester sombre
+            // meme quand le user a active le dark mode (qui inverse var(--color-violet-deep))
             background:
-              "linear-gradient(135deg, var(--color-violet-deep) 0%, var(--color-violet-primary) 100%)",
-            borderColor: "var(--color-gold)",
+              "linear-gradient(135deg, #3d1786 0%, #5523bb 100%)",
+            borderColor: "#f59e0b",
           }}
         >
           <div
