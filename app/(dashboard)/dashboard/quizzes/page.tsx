@@ -13,6 +13,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { DeleteQuizButton } from "@/components/quiz/delete-quiz-button";
+import { DuplicateQuizButton } from "@/components/quiz/duplicate-quiz-button";
 import { LiveQuickActions } from "@/components/quiz/live-quick-actions";
 import { UpgradeCTA } from "@/components/marketing/upgrade-cta";
 import { getBillingContext } from "@/lib/billing/context";
@@ -361,6 +362,10 @@ export default async function QuizzesPage({
                       Éditer
                     </Link>
                   </Button>
+                  <DuplicateQuizButton
+                    quizId={quiz.id}
+                    quizTitle={quiz.title}
+                  />
                   <DeleteQuizButton
                     quizId={quiz.id}
                     quizTitle={quiz.title}

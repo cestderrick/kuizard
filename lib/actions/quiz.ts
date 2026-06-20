@@ -596,3 +596,100 @@ export async function deleteQuizAction(formData: FormData) {
   // la page d'édition (sinon il atterrirait sur un 404 fantôme).
   redirect("/dashboard/quizzes");
 }
+
+// =============================================
+// V41 — DUPLICATE OWN QUIZ
+// =============================================
+// Permet à un user de dupliquer un de ses propres quizz. Utile pour faire
+// des variantes ("Star Wars 2024" → "Star Wars 2025"), garder un quiz
+// terminé tout en relançant une nouvelle session, ou backuper avant gros
+// changement.
+//
+// La copie :
+//   - reprend titre, description, photo, thème, settings, mode, lots, message
+//   - copie TOUTES les questions avec leurs options
+//   - statut DRAFT (le user pourra publier après revue)
+//   - isLibrary=false (jamais publié en banque automatiquement)
+//   - Suffixe " (copie)" sur le titre pour distinguer
+//   - Nouveau code unique
+
+export type DuplicateOwnState = {
+  ok: boolean;
+  message?: string;
+};
+
+export async function duplicateOwnQuizAction(
+  _prev: DuplicateOwnState,
+  formData: FormData
+): Promise<DuplicateOwnState> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { ok: false, message: "Tu dois être connecté." };
+  }
+  const userId = session.user.id;
+
+  const sourceId = formData.get("quizId");
+  if (typeof sourceId !== "string" || !sourceId) {
+    return { ok: false, message: "Quizz manquant." };
+  }
+
+  const source = await prisma.quiz.findFirst({
+    where: { id: sourceId, userId },
+    include: {
+      questions: { orderBy: { order: "asc" } },
+    },
+  });
+  if (!source) {
+    return { ok: false, message: "Quizz introuvable ou non autorisé." };
+  }
+
+  const code = await generateUniqueQuizCode();
+  let newId: string;
+  try {
+    const created = await prisma.$transaction(async (tx) => {
+      const q = await tx.quiz.create({
+        data: {
+          userId,
+          code,
+          title: source.title.endsWith("(copie)")
+            ? source.title
+            : `${source.title} (copie)`,
+          description: source.description,
+          coverImageUrl: source.coverImageUrl,
+          theme: source.theme as object,
+          settings: source.settings as object,
+          mode: source.mode,
+          prizes: source.prizes ?? undefined,
+          finalMessage: source.finalMessage,
+          isLibrary: false,
+          status: "DRAFT",
+        },
+      });
+      if (source.questions.length > 0) {
+        await tx.question.createMany({
+          data: source.questions.map((q2) => ({
+            quizId: q.id,
+            order: q2.order,
+            type: q2.type,
+            text: q2.text,
+            imageUrl: q2.imageUrl,
+            options: q2.options as object,
+            points: q2.points,
+            timerSeconds: q2.timerSeconds,
+          })),
+        });
+      }
+      return q;
+    });
+    newId = created.id;
+  } catch (err) {
+    console.error("[duplicateOwnQuiz] failed:", err);
+    return {
+      ok: false,
+      message: "Erreur lors de la duplication. Réessaie plus tard.",
+    };
+  }
+
+  revalidatePath("/dashboard/quizzes");
+  redirect(`/dashboard/quizzes/${newId}/edit`);
+}

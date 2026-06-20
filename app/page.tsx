@@ -369,6 +369,74 @@ export default async function Home() {
       </section>
 
       {/* ============================================ */}
+      {/* TEASER ESCAPE GAMES (V41) */}
+      {/* ============================================ */}
+      <section
+        className="py-16"
+        style={{
+          background:
+            "linear-gradient(160deg, var(--color-violet-deep) 0%, #1a0e3a 50%, var(--color-night) 100%)",
+        }}
+      >
+        <div className="max-w-5xl mx-auto px-6">
+          <div className="rounded-3xl p-8 sm:p-10 border-2 relative overflow-hidden"
+            style={{
+              borderColor: "var(--color-gold)",
+              background:
+                "linear-gradient(135deg, rgba(245,158,11,0.12), rgba(124,58,237,0.18))",
+            }}
+          >
+            <div
+              aria-hidden
+              className="absolute -top-16 -right-16 w-64 h-64 rounded-full pointer-events-none"
+              style={{
+                background:
+                  "radial-gradient(circle, rgba(245,158,11,0.35) 0%, transparent 65%)",
+              }}
+            />
+            <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center gap-6">
+              <div className="text-7xl shrink-0" aria-hidden>
+                🗝️
+              </div>
+              <div className="flex-1 min-w-0">
+                <p
+                  className="text-xs uppercase tracking-[3px] font-bold mb-2"
+                  style={{ color: "var(--color-gold-light)" }}
+                >
+                  ✨ Nouveauté en préparation
+                </p>
+                <h2
+                  className="text-2xl sm:text-3xl font-bold tracking-wide mb-2"
+                  style={{
+                    color: "#ffffff",
+                    WebkitTextFillColor: "#ffffff",
+                    fontFamily: "var(--font-display, inherit)",
+                  }}
+                >
+                  Kuizard Escape — Escape games à imprimer
+                </h2>
+                <p className="text-[#e9d5ff] opacity-90 mb-4 leading-relaxed">
+                  Bientôt en bêta : des kits escape game personnalisables
+                  (surnoms de tes joueurs + ambiance au choix), à imprimer
+                  chez toi en quelques clics. Achat à l'unité ou abo Kuizard+.
+                </p>
+                <a
+                  href="/escape"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg font-bold text-sm"
+                  style={{
+                    backgroundColor: "var(--color-gold)",
+                    color: "var(--color-violet-deep)",
+                  }}
+                >
+                  🔮 Découvrir Escape
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ============================================ */}
       {/* VIDEO DEMO JOUEUR */}
       {/* ============================================ */}
       <section

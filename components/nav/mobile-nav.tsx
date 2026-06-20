@@ -14,6 +14,7 @@ const ITEMS: Item[] = [
   { href: "/dashboard/quizzes/library", label: "Quizthèque", icon: "📚" },
   { href: "/dashboard/mes-participations", label: "Mes participations", icon: "🕘" },
   { href: "/dashboard/stats", label: "Stats", icon: "📈" },
+  { href: "/escape", label: "Escape (bêta)", icon: "🗝️" },
   { href: "/tarifs", label: "Tarifs", icon: "💳" },
 ];
 
