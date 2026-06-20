@@ -366,11 +366,11 @@ export default async function EscapePage() {
             />
             <Faq
               q="Combien de joueurs minimum / maximum ?"
-              a="La plupart des kits seront dimensionnés pour 2 à 8 joueurs. Certains scénarios pourront monter jusqu'à 15 (équipes)."
+              a="La plupart des kits seront dimensionnés pour 2 à 8 joueurs, parfait pour une soirée entre amis ou en famille."
             />
             <Faq
               q="Je peux modifier le scénario après achat ?"
-              a="Tu pourras régénérer ton PDF autant de fois que tu veux avec d'autres surnoms ou d'autres choix d'ambiance — l'achat est pour le scénario, pas pour un seul tirage."
+              a="Non. Une fois ton PDF généré avec tes surnoms et tes choix d'ambiance, c'est figé. Pense à bien valider ta personnalisation avant de télécharger. Pour une nouvelle variante, il faudra racheter le kit."
             />
             <Faq
               q="C'est en français ou anglais ?"

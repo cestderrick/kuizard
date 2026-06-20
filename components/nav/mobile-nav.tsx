@@ -13,7 +13,6 @@ const ITEMS: Item[] = [
   { href: "/dashboard/quizzes", label: "Mes quizz", icon: "🎩" },
   { href: "/dashboard/quizzes/library", label: "Quizthèque", icon: "📚" },
   { href: "/dashboard/mes-participations", label: "Mes participations", icon: "🕘" },
-  { href: "/dashboard/stats", label: "Stats", icon: "📈" },
   { href: "/escape", label: "Escape (bêta)", icon: "🗝️" },
   { href: "/tarifs", label: "Tarifs", icon: "💳" },
 ];
@@ -121,6 +120,7 @@ export function MobileNav() {
           <p className="px-3 text-[10px] uppercase tracking-[2px] text-muted-foreground font-semibold mb-1">
             Compte
           </p>
+          <MobileLink href="/dashboard/stats" icon="📈" label="Mes stats" onClose={() => setOpen(false)} />
           <MobileLink href="/dashboard/profile" icon="👤" label="Mon profil" onClose={() => setOpen(false)} />
           <MobileLink href="/dashboard/subscription" icon="🔁" label="Mon abonnement" onClose={() => setOpen(false)} />
           <MobileLink href="/dashboard/payments" icon="💳" label="Mes paiements" onClose={() => setOpen(false)} />

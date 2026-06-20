@@ -29,6 +29,7 @@ export function UserMenu({
     home: string;
     admin: string;
     logout: string;
+    stats: string;
   };
 }) {
   const [open, setOpen] = useState(false);
@@ -138,8 +139,14 @@ export function UserMenu({
             />
           </div>
 
-          {/* V29 : Messages + Suggestions déplacés ici depuis la navbar */}
+          {/* V41.1 : Stats déplacé ici depuis la navbar pour épurer */}
           <div className="py-1.5 border-t border-violet-100">
+            <MenuLink
+              href="/dashboard/stats"
+              icon="📈"
+              label={labels.stats}
+              onClick={() => setOpen(false)}
+            />
             <MenuLink
               href="/dashboard/messages"
               icon="✉️"

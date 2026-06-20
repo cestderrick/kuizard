@@ -85,7 +85,6 @@ export default async function DashboardLayout({
                 href="/dashboard/quizzes/library"
                 label="📚 Quizthèque"
               />
-              <DashboardNavLink href="/dashboard/stats" label={navT.stats} />
               <DashboardNavLink href="/escape" label="🗝️ Escape" />
               <DashboardNavLink href="/tarifs" label="💳 Tarifs" />
             </nav>
@@ -111,6 +110,7 @@ export default async function DashboardLayout({
                 home: navT.home,
                 admin: navT.admin,
                 logout: navT.logout,
+                stats: navT.stats,
               }}
             />
             <MobileNav />
