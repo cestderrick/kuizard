@@ -55,14 +55,30 @@ export default async function PaymentSuccessPage({
         </p>
         <div className="flex flex-col gap-2">
           {quizCode ? (
-            <Button asChild>
-              <Link href={`/q/${quizCode}`}>
-                Voir mon quizz
-              </Link>
+            <Button
+              asChild
+              style={{
+                backgroundColor: "var(--color-gold)",
+                color: "var(--color-violet-deep)",
+              }}
+              className="font-bold"
+            >
+              <Link href={`/q/${quizCode}`}>Voir mon quizz</Link>
             </Button>
           ) : null}
-          <Button asChild variant="outline">
-            <Link href="/dashboard/quizzes">Mes quizz</Link>
+          {/* V47.13 : le variant="outline" donnait blanc sur fond night = invisible.
+              Override explicite avec lavande lisible + bordure visible. */}
+          <Button
+            asChild
+            variant="outline"
+            style={{
+              backgroundColor: "rgba(255,255,255,0.08)",
+              color: "var(--color-lavender)",
+              borderColor: "rgba(167,139,250,0.4)",
+            }}
+            className="font-bold"
+          >
+            <Link href="/dashboard/quizzes">📋 Mes quizz</Link>
           </Button>
         </div>
         <p className="text-xs opacity-60">
