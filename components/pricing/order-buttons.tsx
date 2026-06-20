@@ -4,7 +4,8 @@
 // V33 — Boutons d'achat / abonnement pour la page /tarifs
 // =============================================
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
@@ -99,6 +100,11 @@ export function BuyOneShotButton({
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [promoCode, setPromoCode] = useState("");
+  // V47.10 : flag mounted pour createPortal (évite hydration mismatch SSR)
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   const [state, formAction, isPending] = useActionState<
     { ok: boolean; message?: string },
     FormData
@@ -145,12 +151,13 @@ export function BuyOneShotButton({
           (isLoggedIn ? "💳 Acheter ce crédit" : "Créer un compte et acheter")}
       </Button>
 
-      {open && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          role="dialog"
-          aria-modal="true"
-        >
+      {open && mounted &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
+            role="dialog"
+            aria-modal="true"
+          >
           <div
             className="absolute inset-0 bg-black/50 backdrop-blur-sm"
             onClick={() => setOpen(false)}
@@ -235,9 +242,10 @@ export function BuyOneShotButton({
                 CGI)
               </p>
             </form>
-          </div>
-        </div>
-      )}
+            </div>
+          </div>,
+          document.body
+        )}
     </>
   );
 }

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { prisma } from "@/lib/db";
+import { SendDigestNowButton } from "@/components/admin/send-digest-now-button";
 
 export const metadata: Metadata = {
   title: "Admin · Tableau de bord",
@@ -55,13 +56,16 @@ export default async function AdminDashboardPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <header>
-        <h1 className="font-display text-3xl tracking-wide text-[var(--color-lavender)]">
-          📊 Tableau de bord global
-        </h1>
-        <p className="text-sm text-[var(--color-lavender-2)] opacity-80 mt-1">
-          Vue d'ensemble de l'activité Kuizard
-        </p>
+      <header className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+        <div>
+          <h1 className="font-display text-3xl tracking-wide text-[var(--color-lavender)]">
+            📊 Tableau de bord global
+          </h1>
+          <p className="text-sm text-[var(--color-lavender-2)] opacity-80 mt-1">
+            Vue d'ensemble de l'activité Kuizard
+          </p>
+        </div>
+        <SendDigestNowButton />
       </header>
 
       {/* Cartes de stats */}

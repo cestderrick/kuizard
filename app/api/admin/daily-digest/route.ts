@@ -19,18 +19,33 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET(req: Request) {
-  // Auth via Bearer token
-  const auth = req.headers.get("authorization") ?? "";
+  // V47.10 — Double auth :
+  //   1. Bearer CRON_SECRET (utilisé par le cron VPS)
+  //   2. Session admin connectée (pour le bouton "Envoyer maintenant" dans /admin)
+  const authHeader = req.headers.get("authorization") ?? "";
   const expected = process.env.CRON_SECRET;
-  if (!expected) {
-    return NextResponse.json(
-      { ok: false, error: "CRON_SECRET missing on server" },
-      { status: 500 }
-    );
+  const isCronAuth = !!expected && authHeader === `Bearer ${expected}`;
+
+  let isAdminAuth = false;
+  if (!isCronAuth) {
+    const { auth } = await import("@/auth");
+    const session = await auth();
+    if (session?.user?.id) {
+      const user = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { role: true },
+      });
+      isAdminAuth = user?.role === "ADMIN";
+    }
   }
-  if (auth !== `Bearer ${expected}`) {
+
+  if (!isCronAuth && !isAdminAuth) {
     return NextResponse.json(
-      { ok: false, error: "Unauthorized" },
+      {
+        ok: false,
+        error:
+          "Unauthorized. Connectez-vous en tant qu'admin OU passez le Bearer CRON_SECRET.",
+      },
       { status: 401 }
     );
   }
