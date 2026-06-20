@@ -172,12 +172,34 @@ export async function saveImageFile(
   }
 
   // ---- BRANCHE LOCALE (fallback) ----
-  const baseDir = path.join(process.cwd(), "public", "uploads", safeSubdir);
+  // V43.4 : on stocke dans un dossier configurable HORS de `public/` pour
+  // ne plus dépendre du serving Next.js de public/ (qui pose souvent
+  // problème en prod avec PM2 + nginx). Les fichiers sont ensuite servis
+  // par notre propre Route Handler `/uploads/[...path]/route.ts`.
+  //
+  // Par défaut : `<cwd>/storage/uploads`. Override possible via env
+  // LOCAL_UPLOADS_DIR=/var/www/kuizard/storage/uploads (chemin absolu).
+  const uploadsRoot =
+    process.env.LOCAL_UPLOADS_DIR ||
+    path.join(process.cwd(), "storage", "uploads");
+  const baseDir = path.join(uploadsRoot, safeSubdir);
   await mkdir(baseDir, { recursive: true });
   const filePath = path.join(baseDir, filename);
   await writeFile(filePath, buffer);
+  console.log("[upload] local file written:", filePath);
   const url = `/uploads/${safeSubdir}/${filename}`;
   return { ok: true, url, path: filePath };
+}
+
+/**
+ * V43.4 — Helper exposé pour le Route Handler /uploads/[...path]
+ * Retourne le chemin absolu où sont stockés les fichiers locaux.
+ */
+export function getLocalUploadsRoot(): string {
+  return (
+    process.env.LOCAL_UPLOADS_DIR ||
+    path.join(process.cwd(), "storage", "uploads")
+  );
 }
 
 /**
@@ -197,13 +219,11 @@ export async function deleteImageByUrl(url: string | null | undefined) {
 
   // Local : URL préfixée par /uploads/
   if (url.startsWith("/uploads/")) {
-    // V38 : Anti path-traversal robuste. On résout le chemin absolu puis
-    // on vérifie qu'il est CONTENU dans le dossier public/uploads/.
-    // L'ancienne sanitization regex pouvait être contournée avec des
-    // séquences encodées ou interleaved (ex: "....///"). path.resolve +
-    // startsWith est la défense canonique.
-    const uploadsRoot = path.resolve(process.cwd(), "public", "uploads");
-    const absolute = path.resolve(process.cwd(), "public", url.slice(1));
+    // V43.4 : on résout le path relatif vers le dossier de stockage actuel
+    // (configurable via LOCAL_UPLOADS_DIR) + check anti-path-traversal.
+    const uploadsRoot = path.resolve(getLocalUploadsRoot());
+    const relative = url.slice("/uploads/".length); // ex: "quizzes-xxx/abc.jpg"
+    const absolute = path.resolve(uploadsRoot, relative);
     if (
       absolute === uploadsRoot ||
       absolute.startsWith(uploadsRoot + path.sep)
