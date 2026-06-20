@@ -61,6 +61,7 @@ export default async function AdminLayout({
               label="✉️ Messagerie"
               badge={unreadConvos > 0 ? unreadConvos : undefined}
             />
+            <AdminNavLink href="/admin/correction" label="🩺 Correction" />
             <div className="mt-2 pt-2 border-t border-[rgba(167,139,250,0.1)]">
               <p className="px-3 text-[10px] uppercase tracking-[2px] opacity-50 mb-1">
                 Monétisation
