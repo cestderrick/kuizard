@@ -71,12 +71,10 @@ export function ImageUploader({
 
   function handleFileUpload(file: File) {
     if (isDisabled) return;
-    // V43.1 : check taille côté client pour éviter d'envoyer un fichier trop
-    // gros au serveur (qui throw, crash le rendering React).
-    if (file.size > 10 * 1024 * 1024) {
+    if (file.size > 8 * 1024 * 1024) {
       setMessage({
         ok: false,
-        text: `Fichier trop lourd (${(file.size / 1024 / 1024).toFixed(1)} Mo). Maximum 10 Mo.`,
+        text: `Fichier trop lourd (${(file.size / 1024 / 1024).toFixed(1)} Mo). Maximum 8 Mo.`,
       });
       return;
     }
@@ -84,32 +82,52 @@ export function ImageUploader({
     setPreviewUrl(tempUrl);
     setMessage(null);
     startTransition(async () => {
+      // V43.2 : on appelle le Route Handler /api/upload/image via fetch().
+      // Plus de protocole Server Action capricieux : on a un POST classique
+      // avec une réponse JSON déterministe, debuggable, et qui survit aux
+      // erreurs réseau intermédiaires (nginx 413, Cloudflare 522, etc.)
       const fd = buildHiddenFormData();
       fd.append("file", file);
-      // V43.1 : try/catch indispensable — une server action qui throw fait
-      // exploser le boundary React et la page entière crash. On capture
-      // tout, on affiche l'erreur, et on garde la session vivante.
       try {
-        const res = await uploadAction({ ok: false }, fd);
-        if (res.ok && res.url) {
-          setPreviewUrl(res.url);
-          setMessage({ ok: true, text: res.message ?? "Image enregistrée." });
+        const httpRes = await fetch("/api/upload/image", {
+          method: "POST",
+          body: fd,
+        });
+        // Si nginx/Cloudflare retourne du HTML (413, 502, etc), on tente
+        // quand même de lire le JSON. Sinon on prend le statut HTTP.
+        let body: { ok?: boolean; url?: string; message?: string } = {};
+        const contentType = httpRes.headers.get("content-type") ?? "";
+        if (contentType.includes("application/json")) {
+          body = await httpRes.json();
+        }
+        if (httpRes.ok && body.ok && body.url) {
+          setPreviewUrl(body.url);
+          setMessage({ ok: true, text: body.message ?? "Image enregistrée." });
         } else {
           setPreviewUrl(currentUrl);
+          // Erreur HTTP courante : 413 = trop gros (nginx), 401, 403, 500…
+          const fallback =
+            httpRes.status === 413
+              ? "Fichier trop gros pour le serveur (limite réseau). Compresse-le ou contacte le support."
+              : httpRes.status === 401
+              ? "Session expirée, reconnecte-toi."
+              : httpRes.status === 403
+              ? "Cette fonctionnalité n\'est pas incluse dans ton plan."
+              : `Erreur ${httpRes.status} ${httpRes.statusText}.`;
           setMessage({
             ok: false,
-            text: res.message ?? "Erreur lors de l'upload.",
+            text: body.message ?? fallback,
           });
         }
       } catch (err) {
-        console.error("[upload] action threw:", err);
+        console.error("[upload] fetch failed:", err);
         setPreviewUrl(currentUrl);
         setMessage({
           ok: false,
           text:
             err instanceof Error
               ? `Erreur réseau : ${err.message}`
-              : "Erreur réseau pendant l'upload. Réessaie.",
+              : "Erreur réseau pendant l\'upload. Réessaie.",
         });
       }
     });
