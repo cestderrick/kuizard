@@ -644,3 +644,16 @@ model Participation {
   @@index([quizId])
   @@index([quizId, score(sort: Desc)])
 }
+
+// ====================================================
+// V42 — SiteSetting : config éditables par admin sans redéploiement
+// ====================================================
+// Key-value store simple. Utilisé pour les URLs des vidéos home, les
+// futurs textes marketing modifiables, etc.
+
+model SiteSetting {
+  key       String   @id
+  value     String   @db.Text
+  updatedAt DateTime @updatedAt
+  updatedBy String?  // userId admin qui a fait la modif
+}

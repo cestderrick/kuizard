@@ -17,15 +17,12 @@ import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { getActiveWeeklyFeatured } from "@/lib/weekly/featured";
 import { WeeklyFeaturedCard } from "@/components/home/weekly-featured-card";
 import { PlayerCodeCTA } from "@/components/home/player-code-cta";
+import { getSettings, SETTING_KEYS } from "@/lib/site-settings";
 
-// 👉 Pour activer une vidéo plus tard, remplace `null` par une URL (YouTube
-// embed, Vimeo, ou .mp4 direct). Exemples :
-//   - "https://www.youtube.com/embed/dQw4w9WgXcQ"
-//   - "/videos/intro.mp4"
-// V40 : vidéo de présentation Kuizard (YouTube Shorts vertical 9:16)
-const VIDEO_INTRO: string | null = "https://youtube.com/shorts/lsISJqYt8EQ";
-const VIDEO_CREATION: string | null = null;
-const VIDEO_JOUEUR: string | null = null;
+// V42 : les URLs vidéos sont maintenant éditables depuis /admin/site-settings.
+// Default seedé : la vidéo de présentation Shorts. Si admin supprime, la
+// page affiche le placeholder "à venir".
+const DEFAULT_VIDEO_INTRO = "https://youtube.com/shorts/lsISJqYt8EQ";
 
 // STEPS et USE_CASES sont maintenant construits dynamiquement depuis les
 // traductions (voir le composant Home()). Les emojis restent en dur.
@@ -34,14 +31,25 @@ const STEP_ICONS = ["🪄", "📲", "🏆"];
 const USECASE_EMOJIS = ["💍", "🎉", "👰", "🍻", "👶", "🎓"];
 
 export default async function Home() {
-  const [session, messages, oneShotPlans, subscriptionPlans, weeklyFeatured] =
+  const [session, messages, oneShotPlans, subscriptionPlans, weeklyFeatured, settings] =
     await Promise.all([
       auth(),
       getMessages(),
       getActivePlans("one_shot"),
       getActivePlans("subscription"),
       getActiveWeeklyFeatured(),
+      getSettings([
+        SETTING_KEYS.videoIntro,
+        SETTING_KEYS.videoCreation,
+        SETTING_KEYS.videoJoueur,
+      ]),
     ]);
+  // V42 : URLs vidéos pilotées par l'admin. Fallback sur la valeur seedée
+  // pour l'intro (pour ne jamais avoir une page vide au 1er déploiement).
+  const VIDEO_INTRO: string | null =
+    settings[SETTING_KEYS.videoIntro] ?? DEFAULT_VIDEO_INTRO;
+  const VIDEO_CREATION: string | null = settings[SETTING_KEYS.videoCreation] ?? null;
+  const VIDEO_JOUEUR: string | null = settings[SETTING_KEYS.videoJoueur] ?? null;
   const isLoggedIn = !!session?.user;
   const t = messages.home;
   const navT = messages.nav;

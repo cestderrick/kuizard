@@ -5,7 +5,8 @@
 // LiteYouTube (vignette + iframe au clic) pour économiser ~500ko au load.
 // Sinon fallback sur iframe direct (Vimeo) ou <video> (mp4).
 
-import { LiteYouTube, extractYouTubeId } from "@/components/home/lite-youtube";
+import { LiteYouTube } from "@/components/home/lite-youtube";
+import { extractYouTubeId } from "@/lib/utils/youtube";
 
 type Props = {
   src?: string | null;

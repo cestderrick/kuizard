@@ -21,6 +21,12 @@ const ALLOWED_MIME = new Set([
   "image/png",
   "image/webp",
   "image/gif",
+  // V42 : iPhone shoot par défaut en HEIC. Si on bloque, l'utilisateur ne
+  // comprend pas pourquoi son image ne marche pas. On accepte le MIME mais
+  // les magic bytes restent vérifiés en complément (HEIC commence par
+  // 'ftypheic' à l'offset 4).
+  "image/heic",
+  "image/heif",
 ]);
 
 const MAX_BYTES = 8 * 1024 * 1024; // 8 Mo
@@ -60,6 +66,26 @@ function detectImageMime(buf: Buffer): string | null {
     buf[10] === 0x42 && // B
     buf[11] === 0x50 // P
   ) return "image/webp";
+  // V42 : HEIC/HEIF (iPhone). Conteneur ISOBMFF, magic à l'offset 4 = "ftyp",
+  // puis le brand à l'offset 8 indique le type exact (heic, heix, mif1, etc.)
+  if (
+    buf[4] === 0x66 && // f
+    buf[5] === 0x74 && // t
+    buf[6] === 0x79 && // y
+    buf[7] === 0x70 // p
+  ) {
+    const brand = buf.slice(8, 12).toString("ascii").toLowerCase();
+    if (
+      brand === "heic" ||
+      brand === "heix" ||
+      brand === "mif1" ||
+      brand === "msf1" ||
+      brand === "heim" ||
+      brand === "heis"
+    ) {
+      return "image/heic";
+    }
+  }
   return null;
 }
 
@@ -72,6 +98,8 @@ const MIME_TO_EXT: Record<string, string> = {
   "image/png": "png",
   "image/webp": "webp",
   "image/gif": "gif",
+  "image/heic": "heic",
+  "image/heif": "heif",
 };
 
 /**
@@ -83,9 +111,10 @@ export async function saveImageFile(
   subdir: string
 ): Promise<UploadResult> {
   if (!ALLOWED_MIME.has(file.type)) {
+    console.warn("[upload] rejected MIME:", file.type, "size:", file.size);
     return {
       ok: false,
-      message: `Format non supporté. JPG, PNG, WebP ou GIF uniquement.`,
+      message: `Format \"${file.type || "inconnu"}\" non supporté. Formats acceptés : JPG, PNG, WebP, GIF, HEIC (iPhone).`,
     };
   }
   if (file.size > MAX_BYTES) {
@@ -109,9 +138,17 @@ export async function saveImageFile(
   // V38 : magic bytes — refuse si le contenu réel n'est pas une image valide
   const realMime = detectImageMime(buffer);
   if (!realMime || !ALLOWED_MIME.has(realMime)) {
+    console.warn(
+      "[upload] magic bytes rejected. declared=" + file.type,
+      "detected=" + (realMime ?? "unknown"),
+      "first16=" + Array.from(buffer.slice(0, 16)).map((b) => b.toString(16).padStart(2, "0")).join(" ")
+    );
     return {
       ok: false,
-      message: "Le fichier n'est pas une image valide (JPG, PNG, WebP ou GIF).",
+      message:
+        "Le contenu du fichier ne correspond pas à une image standard. " +
+        "Si tu as pris la photo avec un iPhone récent, change le format " +
+        "dans Réglages > Appareil photo > Formats > Plus compatible.",
     };
   }
   // Si le navigateur a menti, on se cale sur le type réel.
