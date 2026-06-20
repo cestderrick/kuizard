@@ -25,6 +25,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { saveImageFile, deleteImageByUrl } from "@/lib/upload/save";
+import { r2IsConfigured } from "@/lib/upload/r2";
 import { getEffectivePlan } from "@/lib/plans/gating";
 
 export const runtime = "nodejs";
@@ -104,6 +105,14 @@ export async function POST(req: Request) {
           { status: 400 }
         );
       }
+      console.log(
+        "[upload route] question image stored — backend:",
+        r2IsConfigured() ? "R2" : "LOCAL",
+        "url:",
+        result.url,
+        "questionId:",
+        questionId
+      );
 
       const oldUrl = question.imageUrl;
       await prisma.question.update({
@@ -115,6 +124,11 @@ export async function POST(req: Request) {
           console.warn("[upload route] old delete failed:", e)
         );
       }
+
+      // V43.3 : invalide les caches Next sur les pages qui affichent l'image
+      const { revalidatePath } = await import("next/cache");
+      revalidatePath(`/dashboard/quizzes/${quizId}/edit`);
+      revalidatePath(`/dashboard/quizzes/${quizId}/questions/${questionId}/edit`);
 
       return NextResponse.json({
         ok: true,
@@ -153,6 +167,14 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
+    console.log(
+      "[upload route] cover image stored — backend:",
+      r2IsConfigured() ? "R2" : "LOCAL",
+      "url:",
+      result.url,
+      "quizId:",
+      quizId
+    );
 
     const oldUrl = quiz.coverImageUrl;
     await prisma.quiz.update({
@@ -164,6 +186,10 @@ export async function POST(req: Request) {
         console.warn("[upload route] old delete failed:", e)
       );
     }
+
+    const { revalidatePath } = await import("next/cache");
+    revalidatePath(`/dashboard/quizzes/${quizId}/edit`);
+    revalidatePath(`/q/${quiz.id}`);
 
     return NextResponse.json({
       ok: true,
