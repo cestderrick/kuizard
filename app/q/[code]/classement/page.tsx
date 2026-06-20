@@ -67,7 +67,7 @@ export default async function ClassementPage({
     const topScore = completedCount > 0 ? data.entries[0].score : 0;
 
     return (
-      <main className="min-h-screen flex items-center justify-center px-4 py-12 bg-[var(--color-night)] text-[var(--color-lavender)]">
+      <main className="min-h-screen flex flex-col items-center px-4 pt-6 pb-12 bg-[var(--color-night)] text-[var(--color-lavender)]">
         <div className="max-w-xl text-center w-full">
           <div className="text-6xl mb-4" aria-hidden>
             🤫
@@ -118,31 +118,23 @@ export default async function ClassementPage({
                 </div>
                 <div className="text-right">
                   <p
-                    className="font-bold text-3xl leading-none"
+                    className="font-bold text-2xl leading-none"
                     style={{
                       color: "var(--color-gold-light)",
                       WebkitTextFillColor: "var(--color-gold-light)",
                       fontFamily: "var(--font-display, inherit)",
                     }}
                   >
-                    {myEntryScheduled.score}
-                    <span
-                      className="text-base opacity-70"
-                      style={{
-                        color: "var(--color-lavender-2)",
-                        WebkitTextFillColor: "var(--color-lavender-2)",
-                        fontFamily: "inherit",
-                      }}
-                    >
-                      {" "}
-                      / {data.totalPoints}
-                    </span>
+                    🤫
+                  </p>
+                  <p className="text-[10px] uppercase tracking-[2px] text-[var(--color-lavender-2)] opacity-70 mt-1">
+                    Score scellé
                   </p>
                 </div>
               </div>
               <p className="text-xs text-[var(--color-lavender-2)] opacity-80">
-                Ton score est enregistré. Le classement complet et les pseudos
-                des autres joueurs seront dévoilés à la clôture.
+                Ta participation est enregistrée. Ton score et le classement
+                complet seront dévoilés à tous à la clôture du créneau.
               </p>
               <div className="mt-3">
                 <MyAnswersPanel
@@ -187,6 +179,61 @@ export default async function ClassementPage({
                 </p>
               </div>
             </div>
+          )}
+
+          {/* V45 : Mini-podium anonyme (rang + score, pseudo masqué) */}
+          {data.entries.length > 0 && (
+            <section className="mb-6 text-left">
+              <p className="text-xs uppercase tracking-[3px] text-[var(--color-violet-primary)] font-semibold mb-2 text-center">
+                🥇 Aperçu anonyme du classement
+              </p>
+              <ol className="rounded-xl bg-[var(--color-night-2)] border border-[rgba(167,139,250,0.2)] divide-y divide-[rgba(167,139,250,0.1)] overflow-hidden">
+                {data.entries.slice(0, 5).map((e) => {
+                  const isMe =
+                    myParticipationId && e.participationId === myParticipationId;
+                  return (
+                    <li
+                      key={e.participationId}
+                      className="grid grid-cols-[40px_1fr_auto] items-center gap-3 px-4 py-2.5"
+                      style={
+                        isMe
+                          ? {
+                              backgroundColor: "rgba(245,158,11,0.08)",
+                              borderLeft: "3px solid var(--color-gold)",
+                            }
+                          : undefined
+                      }
+                    >
+                      <span
+                        className="font-bold text-base"
+                        style={{
+                          color: "var(--color-lavender-2)",
+                          WebkitTextFillColor: "var(--color-lavender-2)",
+                          fontFamily: "var(--font-display, inherit)",
+                        }}
+                      >
+                        #{e.rank}
+                      </span>
+                      <span className="text-sm opacity-80">
+                        {isMe ? (
+                          <span className="text-[var(--color-gold-light)] font-bold">
+                            👉 toi
+                          </span>
+                        ) : (
+                          <span className="italic">Joueur anonyme</span>
+                        )}
+                      </span>
+                      <span className="text-xs opacity-50 italic">
+                        score scellé
+                      </span>
+                    </li>
+                  );
+                })}
+              </ol>
+              <p className="text-[10px] text-center text-[var(--color-lavender-2)] opacity-60 mt-2">
+                Pseudos et scores révélés à la clôture du créneau ({closeStr})
+              </p>
+            </section>
           )}
 
           <Link
@@ -471,9 +518,9 @@ export default async function ClassementPage({
 
         {/* Footer */}
         <footer className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-5 pt-3">
-          {/* V37 : Retour au tableau de bord (nouvel onglet pour ne pas perdre le classement) */}
+          {/* V45 : Retour à l'accueil (au lieu du dashboard, plus pertinent côté joueur) */}
           <a
-            href="/dashboard"
+            href="/"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition hover:opacity-90"
@@ -482,16 +529,9 @@ export default async function ClassementPage({
               color: "var(--color-violet-deep)",
             }}
           >
-            ← Retour au tableau de bord
+            ← Retour à l'accueil Kuizard
             <span className="text-xs opacity-70" aria-hidden>↗</span>
           </a>
-          <Link
-            href="/"
-            className="inline-block text-sm underline-offset-4 hover:underline"
-            style={{ color: "var(--color-lavender-2)" }}
-          >
-            Découvrir Kuizard ✨
-          </Link>
         </footer>
       </div>
     </main>

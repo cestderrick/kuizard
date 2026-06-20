@@ -65,12 +65,15 @@ export function MyAnswersPanel({
   }
 
   return (
-    <div className="border-t border-violet-100 mt-4 pt-4">
+    <div className="border-t border-[rgba(167,139,250,0.3)] mt-4 pt-4">
       <button
         type="button"
         onClick={toggle}
-        className="w-full flex items-center justify-between gap-3 text-sm font-semibold py-2 hover:opacity-80"
-        style={{ color: "var(--color-violet-deep)" }}
+        className="w-full flex items-center justify-between gap-3 text-sm font-bold py-2 hover:opacity-80"
+        style={{
+          color: "var(--color-gold-light)",
+          WebkitTextFillColor: "var(--color-gold-light)",
+        }}
         aria-expanded={open}
       >
         <span>📝 Voir mes réponses</span>
@@ -142,7 +145,15 @@ export function MyAnswersPanel({
                       )}
                     </span>
                   </div>
-                  <p className="font-medium mb-2">{q.text}</p>
+                  <p
+                    className="font-bold mb-2"
+                    style={{
+                      color: "#1a0e3a",
+                      WebkitTextFillColor: "#1a0e3a",
+                    }}
+                  >
+                    {q.text}
+                  </p>
 
                   {q.type === "TEXT" ? (
                     q.userText ? (

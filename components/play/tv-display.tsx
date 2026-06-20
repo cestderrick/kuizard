@@ -171,36 +171,60 @@ export function TvDisplay({
         color: "var(--color-lavender)",
       }}
     >
-      {/* Header compact */}
-      <header className="flex flex-wrap items-center justify-between gap-4 mb-6">
+      {/* Header — V45 : bien visible pour TV vue de loin */}
+      <header className="flex flex-wrap items-center justify-between gap-4 mb-8 pb-4 border-b" style={{ borderColor: "rgba(255,255,255,0.1)" }}>
         <div className="min-w-0">
           <p
-            className="text-xs uppercase tracking-[5px] font-semibold"
-            style={{ color: theme.primaryColor }}
+            className="text-sm sm:text-lg uppercase tracking-[6px] font-bold mb-1"
+            style={{
+              color: "var(--color-gold)",
+              WebkitTextFillColor: "var(--color-gold)",
+            }}
           >
-            ✨ Kuizard ✨
+            ✨ KUIZARD ✨
           </p>
-          <h1 className="font-display text-3xl sm:text-5xl tracking-wide mt-2 truncate">
+          <h1
+            className="text-3xl sm:text-5xl tracking-wide font-bold truncate"
+            style={{
+              color: "#ffffff",
+              WebkitTextFillColor: "#ffffff",
+              fontFamily: "var(--font-display, inherit)",
+            }}
+          >
             {title}
           </h1>
         </div>
-        <div className="flex items-center gap-6 shrink-0">
+        <div className="flex items-center gap-8 sm:gap-12 shrink-0">
           <div className="text-center">
-            <p className="text-[10px] uppercase tracking-[3px] opacity-70">
+            <p className="text-xs sm:text-sm uppercase tracking-[3px] opacity-80 font-bold mb-1" style={{ color: "var(--color-lavender)" }}>
               👥 Participants
             </p>
-            <p className="font-display text-4xl sm:text-5xl font-bold text-[var(--color-gold)]">
+            <p
+              className="text-5xl sm:text-7xl font-bold leading-none"
+              style={{
+                color: "var(--color-gold)",
+                WebkitTextFillColor: "var(--color-gold)",
+                fontFamily: "var(--font-display, inherit)",
+              }}
+            >
               {connectedCount}
             </p>
           </div>
           {isLive && (
             <div className="text-center">
-              <p className="text-[10px] uppercase tracking-[3px] opacity-70">
+              <p className="text-xs sm:text-sm uppercase tracking-[3px] opacity-80 font-bold mb-1" style={{ color: "var(--color-lavender)" }}>
                 Question
               </p>
-              <p className="font-display text-4xl sm:text-5xl font-bold">
+              <p
+                className="text-5xl sm:text-7xl font-bold leading-none"
+                style={{
+                  color: "#ffffff",
+                  WebkitTextFillColor: "#ffffff",
+                  fontFamily: "var(--font-display, inherit)",
+                }}
+              >
                 {idx + 1}
-                <span className="text-2xl opacity-50">
+                <span className="text-2xl sm:text-3xl opacity-50">
                   /{liveState.totalQuestions}
                 </span>
               </p>
@@ -306,36 +330,48 @@ export function TvDisplay({
                       transform: isFirst ? "scale(1.04)" : "scale(1)",
                     }}
                   >
-                    <div className="flex items-center gap-4 min-w-0">
-                      <span className="text-3xl sm:text-5xl" aria-hidden>
+                    <div className="flex items-center gap-4 sm:gap-6 min-w-0">
+                      <span className="text-5xl sm:text-7xl" aria-hidden>
                         {medal}
                       </span>
                       <span
-                        className="font-display text-3xl sm:text-4xl font-bold"
+                        className="font-bold"
                         style={{
                           color: isFirst ? "white" : "var(--color-lavender)",
-                          minWidth: "3rem",
+                          WebkitTextFillColor: isFirst ? "white" : "var(--color-lavender)",
+                          fontFamily: "var(--font-display, inherit)",
+                          fontSize: isFirst ? "3rem" : "2.5rem",
+                          minWidth: "4rem",
+                          lineHeight: 1,
                         }}
                       >
                         #{e.rank}
                       </span>
                       <span
-                        className="font-display text-2xl sm:text-3xl truncate"
+                        className="truncate font-bold"
                         style={{
                           color: isFirst ? "white" : "var(--color-lavender)",
+                          WebkitTextFillColor: isFirst ? "white" : "var(--color-lavender)",
+                          fontFamily: "var(--font-display, inherit)",
+                          fontSize: isFirst ? "3.5rem" : "2.75rem",
+                          lineHeight: 1.1,
                         }}
                       >
                         {e.nickname}
                       </span>
                     </div>
                     <span
-                      className="font-display font-bold text-3xl sm:text-5xl whitespace-nowrap"
+                      className="font-bold whitespace-nowrap"
                       style={{
                         color: isFirst ? "white" : "var(--color-gold)",
+                        WebkitTextFillColor: isFirst ? "white" : "var(--color-gold)",
+                        fontFamily: "var(--font-display, inherit)",
+                        fontSize: isFirst ? "4rem" : "3rem",
+                        lineHeight: 1,
                       }}
                     >
                       {e.score}
-                      <span className="text-lg sm:text-xl opacity-70">pts</span>
+                      <span className="text-2xl sm:text-3xl opacity-70 ml-1">pts</span>
                     </span>
                   </li>
                 );
