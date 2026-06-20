@@ -358,7 +358,27 @@ function QuiztequeCard({
           {q._count.questions} question
           {q._count.questions > 1 ? "s" : ""}
         </p>
-        <div className="mt-auto pt-3">
+        <div className="mt-auto pt-3 flex flex-col gap-2">
+          {/* V47.5 : Bouton "Jouer" direct pour les quiz GRATUITS (tout le
+              monde peut jouer, même sans compte — leur score est cumulé au
+              classement chrono global). Pour les premium, on garde le CTA
+              abonnement. */}
+          {!q.libraryIsPremium && (
+            <Link
+              href={`/q/${q.code}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-2 w-full rounded-lg px-4 py-2.5 text-sm font-bold transition hover:opacity-90"
+              style={{
+                backgroundColor: "var(--color-gold)",
+                color: "var(--color-violet-deep)",
+              }}
+              title="Joue maintenant — pas besoin de compte"
+            >
+              ▶️ Jouer ce quiz
+              <span className="text-xs opacity-70" aria-hidden>↗</span>
+            </Link>
+          )}
           <Link
             href={ctaHref}
             className="inline-flex items-center justify-center w-full rounded-lg px-4 py-2.5 text-sm font-bold transition hover:opacity-90"
@@ -371,6 +391,17 @@ function QuiztequeCard({
           >
             {ctaLabel}
           </Link>
+          {!q.libraryIsPremium && (
+            <Link
+              href={`/q/${q.code}/classement`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs underline-offset-2 hover:underline text-center"
+              style={{ color: "var(--color-violet-primary)" }}
+            >
+              🏆 Voir le classement ↗
+            </Link>
+          )}
         </div>
       </div>
     </li>
