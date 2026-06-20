@@ -76,6 +76,7 @@ export async function createCheckoutSessionAction(
   // Code promo optionnel
   let stripeCouponIds: string[] = [];
   let promoCodeId: string | undefined;
+  let hasCoupon = false;
   if (typeof promoCode === "string" && promoCode.trim()) {
     const code = promoCode.trim().toUpperCase();
     const promo = await prisma.promoCode.findUnique({ where: { code } });
@@ -87,8 +88,30 @@ export async function createCheckoutSessionAction(
       (!promo.planSlug || promo.planSlug === plan.slug) &&
       promo.stripeCouponId
     ) {
+      // V47.11 : pre-check que le total restant après réduction soit >= 50cts
+      // (minimum Stripe). On compare au priceCents BDD (source de vérité).
+      if (
+        promo.amountOffCents &&
+        promo.amountOffCents > 0 &&
+        plan.priceCents - promo.amountOffCents < 50
+      ) {
+        return {
+          ok: false,
+          message: `Le code promo réduit le total en dessous du minimum Stripe (0,50 €). Prix : ${(plan.priceCents / 100).toFixed(2)} € · Réduction : ${(promo.amountOffCents / 100).toFixed(2)} €.`,
+        };
+      }
       stripeCouponIds = [promo.stripeCouponId];
       promoCodeId = promo.id;
+      hasCoupon = true;
+    } else if (promo) {
+      // Le user a tapé un code MAIS il est invalide/expiré/exhausted
+      return {
+        ok: false,
+        message:
+          "Ce code promo n'est pas applicable (expiré, épuisé, ou pas pour ce plan).",
+      };
+    } else {
+      return { ok: false, message: "Code promo inconnu." };
     }
   }
 
@@ -186,10 +209,14 @@ export async function createCheckoutSessionAction(
 
   let stripeSession: { id: string; url: string | null };
   try {
+    // V47.11 : si on a un coupon, on bypass stripePriceId pour éviter une
+    // désynchro Stripe price <-> BDD priceCents qui pourrait faire passer le
+    // total sous 50cts (erreur Stripe "must add up to at least €0.50").
+    const usePriceId = !hasCoupon;
     stripeSession = await stripe.checkout.sessions.create({
       mode: "payment",
       customer: customerId,
-      line_items: buildLineItems(true),
+      line_items: buildLineItems(usePriceId),
       discounts: stripeCouponIds.map((id) => ({ coupon: id })),
       success_url: `${APP_URL}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: quizId
