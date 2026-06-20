@@ -18,6 +18,7 @@ import { getActiveWeeklyFeatured } from "@/lib/weekly/featured";
 import { WeeklyFeaturedCard } from "@/components/home/weekly-featured-card";
 import { PlayerCodeCTA } from "@/components/home/player-code-cta";
 import { getSettings, SETTING_KEYS } from "@/lib/site-settings";
+import { PublicNavbar } from "@/components/nav/public-navbar";
 
 // V42 : les URLs vidéos sont maintenant éditables depuis /admin/site-settings.
 // Default seedé : la vidéo de présentation Shorts. Si admin supprime, la
@@ -122,68 +123,10 @@ export default async function Home() {
       <TopLocaleBar variant="light" />
 
       {/* ============================================ */}
-      {/* NAVBAR (visible uniquement quand connecté) */}
+      {/* V42.1 — Navbar unique via PublicNavbar (source de vérité) */}
+      {/* Retourne null si non connecté → la home affiche son top-bar locale */}
       {/* ============================================ */}
-      {isLoggedIn && session?.user && (
-        <header className="sticky top-0 z-40 border-b border-violet-100 bg-white/85 backdrop-blur supports-[backdrop-filter]:bg-white/70">
-          <div className="mx-auto max-w-7xl flex items-center justify-between gap-3 px-4 py-2.5">
-            {/* Bloc gauche : logo + nav principale (desktop) */}
-            <div className="flex items-center gap-4 min-w-0">
-              <Link
-                href="/dashboard"
-                className="inline-flex items-center gap-2 shrink-0"
-                style={{ color: "var(--color-violet-deep)" }}
-                aria-label="Dashboard Kuizard"
-              >
-                <KuizardLogo size={28} />
-                <span className="font-display text-lg font-bold tracking-[2px] hidden xs:inline">
-                  Kuizard
-                </span>
-              </Link>
-
-              <nav className="hidden md:flex items-center gap-1">
-                <DashboardNavLink href="/dashboard" label={navT.dashboard} exact />
-                <DashboardNavLink
-                  href="/dashboard/quizzes"
-                  label={navT.quizzes}
-                />
-                <DashboardNavLink href="/dashboard/stats" label={navT.stats} />
-                <DashboardNavLink
-                  href="/dashboard/messages"
-                  label={navT.messages}
-                />
-                <DashboardNavLink
-                  href="/dashboard/suggestions"
-                  label={navT.suggestions}
-                />
-                <DashboardNavLink href="/tarifs" label="💳 Tarifs" />
-              </nav>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <ThemeToggle variant="light" />
-              <NotificationBell />
-              <UserMenu
-                name={session.user.name ?? null}
-                email={session.user.email ?? ""}
-                isAdmin={isAdmin}
-                labels={{
-                  profile: navT.profile,
-                  subscription: navT.subscription,
-                  payments: navT.payments,
-                  promos: navT.promos,
-                  messages: navT.messages,
-                  suggestions: navT.suggestions,
-                  home: navT.home,
-                  admin: navT.admin,
-                  logout: navT.logout,
-                  stats: navT.stats,
-                }}
-              />
-            </div>
-          </div>
-        </header>
-      )}
+      <PublicNavbar />
 
       {/* ============================================ */}
       {/* HERO */}
