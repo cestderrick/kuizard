@@ -7,6 +7,7 @@ import { prisma } from "@/lib/db";
 import { generateUniqueQuizCode } from "@/lib/quiz/generate-code";
 import { getBillingContext } from "@/lib/billing/context";
 import { getPlanLimitsForUser } from "@/lib/plans/user-limits";
+import { canUseTemplateNow } from "@/lib/plans/template-quota";
 
 export type DuplicateState = {
   ok: boolean;
@@ -63,6 +64,14 @@ export async function duplicateLibraryQuizAction(
     }
   }
 
+  // V47.8 : quota cumulé Templates + Quizzthèque. Pour les abonnés, on
+  // décompte chaque duplication library du même bucket que les templates.
+  // Les users free/oneshot n'ont pas de quota (canUseTemplateNow renvoie ok).
+  const quotaCheck = await canUseTemplateNow(userId);
+  if (!quotaCheck.ok) {
+    return { ok: false, message: quotaCheck.message };
+  }
+
   // 2. Crée le nouveau quiz dans le compte du user
   const code = await generateUniqueQuizCode();
   let newQuizId: string;
@@ -76,16 +85,16 @@ export async function duplicateLibraryQuizAction(
           title: source.title,
           description: source.description,
           coverImageUrl: source.coverImageUrl,
-          // theme et settings sont des JSON, on les copie tels quels
           theme: source.theme as object,
           settings: source.settings as object,
           mode: source.mode,
           prizes: source.prizes ?? undefined,
           finalMessage: source.finalMessage,
-          // Le nouveau quiz n'est PAS dans la banque (c'est une copie user)
           isLibrary: false,
-          // Statut DRAFT pour que le user puisse modifier avant publication
           status: "DRAFT",
+          // V47.8 : marqueur pour que getTemplateQuota compte les
+          // duplications library dans le bucket Templates+Quizzthèque
+          fromTemplateSlug: `library:${source.code}`,
         },
       });
 

@@ -37,7 +37,7 @@ const ONE_SHOT_FEATURES: CompareFeature[] = [
 const SUBSCRIPTION_FEATURES: CompareFeature[] = [
   { label: "Quizz actifs simultanément", field: "maxActiveQuizzes", type: "number", undefinedMeans: "infinite" },
   { label: "Joueurs par session", field: "maxParticipants", type: "number", undefinedMeans: "infinite" },
-  { label: "Templates / mois", field: "maxTemplatesPerMonth", type: "number", undefinedMeans: "infinite" },
+  { label: "Templates + Quizzthèque / mois", field: "maxTemplatesPerMonth", type: "number", undefinedMeans: "infinite" },
   { label: "Classement avec podium", field: "ranking", type: "boolean", undefinedMeans: "missing" },
   { label: "Photos illimitées", field: "questionImages", type: "boolean", undefinedMeans: "missing" },
   { label: "Mode live + affichage TV", field: "liveMode", type: "boolean", undefinedMeans: "missing" },

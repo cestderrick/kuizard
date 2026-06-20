@@ -230,3 +230,79 @@ export function newMessageNotificationEmail({
   const text = `${fromLabel} t'a écrit : ${shortPreview}. Réponds : ${conversationUrl}`;
   return { subject, html, text };
 }
+
+// ========== V47.8 — Recap quotidien admin ==========
+export function adminDailyDigestEmail({
+  date,
+  newUsersToday,
+  totalUsers,
+  quizzesCreatedToday,
+  totalQuizzes,
+  messagesReceivedToday,
+  unreadConversations,
+  participationsToday,
+  paymentsToday,
+  paymentsAmountCents,
+  newSubscriptionsToday,
+  templatesUsedToday,
+  topQuizToday,
+}: {
+  date: string;
+  newUsersToday: number;
+  totalUsers: number;
+  quizzesCreatedToday: number;
+  totalQuizzes: number;
+  messagesReceivedToday: number;
+  unreadConversations: number;
+  participationsToday: number;
+  paymentsToday: number;
+  paymentsAmountCents: number;
+  newSubscriptionsToday: number;
+  templatesUsedToday: number;
+  topQuizToday: { title: string; participations: number } | null;
+}): { subject: string; html: string; text: string } {
+  const formatEur = (cents: number) => `${(cents / 100).toFixed(2)} EUR`;
+  const lines = [
+    `Users : +${newUsersToday} aujourd'hui, total ${totalUsers}`,
+    `Quizz : +${quizzesCreatedToday} crees, total ${totalQuizzes}`,
+    `Participations : ${participationsToday} aujourd'hui`,
+    `Templates/Quizztheque utilises : ${templatesUsedToday}`,
+    `Paiements : ${paymentsToday} (${formatEur(paymentsAmountCents)})`,
+    `Nouveaux abos : ${newSubscriptionsToday}`,
+    `Messages recus : ${messagesReceivedToday}${unreadConversations > 0 ? ` - ${unreadConversations} non lus` : ""}`,
+  ];
+  if (topQuizToday) {
+    lines.push(`Top quiz du jour : "${topQuizToday.title}" (${topQuizToday.participations})`);
+  }
+
+  const text = `Recap Kuizard du ${date}\n\n` + lines.join("\n") + `\n\nVa sur https://kuizard.com/admin pour le detail.`;
+
+  const trUsers = `<tr><td style="padding:8px 0;border-bottom:1px solid #eee;">👥 <strong>Users</strong></td><td style="text-align:right;border-bottom:1px solid #eee;">+${newUsersToday} aujourd'hui · total ${totalUsers}</td></tr>`;
+  const trQuiz = `<tr><td style="padding:8px 0;border-bottom:1px solid #eee;">🎩 <strong>Quizz créés</strong></td><td style="text-align:right;border-bottom:1px solid #eee;">+${quizzesCreatedToday} · total ${totalQuizzes}</td></tr>`;
+  const trPart = `<tr><td style="padding:8px 0;border-bottom:1px solid #eee;">🎮 <strong>Participations</strong></td><td style="text-align:right;border-bottom:1px solid #eee;">${participationsToday}</td></tr>`;
+  const trTpl = `<tr><td style="padding:8px 0;border-bottom:1px solid #eee;">📚 <strong>Templates + Quizzthèque</strong></td><td style="text-align:right;border-bottom:1px solid #eee;">${templatesUsedToday}</td></tr>`;
+  const trPay = `<tr><td style="padding:8px 0;border-bottom:1px solid #eee;">💸 <strong>Paiements</strong></td><td style="text-align:right;border-bottom:1px solid #eee;">${paymentsToday} (${formatEur(paymentsAmountCents)})</td></tr>`;
+  const trSub = `<tr><td style="padding:8px 0;border-bottom:1px solid #eee;">🔁 <strong>Nouveaux abos</strong></td><td style="text-align:right;border-bottom:1px solid #eee;">${newSubscriptionsToday}</td></tr>`;
+  const unreadBadge = unreadConversations > 0 ? ` <span style="color:#dc2626;">(${unreadConversations} non lus)</span>` : "";
+  const trMsg = `<tr><td style="padding:8px 0;border-bottom:1px solid #eee;">✉️ <strong>Messages reçus</strong></td><td style="text-align:right;border-bottom:1px solid #eee;">${messagesReceivedToday}${unreadBadge}</td></tr>`;
+  const trTop = topQuizToday
+    ? `<tr><td style="padding:8px 0;">🏆 <strong>Top quiz du jour</strong></td><td style="text-align:right;">${topQuizToday.title}<br><span style="color:#888;font-size:12px;">${topQuizToday.participations} participations</span></td></tr>`
+    : "";
+
+  const html =
+    `<div style="font-family:-apple-system,BlinkMacSystemFont,sans-serif;max-width:560px;margin:0 auto;color:#1a0e3a;">` +
+    `<h2 style="margin:0 0 12px;color:#5523BB;">📊 Kuizard — Récap du ${date}</h2>` +
+    `<table style="width:100%;border-collapse:collapse;font-size:14px;">` +
+    trUsers + trQuiz + trPart + trTpl + trPay + trSub + trMsg + trTop +
+    `</table>` +
+    `<p style="margin:20px 0 0;font-size:12px;color:#888;">` +
+    `<a href="https://kuizard.com/admin" style="color:#5523BB;text-decoration:none;font-weight:bold;">→ Ouvrir l'admin Kuizard</a>` +
+    `</p>` +
+    `</div>`;
+
+  return {
+    subject: `📊 Kuizard daily — +${newUsersToday} users, +${quizzesCreatedToday} quizz, ${formatEur(paymentsAmountCents)}`,
+    html,
+    text,
+  };
+}
