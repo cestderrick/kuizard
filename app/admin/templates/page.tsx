@@ -101,24 +101,80 @@ export default async function AdminTemplatesPage() {
               d&apos;origine ci-dessus, ou crée-en un nouveau via le formulaire.
             </p>
           ) : (
-            dbTemplates.map((t) => (
-              <TemplateForm
-                key={t.id}
-                template={{
-                  id: t.id,
-                  slug: t.slug,
-                  title: t.title,
-                  description: t.description,
-                  category: t.category,
-                  theme: t.theme,
-                  tags: t.tags,
-                  coverImageUrl: t.coverImageUrl,
-                  displayOrder: t.displayOrder,
-                  isActive: t.isActive,
-                  questions: t.questions,
-                }}
-              />
-            ))
+            // V47.6 : chaque template plié dans un <details>, click sur summary pour déplier
+            dbTemplates.map((t) => {
+              const FALLBACK_EMOJIS: Record<string, string> = {
+                mariage: "💍",
+                "evjf-evg": "🎉",
+                anniversaire: "🎂",
+                "blind-test": "🎵",
+                naissance: "👶",
+                "team-building": "🤝",
+              };
+              const emoji = FALLBACK_EMOJIS[t.category] ?? "✨";
+              const nbQ = Array.isArray(t.questions) ? t.questions.length : 0;
+              return (
+                <details
+                  key={t.id}
+                  className="group rounded-2xl bg-[var(--color-night-2)] border border-[rgba(167,139,250,0.15)] overflow-hidden hover:border-[var(--color-gold)]/50 transition"
+                >
+                  <summary className="cursor-pointer px-5 py-4 flex items-center justify-between gap-3 list-none">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <span className="text-2xl shrink-0" aria-hidden>
+                        {emoji}
+                      </span>
+                      <div className="min-w-0">
+                        <p
+                          className="font-semibold truncate"
+                          style={{ color: "var(--color-lavender)" }}
+                        >
+                          {t.title}
+                          {!t.isActive && (
+                            <span
+                              className="ml-2 text-[10px] uppercase tracking-[1.5px] px-1.5 py-0.5 rounded-full font-bold align-middle"
+                              style={{
+                                backgroundColor: "rgba(239,68,68,0.2)",
+                                color: "rgb(252, 165, 165)",
+                              }}
+                            >
+                              inactif
+                            </span>
+                          )}
+                        </p>
+                        <p className="text-xs opacity-70 mt-0.5">
+                          slug{" "}
+                          <code className="font-mono">{t.slug}</code> · {nbQ}{" "}
+                          question{nbQ > 1 ? "s" : ""} · ordre {t.displayOrder}
+                        </p>
+                      </div>
+                    </div>
+                    <span
+                      className="text-xs opacity-60 shrink-0 transition-transform group-open:rotate-180"
+                      aria-hidden
+                    >
+                      ▼
+                    </span>
+                  </summary>
+                  <div className="px-5 pb-5 pt-2 border-t border-[rgba(167,139,250,0.15)]">
+                    <TemplateForm
+                      template={{
+                        id: t.id,
+                        slug: t.slug,
+                        title: t.title,
+                        description: t.description,
+                        category: t.category,
+                        theme: t.theme,
+                        tags: t.tags,
+                        coverImageUrl: t.coverImageUrl,
+                        displayOrder: t.displayOrder,
+                        isActive: t.isActive,
+                        questions: t.questions,
+                      }}
+                    />
+                  </div>
+                </details>
+              );
+            })
           )}
         </div>
       </section>
