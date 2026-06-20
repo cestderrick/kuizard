@@ -99,14 +99,24 @@ export function MyAnswersPanel({
       </button>
 
       {open && (
-        <div className="mt-3 flex flex-col gap-3 text-left">
+        <div
+          className="mt-3 flex flex-col gap-3 text-left"
+          style={{ color: "#1a0e3a", colorScheme: "light" }}
+        >
           {loading && (
             <p className="text-center text-sm text-muted-foreground py-4">
               Chargement…
             </p>
           )}
           {!loading && data?.ok === false && (
-            <div className="rounded-lg bg-amber-50 border border-amber-200 p-3 text-sm">
+            <div
+              className="rounded-lg p-3 text-sm font-semibold"
+              style={{
+                backgroundColor: "rgba(245,158,11,0.15)",
+                border: "1px solid rgba(245,158,11,0.4)",
+                color: "#92400e",
+              }}
+            >
               {data.waiting ? (
                 <>
                   ⏳ Les réponses seront révélées quand l'organisateur clôturera

@@ -615,7 +615,7 @@ function QuizCard({
                   accéder au quiz (gratuit pour tout le monde, premium pour
                   abonnés). Le classement chrono est cumulé globalement. */}
               <Link
-                href={`/q/${q.code}`}
+                href={`/q/${q.code}/go`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center justify-center gap-2 w-full rounded-lg px-4 py-2.5 text-sm font-bold transition hover:opacity-90"
@@ -623,21 +623,16 @@ function QuizCard({
                   backgroundColor: "var(--color-gold)",
                   color: "var(--color-violet-deep)",
                 }}
-                title="Joue directement à ce quiz, ton score apparaît au classement chrono global"
+                title={alreadyPlayed ? "Tu as déjà joué — clique pour voir le classement ou rejouer" : "Joue directement à ce quiz"}
               >
-                ▶️ Jouer ce quiz
+                {alreadyPlayed && !isWeeklyFeatured ? "🔄 Rejouer ou voir mon classement" : alreadyPlayed ? "🏆 Voir le classement" : "▶️ Jouer ce quiz"}
                 <span className="text-xs opacity-70" aria-hidden>↗</span>
               </Link>
               <DuplicateButton libraryQuizId={q.id} />
-              <Link
-                href={`/q/${q.code}/classement`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs underline-offset-2 hover:underline text-center"
-                style={{ color: "var(--color-violet-primary)" }}
-              >
-                🏆 Voir le classement chrono ↗
-              </Link>
+              {/* V47.22 : lien "classement chrono" supprimé — le bouton principal
+                  "Rejouer ou voir mon classement" / "Voir le classement" pointe vers /go
+                  qui redirige déjà vers le classement si déjà joué. Le chrono y
+                  est affiché à côté des points. */}
             </>
           )}
         </div>

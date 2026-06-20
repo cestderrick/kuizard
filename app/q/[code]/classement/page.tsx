@@ -10,6 +10,7 @@ import { MyAnswersPanel } from "@/components/play/my-answers-panel";
 import { UpgradeCTA } from "@/components/marketing/upgrade-cta";
 import { ReplayQuizButton } from "@/components/quiz/replay-quiz-button";
 import { getActivePlans } from "@/lib/plans/config";
+import { getActiveWeeklyFeatured } from "@/lib/weekly/featured";
 
 // V47.2 — Format chrono "1m23s" pour afficher le temps mis sur chaque entrée
 function formatDuration(ms: number): string {
@@ -57,7 +58,13 @@ export default async function ClassementPage({
       prizes: true,
     },
   });
+  // V47.22 : le masquage SCHEDULED ne s'applique QUE pour le quiz de la
+  // semaine (weekly featured). Les autres quiz SCHEDULED de la quizzthèque
+  // affichent leurs résultats immédiatement.
+  const weekly = await getActiveWeeklyFeatured();
+  const isWeeklyFeatured = weekly?.quizCode === code;
   if (
+    isWeeklyFeatured &&
     quizMeta?.mode === "SCHEDULED" &&
     quizMeta.scheduledCloseAt &&
     Date.now() < quizMeta.scheduledCloseAt.getTime()

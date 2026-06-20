@@ -30,10 +30,12 @@ export async function PublicNavbar() {
       // le hero sombre derrière → contraste pourri). Shadow léger pour
       // structurer + bordure plus visible.
       <header
+        data-theme="light"
         className="sticky top-0 z-40 border-b shadow-sm"
         style={{
           backgroundColor: "#ffffff",
           borderColor: "rgba(167,139,250,0.3)",
+          colorScheme: "light",
         }}
       >
         <div className="mx-auto max-w-7xl flex items-center justify-between gap-3 px-4 py-2.5">
@@ -96,7 +98,11 @@ export async function PublicNavbar() {
   const isAdmin = me?.role === "ADMIN";
 
   return (
-    <header className="sticky top-0 z-40 border-b border-violet-100 bg-white/85 backdrop-blur supports-[backdrop-filter]:bg-white/70">
+    <header
+      data-theme="light"
+      className="sticky top-0 z-40 border-b border-violet-100 bg-white shadow-sm"
+      style={{ colorScheme: "light" }}
+    >
       <div className="mx-auto max-w-7xl flex items-center justify-between gap-3 px-4 py-2.5">
         <div className="flex items-center gap-4 min-w-0">
           <Link
