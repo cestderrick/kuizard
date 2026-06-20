@@ -74,3 +74,57 @@ export async function toggleLibraryQuizAction(
       : "Retiré de la banque ✓",
   };
 }
+
+// =============================================
+// V46 — Toggle libraryIsPremium uniquement (depuis liste admin)
+// =============================================
+// Action légère pour basculer un quiz library entre gratuit/premium sans
+// avoir à ouvrir l'éditeur du quiz. Appelée depuis /admin/library.
+
+export type PremiumToggleState = {
+  ok: boolean;
+  message?: string;
+};
+
+const premiumSchema = z.object({
+  quizId: z.string().min(1),
+  isPremium: z.preprocess(
+    (v) => v === "on" || v === "true" || v === "1" || v === true,
+    z.boolean()
+  ),
+});
+
+export async function toggleLibraryPremiumAction(
+  _prev: PremiumToggleState,
+  formData: FormData
+): Promise<PremiumToggleState> {
+  await requireAdmin();
+
+  const parsed = premiumSchema.safeParse({
+    quizId: formData.get("quizId"),
+    isPremium: formData.get("isPremium"),
+  });
+  if (!parsed.success) {
+    return { ok: false, message: "Données invalides." };
+  }
+
+  const quiz = await prisma.quiz.findUnique({
+    where: { id: parsed.data.quizId },
+    select: { id: true, isLibrary: true },
+  });
+  if (!quiz || !quiz.isLibrary) {
+    return { ok: false, message: "Quiz introuvable ou pas dans la banque." };
+  }
+
+  await prisma.quiz.update({
+    where: { id: parsed.data.quizId },
+    data: { libraryIsPremium: parsed.data.isPremium },
+  });
+
+  revalidatePath("/admin/library");
+  revalidatePath("/dashboard/quizzes/library");
+  return {
+    ok: true,
+    message: parsed.data.isPremium ? "Passé en premium." : "Passé en gratuit.",
+  };
+}

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { requireAdmin } from "@/lib/auth/require-admin";
 import { InstantSearchInput } from "@/components/search/instant-search-input";
+import { PremiumQuickToggle } from "@/components/admin/premium-quick-toggle";
 
 export const metadata: Metadata = {
   title: "Admin · Banque de quizz",
@@ -35,6 +36,7 @@ export default async function AdminLibraryPage({
     include: {
       _count: { select: { questions: true } },
       user: { select: { name: true, email: true } },
+      libraryIsPremium: true,
     },
   });
 
@@ -132,8 +134,14 @@ export default async function AdminLibraryPage({
                 className="rounded-xl bg-[var(--color-night-2)] border border-[rgba(167,139,250,0.15)] p-4 hover:border-[var(--color-gold)]/50 transition flex items-center justify-between gap-3"
               >
                 <div className="min-w-0">
-                  <p className="font-semibold truncate">{q.title}</p>
-                  <p className="text-xs opacity-70 mt-1">
+                  <div className="flex items-center gap-2 flex-wrap mb-1">
+                    <p className="font-semibold truncate">{q.title}</p>
+                    <PremiumQuickToggle
+                      quizId={q.id}
+                      initialIsPremium={q.libraryIsPremium}
+                    />
+                  </div>
+                  <p className="text-xs opacity-70">
                     {q._count.questions} questions · code{" "}
                     <span className="font-mono">{q.code}</span> · par{" "}
                     {q.user.name ?? q.user.email}

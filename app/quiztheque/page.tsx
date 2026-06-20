@@ -17,6 +17,20 @@ export const metadata: Metadata = {
   description:
     "Explore la quizthèque Kuizard : des quizz tout prêts (Star Wars, Friends, Harry Potter, cuisine, mode, et plus) à dupliquer dans ton compte.",
   alternates: { canonical: `${BASE_URL}/quiztheque` },
+  openGraph: {
+    title: "📚 Quizthèque Kuizard — Quizz prêts à l\'emploi",
+    description:
+      "Catalogue de quizz tout prêts à dupliquer en 1 clic pour ta soirée, mariage, EVJF, anniversaire ou bar.",
+    url: `${BASE_URL}/quiztheque`,
+    type: "website",
+    images: [{ url: "/og-image", width: 1200, height: 630 }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "📚 Quizthèque Kuizard",
+    description: "Des quizz tout prêts pour ta soirée.",
+    images: ["/og-image"],
+  },
 };
 
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;

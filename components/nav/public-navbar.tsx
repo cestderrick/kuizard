@@ -12,23 +12,70 @@ import { MobileNav } from "@/components/nav/mobile-nav";
 
 /**
  * V41.3 — Navbar globale unifiée. Utilisée par la home, /escape, /tarifs et
- * toute page publique qui doit garder le menu utilisateur en haut.
- * Si pas connecté : retourne null (les pages affichent leur propre header
- * de secours).
+ * toute page publique.
+ *
+ * V46 : retourne maintenant aussi un header pour les visiteurs NON connectés
+ * avec liens Accueil / Tarifs / Escape + boutons Se connecter / Créer compte.
  */
 export async function PublicNavbar() {
   const session = await auth();
-  if (!session?.user?.id) return null;
 
-  const [me, messages] = await Promise.all([
-    prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { role: true },
-    }),
-    getMessages(),
-  ]);
-  const isAdmin = me?.role === "ADMIN";
+  const messages = await getMessages();
   const navT = messages.nav;
+
+  // ============ Version NON CONNECTÉ ============
+  if (!session?.user?.id) {
+    return (
+      <header className="sticky top-0 z-40 border-b border-violet-100 bg-white/85 backdrop-blur supports-[backdrop-filter]:bg-white/70">
+        <div className="mx-auto max-w-7xl flex items-center justify-between gap-3 px-4 py-2.5">
+          <div className="flex items-center gap-4 min-w-0">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-2 shrink-0"
+              style={{ color: "var(--color-violet-deep)" }}
+              aria-label="Accueil Kuizard"
+            >
+              <KuizardLogo size={28} />
+              <span className="font-display text-lg font-bold tracking-[2px] hidden xs:inline">
+                Kuizard
+              </span>
+            </Link>
+
+            <nav className="hidden md:flex items-center gap-1">
+              <DashboardNavLink href="/" label="🏠 Accueil" exact />
+              <DashboardNavLink href="/tarifs" label="💳 Tarifs" />
+              <DashboardNavLink href="/escape" label="🗝️ Escape" />
+            </nav>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Link
+              href="/login"
+              className="inline-flex items-center px-3 py-1.5 rounded-md text-sm font-semibold hover:bg-violet-50 transition"
+              style={{ color: "var(--color-violet-deep)" }}
+            >
+              Se connecter
+            </Link>
+            <Link
+              href="/signup"
+              className="inline-flex items-center px-4 py-1.5 rounded-md text-sm font-bold text-white transition hover:opacity-90"
+              style={{ backgroundColor: "var(--color-violet-primary)" }}
+            >
+              ✨ Créer un compte
+            </Link>
+            <MobileNav />
+          </div>
+        </div>
+      </header>
+    );
+  }
+
+  // ============ Version CONNECTÉ ============
+  const me = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { role: true },
+  });
+  const isAdmin = me?.role === "ADMIN";
 
   return (
     <header className="sticky top-0 z-40 border-b border-violet-100 bg-white/85 backdrop-blur supports-[backdrop-filter]:bg-white/70">

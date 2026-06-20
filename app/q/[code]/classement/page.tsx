@@ -188,47 +188,29 @@ export default async function ClassementPage({
                 🥇 Aperçu anonyme du classement
               </p>
               <ol className="rounded-xl bg-[var(--color-night-2)] border border-[rgba(167,139,250,0.2)] divide-y divide-[rgba(167,139,250,0.1)] overflow-hidden">
-                {data.entries.slice(0, 5).map((e) => {
-                  const isMe =
-                    myParticipationId && e.participationId === myParticipationId;
-                  return (
-                    <li
-                      key={e.participationId}
-                      className="grid grid-cols-[40px_1fr_auto] items-center gap-3 px-4 py-2.5"
-                      style={
-                        isMe
-                          ? {
-                              backgroundColor: "rgba(245,158,11,0.08)",
-                              borderLeft: "3px solid var(--color-gold)",
-                            }
-                          : undefined
-                      }
+                {data.entries.slice(0, 5).map((e) => (
+                  <li
+                    key={e.participationId}
+                    className="grid grid-cols-[40px_1fr_auto] items-center gap-3 px-4 py-2.5"
+                  >
+                    <span
+                      className="font-bold text-base"
+                      style={{
+                        color: "var(--color-lavender-2)",
+                        WebkitTextFillColor: "var(--color-lavender-2)",
+                        fontFamily: "var(--font-display, inherit)",
+                      }}
                     >
-                      <span
-                        className="font-bold text-base"
-                        style={{
-                          color: "var(--color-lavender-2)",
-                          WebkitTextFillColor: "var(--color-lavender-2)",
-                          fontFamily: "var(--font-display, inherit)",
-                        }}
-                      >
-                        #{e.rank}
-                      </span>
-                      <span className="text-sm opacity-80">
-                        {isMe ? (
-                          <span className="text-[var(--color-gold-light)] font-bold">
-                            👉 toi
-                          </span>
-                        ) : (
-                          <span className="italic">Joueur anonyme</span>
-                        )}
-                      </span>
-                      <span className="text-xs opacity-50 italic">
-                        score scellé
-                      </span>
-                    </li>
-                  );
-                })}
+                      #{e.rank}
+                    </span>
+                    <span className="text-sm opacity-80 italic">
+                      Joueur anonyme
+                    </span>
+                    <span className="text-xs opacity-50 italic">
+                      score scellé
+                    </span>
+                  </li>
+                ))}
               </ol>
               <p className="text-[10px] text-center text-[var(--color-lavender-2)] opacity-60 mt-2">
                 Pseudos et scores révélés à la clôture du créneau ({closeStr})
@@ -283,33 +265,33 @@ export default async function ClassementPage({
     : null;
 
   return (
-    <main className="min-h-screen flex flex-col items-center px-3 sm:px-4 py-2 sm:py-6 bg-[var(--color-night)] text-[var(--color-lavender)] relative overflow-hidden">
+    <main className="min-h-[100dvh] flex flex-col items-center px-3 sm:px-4 py-1 sm:py-6 bg-[var(--color-night)] text-[var(--color-lavender)] relative overflow-hidden">
       {/* Halos magiques */}
       <div
         aria-hidden
-        className="pointer-events-none absolute -top-32 left-1/4 w-[420px] h-[420px] rounded-full"
+        className="pointer-events-none absolute -top-20 left-1/4 w-[280px] h-[280px] sm:w-[420px] sm:h-[420px] rounded-full"
         style={{
           background:
-            "radial-gradient(circle, rgba(245, 158, 11, 0.25) 0%, transparent 70%)",
+            "radial-gradient(circle, rgba(245, 158, 11, 0.2) 0%, transparent 70%)",
         }}
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute -bottom-32 right-1/4 w-[420px] h-[420px] rounded-full"
+        className="pointer-events-none absolute -bottom-20 right-1/4 w-[280px] h-[280px] sm:w-[420px] sm:h-[420px] rounded-full"
         style={{
           background:
-            "radial-gradient(circle, rgba(124, 58, 237, 0.35) 0%, transparent 70%)",
+            "radial-gradient(circle, rgba(124, 58, 237, 0.3) 0%, transparent 70%)",
         }}
       />
 
-      <div className="relative z-10 w-full max-w-3xl flex flex-col gap-3 sm:gap-5">
+      <div className="relative z-10 w-full max-w-3xl flex flex-col gap-2 sm:gap-5">
         {/* Header — compact sur mobile pour voir les résultats sans scroll */}
         <header className="text-center">
           <p className="text-[10px] sm:text-xs uppercase tracking-[3px] text-[var(--color-gold)] font-semibold mb-0.5">
             ✨ Classement ✨
           </p>
           <h1
-            className="text-base sm:text-2xl md:text-3xl tracking-wide mb-0.5 font-bold line-clamp-2"
+            className="text-sm sm:text-2xl md:text-3xl tracking-wide mb-0.5 font-bold line-clamp-1"
             style={{
               color: "var(--color-lavender)",
               WebkitTextFillColor: "var(--color-lavender)",
@@ -327,14 +309,14 @@ export default async function ClassementPage({
         {/* V24 : Bloc "Mes résultats" en évidence pour le joueur identifié */}
         {myEntry && myParticipationId && (
           <section
-            className="rounded-2xl p-4 sm:p-5 border-2"
+            className="rounded-2xl p-3 sm:p-5 border-2"
             style={{
               borderColor: "var(--color-gold)",
               background:
                 "linear-gradient(135deg, rgba(245,158,11,0.18), rgba(124,58,237,0.18))",
             }}
           >
-            <div className="flex items-start justify-between gap-3 flex-wrap mb-3">
+            <div className="flex items-start justify-between gap-3 flex-wrap mb-2 sm:mb-3">
               <div>
                 <p
                   className="text-xs uppercase tracking-[3px] font-semibold"
@@ -358,7 +340,7 @@ export default async function ClassementPage({
               </div>
               <div className="text-right">
                 <p
-                  className="font-bold text-3xl leading-none"
+                  className="font-bold text-2xl sm:text-3xl leading-none"
                   style={{
                     color: "var(--color-gold-light)",
                     WebkitTextFillColor: "var(--color-gold-light)",

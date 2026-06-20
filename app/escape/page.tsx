@@ -9,6 +9,20 @@ export const metadata: Metadata = {
   title: "Escape — Escape games imprimables · Kuizard",
   description:
     "Bientôt sur Kuizard : des escape games complets à imprimer chez toi. Énigmes, personnages personnalisables avec les surnoms de tes amis, et actions au choix selon l'ambiance que tu veux.",
+  openGraph: {
+    title: "🗝️ Kuizard Escape — Escape games personnalisés à imprimer",
+    description:
+      "Bêta privée bientôt ouverte. Kits escape game avec surnoms perso + ambiance au choix, à imprimer chez toi en 2 minutes.",
+    url: "/escape",
+    type: "website",
+    images: [{ url: "/og-image", width: 1200, height: 630 }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "🗝️ Kuizard Escape — Beta bientôt",
+    description: "Escape games personnalisés à imprimer chez toi.",
+    images: ["/og-image"],
+  },
 };
 
 // V41 — Page teasing Escape. Pas encore d'implémentation réelle, juste un

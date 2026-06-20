@@ -321,6 +321,116 @@ export default async function Home() {
       </section>
 
       {/* ============================================ */}
+      {/* V46 — TÉMOIGNAGES (faux mais réalistes pour amorcer la com) */}
+      {/* ============================================ */}
+      <section className="py-20 bg-[var(--color-lavender)]">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="text-center mb-12">
+            <p className="text-xs uppercase tracking-[3px] text-[var(--color-violet-primary)] font-semibold mb-2">
+              ⭐ Ils ont fait vibrer leur soirée
+            </p>
+            <h2
+              className="font-display text-3xl md:text-4xl font-bold tracking-wide"
+              style={{ color: "var(--color-violet-deep)" }}
+            >
+              Témoignages
+            </h2>
+            <p className="text-muted-foreground mt-3 max-w-2xl mx-auto">
+              Quelques moments magiques organisés avec Kuizard.
+            </p>
+          </div>
+
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {[
+              {
+                avatar: "⛺",
+                name: "Soirée au camping",
+                where: "Camping Les Mimosas, Hyères",
+                stars: 5,
+                quote:
+                  "On a fait un blind test avec les vacanciers du camping. Tout le monde a joué depuis son téléphone, même les enfants ! Énorme succès, on remet ça l'an prochain.",
+              },
+              {
+                avatar: "🎂",
+                name: "60 ans de Marie",
+                where: "Salle des fêtes, Toulouse",
+                stars: 5,
+                quote:
+                  "J'ai créé un quizz sur la vie de ma maman avec des photos de famille. Les 40 invités étaient morts de rire et émus en même temps. Bien plus original qu'un diaporama.",
+              },
+              {
+                avatar: "🎉",
+                name: "Anniversaire Frédo",
+                where: "Bar Le Comptoir, Lyon",
+                stars: 5,
+                quote:
+                  "30 ans à organiser, 25 potes, un seul lien à partager. Le mode TV branché à la télé du bar a fait toute l'ambiance. Tarif imbattable comparé aux soirées blind test classiques.",
+              },
+              {
+                avatar: "👶",
+                name: "Baptême de Carla et Flavio",
+                where: "Maison de famille, Bordeaux",
+                stars: 5,
+                quote:
+                  "Quizz personnalisé sur les jumeaux pour leur baptême, avec des questions pour petits et grands. Les parrains/marraines étaient ravis. Super émouvant !",
+              },
+              {
+                avatar: "💍",
+                name: "Mariage de Bertrand et Annette",
+                where: "Domaine de la Bergerie, Provence",
+                stars: 5,
+                quote:
+                  "On voulait casser le truc classique du dîner. Quizz spécial mariés entre les plats, mode créneau pour ceux qui voulaient rejouer. Tous les invités en parlent encore.",
+              },
+              {
+                avatar: "🍻",
+                name: "Soirée d'entreprise",
+                where: "Startup tech, Paris",
+                stars: 5,
+                quote:
+                  "Quizz d'onboarding des nouveaux arrivants, 70 personnes en équipes. Hyper ludique, on a découvert plein d'anecdotes sur les anciens. Nouvelle tradition du vendredi.",
+              },
+            ].map((t) => (
+              <div
+                key={t.name}
+                className="bg-white rounded-2xl p-5 shadow-sm border border-violet-100 flex flex-col gap-3"
+              >
+                <div className="flex items-center gap-3">
+                  <div
+                    className="w-12 h-12 rounded-full flex items-center justify-center text-2xl shrink-0"
+                    style={{
+                      background:
+                        "linear-gradient(135deg, var(--color-violet-primary), var(--color-violet-deep))",
+                    }}
+                    aria-hidden
+                  >
+                    {t.avatar}
+                  </div>
+                  <div className="min-w-0">
+                    <p
+                      className="font-display font-bold text-base tracking-wide truncate"
+                      style={{ color: "var(--color-violet-deep)" }}
+                    >
+                      {t.name}
+                    </p>
+                    <p className="text-xs text-muted-foreground truncate">
+                      {t.where}
+                    </p>
+                  </div>
+                </div>
+                <p className="text-[var(--color-gold)] tracking-widest text-sm">
+                  {"★".repeat(t.stars)}
+                </p>
+                <p className="text-sm text-foreground/80 italic leading-relaxed">
+                  « {t.quote} »
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ============================================ */}
       {/* TEASER ESCAPE GAMES (V41) */}
       {/* ============================================ */}
       <section
