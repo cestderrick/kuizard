@@ -8,12 +8,13 @@ import { NotificationBell } from "@/components/notifications/notification-bell";
 import { UserMenu } from "@/components/nav/user-menu";
 import { DashboardNavLink } from "@/components/nav/dashboard-nav-link";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
+import { MobileNav } from "@/components/nav/mobile-nav";
 
 /**
- * Navbar globale réutilisable, à inclure sur toutes les pages publiques
- * (home, tarifs, cas d'usage, blog, etc.). Affiche :
- *  - non connecté : juste un lien retour à l'accueil
- *  - connecté : la navbar dashboard complète (Dashboard, Quizzes, Stats, etc.)
+ * V41.3 — Navbar globale unifiée. Utilisée par la home, /escape, /tarifs et
+ * toute page publique qui doit garder le menu utilisateur en haut.
+ * Si pas connecté : retourne null (les pages affichent leur propre header
+ * de secours).
  */
 export async function PublicNavbar() {
   const session = await auth();
@@ -46,17 +47,14 @@ export async function PublicNavbar() {
           </Link>
 
           <nav className="hidden md:flex items-center gap-1">
+            <DashboardNavLink href="/" label={`🏠 ${navT.home}`} exact />
             <DashboardNavLink href="/dashboard" label={navT.dashboard} exact />
             <DashboardNavLink href="/dashboard/quizzes" label={navT.quizzes} />
-            <DashboardNavLink href="/dashboard/stats" label={navT.stats} />
             <DashboardNavLink
-              href="/dashboard/messages"
-              label={navT.messages}
+              href="/dashboard/quizzes/library"
+              label="📚 Quizthèque"
             />
-            <DashboardNavLink
-              href="/dashboard/suggestions"
-              label={navT.suggestions}
-            />
+            <DashboardNavLink href="/escape" label="🗝️ Escape" />
             <DashboardNavLink href="/tarifs" label="💳 Tarifs" />
           </nav>
         </div>
@@ -81,6 +79,7 @@ export async function PublicNavbar() {
               stats: navT.stats,
             }}
           />
+          <MobileNav />
         </div>
       </div>
     </header>

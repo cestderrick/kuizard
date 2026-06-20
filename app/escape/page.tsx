@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { auth } from "@/auth";
 import { SiteFooter } from "@/components/legal/site-footer";
+import { PublicNavbar } from "@/components/nav/public-navbar";
 
 export const metadata: Metadata = {
   title: "Escape — Escape games imprimables · Kuizard",
@@ -52,26 +53,40 @@ export default async function EscapePage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[var(--color-night)] text-[var(--color-lavender)]">
-      {/* Header simple : logo + retour */}
-      <header className="border-b border-[rgba(167,139,250,0.15)] bg-[var(--color-night-2)]">
-        <div className="mx-auto max-w-6xl flex items-center justify-between px-4 py-3 gap-4">
-          <Link
-            href="/"
-            className="font-display text-lg font-bold tracking-[2px]"
-            style={{ color: "var(--color-lavender)" }}
-          >
-            ✨ Kuizard
-          </Link>
-          <div className="flex items-center gap-3 text-sm">
+      {/* V41.3 : Si connecté, on affiche le menu global (sticky en haut). */}
+      {/* Si non connecté, fallback minimal pour avoir un lien retour. */}
+      <PublicNavbar />
+      {!isAuth && (
+        <header className="border-b border-[rgba(167,139,250,0.15)] bg-[var(--color-night-2)]">
+          <div className="mx-auto max-w-6xl flex items-center justify-between px-4 py-3 gap-4">
             <Link
-              href={isAuth ? "/dashboard" : "/"}
-              className="text-[var(--color-lavender-2)] hover:text-[var(--color-gold)] text-xs uppercase tracking-[2px]"
+              href="/"
+              className="font-display text-lg font-bold tracking-[2px]"
+              style={{ color: "var(--color-lavender)" }}
             >
-              ← Retour
+              ✨ Kuizard
             </Link>
+            <div className="flex items-center gap-3 text-sm">
+              <Link
+                href="/"
+                className="text-[var(--color-lavender-2)] hover:text-[var(--color-gold)] text-xs uppercase tracking-[2px]"
+              >
+                ← Retour
+              </Link>
+              <Link
+                href="/login?from=/escape"
+                className="text-xs uppercase tracking-[2px] px-3 py-1.5 rounded-lg font-semibold"
+                style={{
+                  backgroundColor: "var(--color-gold)",
+                  color: "var(--color-violet-deep)",
+                }}
+              >
+                Se connecter
+              </Link>
+            </div>
           </div>
-        </div>
-      </header>
+        </header>
+      )}
 
       {/* HERO */}
       <section className="relative overflow-hidden py-20 sm:py-28">
