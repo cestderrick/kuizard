@@ -71,22 +71,45 @@ export function ImageUploader({
 
   function handleFileUpload(file: File) {
     if (isDisabled) return;
+    // V43.1 : check taille côté client pour éviter d'envoyer un fichier trop
+    // gros au serveur (qui throw, crash le rendering React).
+    if (file.size > 10 * 1024 * 1024) {
+      setMessage({
+        ok: false,
+        text: `Fichier trop lourd (${(file.size / 1024 / 1024).toFixed(1)} Mo). Maximum 10 Mo.`,
+      });
+      return;
+    }
     const tempUrl = URL.createObjectURL(file);
     setPreviewUrl(tempUrl);
     setMessage(null);
     startTransition(async () => {
       const fd = buildHiddenFormData();
       fd.append("file", file);
-      const res = await uploadAction({ ok: false }, fd);
-      if (res.ok && res.url) {
-        setPreviewUrl(res.url);
-        setMessage({ ok: true, text: res.message ?? "Image enregistrée." });
-      } else {
-        // Restaure l'ancien aperçu si l'upload a foiré, plus de blob fantôme
+      // V43.1 : try/catch indispensable — une server action qui throw fait
+      // exploser le boundary React et la page entière crash. On capture
+      // tout, on affiche l'erreur, et on garde la session vivante.
+      try {
+        const res = await uploadAction({ ok: false }, fd);
+        if (res.ok && res.url) {
+          setPreviewUrl(res.url);
+          setMessage({ ok: true, text: res.message ?? "Image enregistrée." });
+        } else {
+          setPreviewUrl(currentUrl);
+          setMessage({
+            ok: false,
+            text: res.message ?? "Erreur lors de l'upload.",
+          });
+        }
+      } catch (err) {
+        console.error("[upload] action threw:", err);
         setPreviewUrl(currentUrl);
         setMessage({
           ok: false,
-          text: res.message ?? "Erreur lors de l'upload.",
+          text:
+            err instanceof Error
+              ? `Erreur réseau : ${err.message}`
+              : "Erreur réseau pendant l'upload. Réessaie.",
         });
       }
     });
@@ -104,16 +127,28 @@ export function ImageUploader({
     startTransition(async () => {
       const fd = buildHiddenFormData();
       fd.append("imageUrl", trimmed);
-      const res = await setFromUrlAction({ ok: false }, fd);
-      if (res.ok && res.url) {
-        setPreviewUrl(res.url);
-        setUrlValue("");
-        setMessage({ ok: true, text: res.message ?? "Image enregistrée." });
-      } else {
+      try {
+        const res = await setFromUrlAction({ ok: false }, fd);
+        if (res.ok && res.url) {
+          setPreviewUrl(res.url);
+          setUrlValue("");
+          setMessage({ ok: true, text: res.message ?? "Image enregistrée." });
+        } else {
+          setPreviewUrl(currentUrl);
+          setMessage({
+            ok: false,
+            text: res.message ?? "Erreur lors de l'enregistrement.",
+          });
+        }
+      } catch (err) {
+        console.error("[setFromUrl] action threw:", err);
         setPreviewUrl(currentUrl);
         setMessage({
           ok: false,
-          text: res.message ?? "Erreur lors de l'enregistrement.",
+          text:
+            err instanceof Error
+              ? `Erreur : ${err.message}`
+              : "Erreur réseau. Réessaie.",
         });
       }
     });
@@ -124,9 +159,20 @@ export function ImageUploader({
     setMessage(null);
     startTransition(async () => {
       const fd = buildHiddenFormData();
-      await removeAction(fd);
-      setPreviewUrl(null);
-      setMessage({ ok: true, text: "Image supprimée." });
+      try {
+        await removeAction(fd);
+        setPreviewUrl(null);
+        setMessage({ ok: true, text: "Image supprimée." });
+      } catch (err) {
+        console.error("[remove] action threw:", err);
+        setMessage({
+          ok: false,
+          text:
+            err instanceof Error
+              ? `Erreur : ${err.message}`
+              : "Erreur lors de la suppression.",
+        });
+      }
     });
   }
 
@@ -359,15 +405,30 @@ export function ImageUploader({
         )}
       </div>
 
-      {/* Disclaimer légal photos */}
+      {/* Disclaimer légal photos — V43.1 renforcé */}
       <div className="rounded-md border border-amber-300 bg-amber-50 p-3 text-xs text-amber-900 leading-relaxed">
-        <p className="font-semibold mb-1">⚠️ Important — droit à l'image</p>
+        <p className="font-semibold mb-1">
+          ⚠️ Important — Responsabilité du créateur
+        </p>
+        <p className="mb-2">
+          En ajoutant une image (upload ou URL externe), tu déclares en être
+          l&apos;auteur ou détenir les droits nécessaires à sa diffusion, et
+          tu confirmes avoir l&apos;accord des personnes représentées le cas
+          échéant.{" "}
+          <strong>
+            Le créateur du quizz est seul garant du respect du droit à
+            l&apos;image, du droit d&apos;auteur et de la protection des
+            données personnelles.
+          </strong>{" "}
+          Kuizard et Projiat ne peuvent en aucun cas être tenus responsables
+          des contenus ajoutés par les utilisateurs et se réservent le droit
+          de supprimer toute image signalée comme litigieuse.
+        </p>
         <p>
-          Kuizard et Projiat ne peuvent pas être tenus responsables des photos
-          ajoutées. Assure-toi que ton public et les personnes présentes sur
-          les photos sont d'accord. Les photos sont stockées de manière
-          sécurisée pendant <strong>1 mois après la fin du quizz</strong> puis
-          supprimées automatiquement.
+          📅 Les photos uploadées sont stockées de manière sécurisée pendant{" "}
+          <strong>1 mois après la fin du quizz</strong>, puis supprimées
+          automatiquement. Les images référencées par URL externe restent
+          hébergées chez le fournisseur tiers.
         </p>
       </div>
     </div>

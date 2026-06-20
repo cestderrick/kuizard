@@ -56,23 +56,37 @@ export async function uploadCoverImageAction(
     };
   }
 
-  const result = await saveImageFile(file, `quizzes-${quizId}`);
-  if (!result.ok) return { ok: false, message: result.message };
+  try {
+    const result = await saveImageFile(file, `quizzes-${quizId}`);
+    if (!result.ok) return { ok: false, message: result.message };
 
-  // Mettre à jour le quizz + supprimer l'ancien fichier si existant
-  const oldUrl = quiz.coverImageUrl;
-  await prisma.quiz.update({
-    where: { id: quizId },
-    data: { coverImageUrl: result.url },
-  });
-  if (oldUrl && oldUrl !== result.url) {
-    await deleteImageByUrl(oldUrl);
+    const oldUrl = quiz.coverImageUrl;
+    await prisma.quiz.update({
+      where: { id: quizId },
+      data: { coverImageUrl: result.url },
+    });
+    if (oldUrl && oldUrl !== result.url) {
+      await deleteImageByUrl(oldUrl).catch((e) =>
+        console.warn("[upload] old cover delete failed:", e)
+      );
+    }
+
+    revalidatePath(`/dashboard/quizzes/${quizId}/edit`);
+    revalidatePath(`/q/${quiz.id}`);
+
+    return { ok: true, url: result.url, message: "Photo de couverture mise à jour." };
+  } catch (err) {
+    // V43.1 : si saveImageFile ou Prisma throw, on renvoie une erreur propre
+    // au lieu de laisser la page React crasher.
+    console.error("[uploadCoverImage] failed:", err);
+    return {
+      ok: false,
+      message:
+        err instanceof Error
+          ? `Erreur serveur : ${err.message}`
+          : "Erreur serveur lors de l'upload. Réessaie.",
+    };
   }
-
-  revalidatePath(`/dashboard/quizzes/${quizId}/edit`);
-  revalidatePath(`/q/${quiz.id}`); // pattern, revalidate s'occupe du reste
-
-  return { ok: true, url: result.url, message: "Photo de couverture mise à jour." };
 }
 
 export async function removeCoverImageAction(formData: FormData) {
@@ -140,22 +154,35 @@ export async function uploadQuestionImageAction(
     };
   }
 
-  const result = await saveImageFile(file, `quizzes-${quizId}`);
-  if (!result.ok) return { ok: false, message: result.message };
+  try {
+    const result = await saveImageFile(file, `quizzes-${quizId}`);
+    if (!result.ok) return { ok: false, message: result.message };
 
-  const oldUrl = question.imageUrl;
-  await prisma.question.update({
-    where: { id: questionId },
-    data: { imageUrl: result.url },
-  });
-  if (oldUrl && oldUrl !== result.url) {
-    await deleteImageByUrl(oldUrl);
+    const oldUrl = question.imageUrl;
+    await prisma.question.update({
+      where: { id: questionId },
+      data: { imageUrl: result.url },
+    });
+    if (oldUrl && oldUrl !== result.url) {
+      await deleteImageByUrl(oldUrl).catch((e) =>
+        console.warn("[upload] old question image delete failed:", e)
+      );
+    }
+
+    revalidatePath(`/dashboard/quizzes/${quizId}/edit`);
+    revalidatePath(`/dashboard/quizzes/${quizId}/questions/${questionId}/edit`);
+
+    return { ok: true, url: result.url, message: "Image enregistrée." };
+  } catch (err) {
+    console.error("[uploadQuestionImage] failed:", err);
+    return {
+      ok: false,
+      message:
+        err instanceof Error
+          ? `Erreur serveur : ${err.message}`
+          : "Erreur serveur lors de l'upload. Réessaie.",
+    };
   }
-
-  revalidatePath(`/dashboard/quizzes/${quizId}/edit`);
-  revalidatePath(`/dashboard/quizzes/${quizId}/questions/${questionId}/edit`);
-
-  return { ok: true, url: result.url, message: "Image enregistrée." };
 }
 
 export async function removeQuestionImageAction(formData: FormData) {
