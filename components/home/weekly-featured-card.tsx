@@ -84,7 +84,7 @@ export function WeeklyFeaturedCard({ data }: { data: WeeklyFeaturedDTO }) {
                   {data.ctaLabel ?? "🎁 Tenter ma chance"}
                 </Link>
                 <p className="text-xs opacity-70">
-                  Gratuit · sans inscription
+                  Gratuit
                 </p>
               </div>
             </div>

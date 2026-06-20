@@ -78,7 +78,10 @@ export default async function AdminLayout({
             <AdminNavLink href="/admin/library" label="📚 Banque de quizz" />
             <AdminNavLink href="/admin/weekly" label="🎁 Quizz de la semaine" />
             <AdminNavLink href="/admin/public-stats" label="🌍 Stats publiques" />
-            <AdminNavLink href="/admin/site-settings" label="🎬 Vidéos home" />
+            <AdminNavLink
+              href="/admin/site-settings"
+              label="⚙️ Vidéos + Quiz démo"
+            />
           </nav>
         </aside>
 
