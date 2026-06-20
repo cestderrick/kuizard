@@ -14,6 +14,7 @@ import {
 import {
   uploadQuestionImageAction,
   removeQuestionImageAction,
+  setQuestionImageFromUrlAction,
 } from "@/lib/actions/upload";
 import { ImageUploader } from "@/components/quiz/image-uploader";
 import { useActionToast } from "@/lib/hooks/use-action-toast";
@@ -37,6 +38,10 @@ type Props = {
     options: unknown; // venant de Prisma JSONB
     imageUrl: string | null;
   };
+  /** V43 : si le plan ne permet pas les images, on grise la zone + CTA upgrade */
+  allowImages?: boolean;
+  /** Nom du plan courant pour le message de gating */
+  planName?: string;
 };
 
 const initialState: UpdateQuestionState = { ok: false };
@@ -54,7 +59,7 @@ function parseInitialOptions(raw: unknown): Option[] {
     .map((o) => ({ label: o.label, isCorrect: o.isCorrect }));
 }
 
-export function QuestionForm({ quizId, question }: Props) {
+export function QuestionForm({ quizId, question, allowImages = true, planName }: Props) {
   const [type, setType] = useState<QuestionType>(question.type as QuestionType);
 
   // Options gérées en state pour le côté dynamique (ajout/suppression)
@@ -195,9 +200,15 @@ export function QuestionForm({ quizId, question }: Props) {
           currentUrl={question.imageUrl}
           uploadAction={uploadQuestionImageAction}
           removeAction={removeQuestionImageAction}
+          setFromUrlAction={setQuestionImageFromUrlAction}
           hiddenFields={{ quizId, questionId: question.id }}
           emptyLabel="Glisse une image ou clique pour parcourir"
           previewHeightClass="h-40"
+          disabledMessage={
+            allowImages
+              ? null
+              : `Les photos sur les questions ne sont pas incluses dans ton plan${planName ? " \"" + planName + "\"" : ""}. Passe à un plan supérieur pour les activer.`
+          }
         />
       </div>
 

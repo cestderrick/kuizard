@@ -1,112 +1,256 @@
 "use client";
 
-import { useActionState, useRef, useState } from "react";
+import { useRef, useState, useTransition } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 import type { UploadState } from "@/lib/actions/upload";
 
-const initial: UploadState = { ok: false };
-
 type Props = {
   currentUrl: string | null;
-  /** Server action d'upload */
+  /** Server action d'upload (fichier) */
   uploadAction: (
     prev: UploadState,
     formData: FormData
   ) => Promise<UploadState>;
-  /** Server action de suppression (form classique, pas useActionState) */
+  /** Server action de suppression */
   removeAction: (formData: FormData) => Promise<void>;
-  /** Champs cachés à inclure dans les forms (quizId, questionId, etc.) */
+  /** Server action pour set depuis URL externe (optionnel) */
+  setFromUrlAction?: (
+    prev: UploadState,
+    formData: FormData
+  ) => Promise<UploadState>;
+  /** Champs cachés à passer dans tous les formData (quizId, questionId, etc.) */
   hiddenFields: Record<string, string>;
   /** Texte à afficher quand il n'y a pas d'image */
   emptyLabel?: string;
-  /** Hauteur de l'aperçu en CSS (par défaut 200px) */
+  /** Hauteur de l'aperçu */
   previewHeightClass?: string;
+  /** V43 : grise tout si feature non autorisée par le plan + message de gating */
+  disabledMessage?: string | null;
 };
 
+/**
+ * V43 — Refonte : on n'utilise PLUS de <form> interne (qui créait des forms
+ * imbriquées quand utilisé dans QuestionForm → upload silencieusement
+ * remplacé par updateQuestionAction côté serveur, image jamais sauvée).
+ * À la place on appelle les server actions DIRECTEMENT via useTransition
+ * avec un FormData construit manuellement.
+ *
+ * Bonus : nouvelle tab "URL externe" pour coller un lien d'image au lieu
+ * d'uploader un fichier, et grisage si le plan ne permet pas les images.
+ */
 export function ImageUploader({
   currentUrl,
   uploadAction,
   removeAction,
+  setFromUrlAction,
   hiddenFields,
   emptyLabel = "Glisse une image ou clique pour parcourir",
   previewHeightClass = "h-48",
+  disabledMessage = null,
 }: Props) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const formRef = useRef<HTMLFormElement | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(currentUrl);
   const [isDragging, setIsDragging] = useState(false);
+  const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(
+    null
+  );
+  const [isPending, startTransition] = useTransition();
+  const [mode, setMode] = useState<"upload" | "url">("upload");
+  const [urlValue, setUrlValue] = useState("");
 
-  const [state, formAction, isPending] = useActionState(uploadAction, initial);
+  const isDisabled = !!disabledMessage;
 
-  // Lorsque l'action a renvoyé une nouvelle URL, on met à jour l'aperçu
-  if (state.ok && state.url && state.url !== previewUrl) {
-    setPreviewUrl(state.url);
+  function buildHiddenFormData(): FormData {
+    const fd = new FormData();
+    for (const [k, v] of Object.entries(hiddenFields)) fd.append(k, v);
+    return fd;
+  }
+
+  function handleFileUpload(file: File) {
+    if (isDisabled) return;
+    const tempUrl = URL.createObjectURL(file);
+    setPreviewUrl(tempUrl);
+    setMessage(null);
+    startTransition(async () => {
+      const fd = buildHiddenFormData();
+      fd.append("file", file);
+      const res = await uploadAction({ ok: false }, fd);
+      if (res.ok && res.url) {
+        setPreviewUrl(res.url);
+        setMessage({ ok: true, text: res.message ?? "Image enregistrée." });
+      } else {
+        // Restaure l'ancien aperçu si l'upload a foiré, plus de blob fantôme
+        setPreviewUrl(currentUrl);
+        setMessage({
+          ok: false,
+          text: res.message ?? "Erreur lors de l'upload.",
+        });
+      }
+    });
+  }
+
+  function handleUrlSubmit() {
+    if (!setFromUrlAction || isDisabled) return;
+    const trimmed = urlValue.trim();
+    if (!trimmed) {
+      setMessage({ ok: false, text: "Saisis une URL d'image." });
+      return;
+    }
+    setMessage(null);
+    setPreviewUrl(trimmed);
+    startTransition(async () => {
+      const fd = buildHiddenFormData();
+      fd.append("imageUrl", trimmed);
+      const res = await setFromUrlAction({ ok: false }, fd);
+      if (res.ok && res.url) {
+        setPreviewUrl(res.url);
+        setUrlValue("");
+        setMessage({ ok: true, text: res.message ?? "Image enregistrée." });
+      } else {
+        setPreviewUrl(currentUrl);
+        setMessage({
+          ok: false,
+          text: res.message ?? "Erreur lors de l'enregistrement.",
+        });
+      }
+    });
+  }
+
+  function handleRemove() {
+    if (isDisabled) return;
+    setMessage(null);
+    startTransition(async () => {
+      const fd = buildHiddenFormData();
+      await removeAction(fd);
+      setPreviewUrl(null);
+      setMessage({ ok: true, text: "Image supprimée." });
+    });
   }
 
   function triggerFilePicker() {
+    if (isDisabled) return;
     fileInputRef.current?.click();
   }
 
   function onFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     if (e.target.files && e.target.files.length > 0) {
-      // Aperçu instantané côté client
-      const file = e.target.files[0];
-      const tempUrl = URL.createObjectURL(file);
-      setPreviewUrl(tempUrl);
-      // Soumettre la form (upload)
-      formRef.current?.requestSubmit();
+      handleFileUpload(e.target.files[0]);
     }
+    // Reset l'input pour permettre de re-sélectionner le même fichier
+    e.target.value = "";
   }
 
   function onDrop(e: React.DragEvent<HTMLDivElement>) {
     e.preventDefault();
     setIsDragging(false);
+    if (isDisabled) return;
     const dt = e.dataTransfer;
-    if (dt.files && dt.files.length > 0 && fileInputRef.current) {
-      // Affecter les fichiers à l'input et déclencher onChange
-      fileInputRef.current.files = dt.files;
-      fileInputRef.current.dispatchEvent(
-        new Event("change", { bubbles: true })
-      );
+    if (dt.files && dt.files.length > 0) {
+      handleFileUpload(dt.files[0]);
     }
   }
 
   return (
     <div className="flex flex-col gap-3">
-      {state.message && !state.ok && (
-        <Alert variant="destructive">
-          <AlertDescription>{state.message}</AlertDescription>
+      {/* V43 : Bandeau de gating si feature non incluse dans le plan */}
+      {disabledMessage && (
+        <div
+          className="rounded-lg border-2 p-3 flex items-start gap-2 text-sm"
+          style={{
+            borderColor: "rgba(245,158,11,0.4)",
+            backgroundColor: "rgba(245,158,11,0.08)",
+          }}
+        >
+          <span className="text-lg shrink-0" aria-hidden>🔒</span>
+          <div className="flex-1 min-w-0">
+            <p className="font-semibold" style={{ color: "var(--color-violet-deep)" }}>
+              Photos non incluses dans ton plan actuel
+            </p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {disabledMessage}
+            </p>
+            <a
+              href="/tarifs"
+              className="inline-block mt-2 text-xs font-bold underline-offset-2 hover:underline"
+              style={{ color: "var(--color-violet-primary)" }}
+            >
+              Voir les plans qui débloquent les photos →
+            </a>
+          </div>
+        </div>
+      )}
+
+      {message && (
+        <Alert variant={message.ok ? "default" : "destructive"}>
+          <AlertDescription>{message.text}</AlertDescription>
         </Alert>
       )}
 
-      <form ref={formRef} action={formAction} className="contents">
-        {Object.entries(hiddenFields).map(([name, value]) => (
-          <input key={name} type="hidden" name={name} value={value} />
-        ))}
+      {/* Tabs Upload / URL externe */}
+      {setFromUrlAction && (
+        <div
+          className="inline-flex rounded-lg border self-start text-xs"
+          style={{ borderColor: "var(--color-violet-light, #e9d5ff)" }}
+        >
+          <button
+            type="button"
+            disabled={isDisabled}
+            onClick={() => setMode("upload")}
+            className={
+              "px-3 py-1.5 rounded-l-lg transition " +
+              (mode === "upload"
+                ? "bg-[var(--color-violet-primary)] text-white font-bold"
+                : "text-muted-foreground hover:bg-zinc-50")
+            }
+          >
+            📤 Uploader
+          </button>
+          <button
+            type="button"
+            disabled={isDisabled}
+            onClick={() => setMode("url")}
+            className={
+              "px-3 py-1.5 rounded-r-lg transition " +
+              (mode === "url"
+                ? "bg-[var(--color-violet-primary)] text-white font-bold"
+                : "text-muted-foreground hover:bg-zinc-50")
+            }
+          >
+            🔗 URL externe
+          </button>
+        </div>
+      )}
 
+      {/* Mode Upload : zone drag&drop + preview */}
+      {mode === "upload" && (
         <div
           onDragOver={(e) => {
             e.preventDefault();
-            setIsDragging(true);
+            if (!isDisabled) setIsDragging(true);
           }}
           onDragLeave={() => setIsDragging(false)}
           onDrop={onDrop}
           onClick={triggerFilePicker}
-          className={`relative rounded-xl border-2 border-dashed cursor-pointer transition-colors overflow-hidden ${previewHeightClass}`}
+          className={
+            "relative rounded-xl border-2 border-dashed overflow-hidden " +
+            previewHeightClass +
+            " " +
+            (isDisabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer transition-colors")
+          }
           style={{
             borderColor: isDragging
               ? "var(--color-violet-primary)"
               : previewUrl
               ? "transparent"
-              : "var(--color-violet-light)",
+              : "var(--color-violet-light, #c4b5fd)",
             backgroundColor: isDragging
               ? "rgba(124,58,237,0.05)"
               : previewUrl
               ? "transparent"
-              : "var(--color-lavender)",
+              : "var(--color-lavender, #f5f0ff)",
           }}
         >
           {previewUrl ? (
@@ -118,14 +262,12 @@ export function ImageUploader({
             />
           ) : (
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-center p-4 pointer-events-none">
-              <span className="text-4xl" aria-hidden>
-                🖼️
-              </span>
+              <span className="text-4xl" aria-hidden>🖼️</span>
               <span className="text-sm font-medium text-[var(--color-violet-primary)]">
                 {emptyLabel}
               </span>
               <span className="text-xs text-muted-foreground">
-                JPG, PNG, WebP — max 8 Mo
+                JPG, PNG, WebP, GIF, HEIC — max 8 Mo
               </span>
             </div>
           )}
@@ -135,51 +277,91 @@ export function ImageUploader({
             </div>
           )}
         </div>
+      )}
 
-        <input
-          ref={fileInputRef}
-          type="file"
-          name="file"
-          accept="image/jpeg,image/png,image/webp,image/gif"
-          onChange={onFileChange}
-          className="hidden"
-        />
-      </form>
-
-      {/* Boutons d'action */}
-      <div className="flex flex-wrap gap-2">
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={triggerFilePicker}
-          disabled={isPending}
-        >
-          {previewUrl ? "Changer l'image" : "Choisir une image"}
-        </Button>
-        {previewUrl && (
-          <form action={removeAction}>
-            {Object.entries(hiddenFields).map(([name, value]) => (
-              <input key={name} type="hidden" name={name} value={value} />
-            ))}
+      {/* Mode URL externe */}
+      {mode === "url" && setFromUrlAction && (
+        <div className="flex flex-col gap-2">
+          <div className="flex gap-2">
+            <input
+              type="url"
+              value={urlValue}
+              onChange={(e) => setUrlValue(e.target.value)}
+              placeholder="https://exemple.com/image.jpg"
+              disabled={isDisabled || isPending}
+              className="flex-1 rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2"
+              style={{ borderColor: "var(--color-violet-primary)" }}
+            />
             <Button
-              type="submit"
-              variant="ghost"
+              type="button"
+              onClick={handleUrlSubmit}
+              disabled={isDisabled || isPending || !urlValue.trim()}
               size="sm"
-              className="text-destructive hover:text-destructive"
-              onClick={() => setPreviewUrl(null)}
+              style={{
+                backgroundColor: "var(--color-violet-primary)",
+                color: "white",
+              }}
             >
-              Supprimer
+              {isPending ? "…" : "Utiliser"}
             </Button>
-          </form>
+          </div>
+          {previewUrl && (
+            <div className={"rounded-xl overflow-hidden border " + previewHeightClass}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={previewUrl}
+                alt="Aperçu"
+                className="w-full h-full object-cover"
+              />
+            </div>
+          )}
+          <p className="text-xs text-muted-foreground">
+            ⚠ L'URL doit être en HTTPS. L'image doit rester accessible
+            publiquement — si elle est supprimée chez l'hébergeur, elle
+            disparaît aussi côté Kuizard.
+          </p>
+        </div>
+      )}
+
+      {/* Input file caché — déclenché via triggerFilePicker */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif"
+        onChange={onFileChange}
+        className="hidden"
+      />
+
+      {/* Boutons : changer / supprimer */}
+      <div className="flex flex-wrap gap-2">
+        {mode === "upload" && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={triggerFilePicker}
+            disabled={isDisabled || isPending}
+          >
+            {previewUrl ? "Changer l'image" : "Choisir une image"}
+          </Button>
+        )}
+        {previewUrl && !isDisabled && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="text-destructive hover:text-destructive"
+            onClick={handleRemove}
+            disabled={isPending}
+          >
+            Supprimer l'image
+          </Button>
         )}
       </div>
 
       {/* Disclaimer légal photos */}
       <div className="rounded-md border border-amber-300 bg-amber-50 p-3 text-xs text-amber-900 leading-relaxed">
-        <p className="font-semibold mb-1">
-          ⚠️ Important — droit à l'image
-        </p>
+        <p className="font-semibold mb-1">⚠️ Important — droit à l'image</p>
         <p>
           Kuizard et Projiat ne peuvent pas être tenus responsables des photos
           ajoutées. Assure-toi que ton public et les personnes présentes sur

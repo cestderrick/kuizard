@@ -29,6 +29,7 @@ import { ImageUploader } from "@/components/quiz/image-uploader";
 import {
   uploadCoverImageAction,
   removeCoverImageAction,
+  setCoverImageFromUrlAction,
 } from "@/lib/actions/upload";
 import { parsePrizes } from "@/lib/quiz/prizes";
 import { parseTheme } from "@/lib/quiz/theme";
@@ -415,9 +416,15 @@ export default async function EditQuizPage({
           currentUrl={quiz.coverImageUrl}
           uploadAction={uploadCoverImageAction}
           removeAction={removeCoverImageAction}
+          setFromUrlAction={setCoverImageFromUrlAction}
           hiddenFields={{ quizId: quiz.id }}
           emptyLabel="Glisse une photo de couverture ou clique pour parcourir"
           previewHeightClass="h-56"
+          disabledMessage={
+            plan.limits.coverImage === false
+              ? `La photo de couverture n'est pas incluse dans ton plan \"${plan.name}\". Passe à un plan supérieur pour l'activer.`
+              : null
+          }
         />
       </CollapsibleSection>
 

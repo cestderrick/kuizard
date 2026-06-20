@@ -182,3 +182,134 @@ export async function removeQuestionImageAction(formData: FormData) {
 
   revalidatePath(`/dashboard/quizzes/${quizId}/questions/${questionId}/edit`);
 }
+
+// =============================================
+// V43 — Set image from external URL (link instead of upload)
+// =============================================
+// Permet de coller une URL HTTPS directement dans le champ "image" au lieu
+// d'uploader un fichier. Utile pour les photos déjà hébergées (Unsplash,
+// Google Photos public, etc.) ou pour les utilisateurs qui n'ont pas la
+// place de stocker.
+
+const URL_SCHEMA = /^https:\/\/[^\s<>"]+/i;
+
+export async function setQuestionImageFromUrlAction(
+  _prev: UploadState,
+  formData: FormData
+): Promise<UploadState> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { ok: false, message: "Non authentifié." };
+  }
+
+  const quizId = formData.get("quizId");
+  const questionId = formData.get("questionId");
+  const url = formData.get("imageUrl");
+
+  if (typeof quizId !== "string" || !quizId) {
+    return { ok: false, message: "Quizz manquant." };
+  }
+  if (typeof questionId !== "string" || !questionId) {
+    return { ok: false, message: "Question manquante." };
+  }
+  if (typeof url !== "string" || !url.trim()) {
+    return { ok: false, message: "URL vide." };
+  }
+
+  const trimmed = url.trim();
+  if (!URL_SCHEMA.test(trimmed)) {
+    return {
+      ok: false,
+      message: "L'URL doit commencer par https:// et ne pas contenir d'espaces.",
+    };
+  }
+  if (trimmed.length > 2048) {
+    return { ok: false, message: "URL trop longue (max 2048 caractères)." };
+  }
+
+  // Vérifier ownership
+  const question = await prisma.question.findFirst({
+    where: { id: questionId, quizId, quiz: { userId: session.user.id } },
+    select: { id: true, imageUrl: true },
+  });
+  if (!question) return { ok: false, message: "Question introuvable." };
+
+  // Gating plan : même limite que pour l'upload de fichier
+  const plan = await getEffectivePlan(quizId);
+  if (plan.limits.questionImages === false) {
+    return {
+      ok: false,
+      message: `Les images sur les questions ne sont pas incluses dans ton plan \"${plan.name}\".`,
+    };
+  }
+
+  // Update + cleanup éventuel de l'ancienne image hébergée chez nous
+  const oldUrl = question.imageUrl;
+  await prisma.question.update({
+    where: { id: questionId },
+    data: { imageUrl: trimmed },
+  });
+  // On supprime l'ancien fichier UNIQUEMENT s'il était hébergé chez nous
+  // (local /uploads/ ou R2). Si c'était déjà une URL externe, on ne touche rien.
+  if (oldUrl && oldUrl !== trimmed) {
+    await deleteImageByUrl(oldUrl);
+  }
+
+  revalidatePath(`/dashboard/quizzes/${quizId}/edit`);
+  revalidatePath(`/dashboard/quizzes/${quizId}/questions/${questionId}/edit`);
+
+  return { ok: true, url: trimmed, message: "Image enregistrée depuis URL." };
+}
+
+export async function setCoverImageFromUrlAction(
+  _prev: UploadState,
+  formData: FormData
+): Promise<UploadState> {
+  const session = await auth();
+  if (!session?.user?.id) return { ok: false, message: "Non authentifié." };
+
+  const quizId = formData.get("quizId");
+  const url = formData.get("imageUrl");
+  if (typeof quizId !== "string" || !quizId) {
+    return { ok: false, message: "Quizz manquant." };
+  }
+  if (typeof url !== "string" || !url.trim()) {
+    return { ok: false, message: "URL vide." };
+  }
+  const trimmed = url.trim();
+  if (!URL_SCHEMA.test(trimmed)) {
+    return {
+      ok: false,
+      message: "L'URL doit commencer par https:// et ne pas contenir d'espaces.",
+    };
+  }
+  if (trimmed.length > 2048) {
+    return { ok: false, message: "URL trop longue." };
+  }
+
+  const quiz = await prisma.quiz.findFirst({
+    where: { id: quizId, userId: session.user.id },
+    select: { id: true, coverImageUrl: true },
+  });
+  if (!quiz) return { ok: false, message: "Quizz introuvable." };
+
+  const plan = await getEffectivePlan(quizId);
+  if (plan.limits.coverImage === false) {
+    return {
+      ok: false,
+      message: `La photo de couverture n'est pas incluse dans ton plan \"${plan.name}\".`,
+    };
+  }
+
+  const oldUrl = quiz.coverImageUrl;
+  await prisma.quiz.update({
+    where: { id: quizId },
+    data: { coverImageUrl: trimmed },
+  });
+  if (oldUrl && oldUrl !== trimmed) {
+    await deleteImageByUrl(oldUrl);
+  }
+
+  revalidatePath(`/dashboard/quizzes/${quizId}/edit`);
+  return { ok: true, url: trimmed, message: "Photo de couverture enregistrée." };
+}

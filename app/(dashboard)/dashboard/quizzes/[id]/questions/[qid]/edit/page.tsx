@@ -14,6 +14,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { QuestionForm } from "@/components/quiz/question-form";
+import { getEffectivePlan } from "@/lib/plans/gating";
 
 export const metadata: Metadata = {
   title: "Éditer une question",
@@ -55,6 +56,10 @@ export default async function EditQuestionPage({
   if (!quiz || quiz.questions.length === 0) notFound();
   const question = quiz.questions[0];
 
+  // V43 : on charge le plan effectif pour griser/débloquer l'upload d'image
+  const plan = await getEffectivePlan(quizId);
+  const allowImages = plan.limits.questionImages !== false;
+
   return (
     <div className="max-w-3xl mx-auto flex flex-col gap-6">
       {/* Breadcrumb */}
@@ -88,7 +93,12 @@ export default async function EditQuestionPage({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <QuestionForm quizId={quizId} question={question} />
+          <QuestionForm
+            quizId={quizId}
+            question={question}
+            allowImages={allowImages}
+            planName={plan.name}
+          />
         </CardContent>
       </Card>
 
