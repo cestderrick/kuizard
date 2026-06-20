@@ -60,10 +60,21 @@ export default async function LibraryBrowserPage({
   const myParticipations = myCookiePartIds.length
     ? await prisma.participation.findMany({
         where: { id: { in: myCookiePartIds } },
-        select: { quizId: true },
+        select: {
+          id: true,
+          quizId: true,
+          score: true,
+          completedAt: true,
+        },
       })
     : [];
   const myPlayedQuizIds = new Set(myParticipations.map((p) => p.quizId));
+  // V47.21 : map quizId -> {score, participationId} pour affichage cards
+  const myScoreByQuiz = new Map(
+    myParticipations
+      .filter((p) => p.completedAt !== null)
+      .map((p) => [p.quizId, { score: p.score, participationId: p.id }])
+  );
 
   // Construction du where
   const where: Record<string, unknown> = {
@@ -136,6 +147,48 @@ export default async function LibraryBrowserPage({
     });
     const q = params.toString();
     return q ? `/dashboard/quizzes/library?${q}` : "/dashboard/quizzes/library";
+  }
+
+  // V47.21 : calcul rangs pour chaque quiz affiche joue
+  const displayedPlayedQuizIds = quizzes
+    .filter((q) => myScoreByQuiz.has(q.id))
+    .map((q) => q.id);
+  const rankByQuiz = new Map<string, { rank: number; total: number }>();
+  if (displayedPlayedQuizIds.length > 0) {
+    const allParts = await prisma.participation.findMany({
+      where: {
+        quizId: { in: displayedPlayedQuizIds },
+        completedAt: { not: null },
+      },
+      select: {
+        id: true,
+        quizId: true,
+        score: true,
+        startedAt: true,
+        completedAt: true,
+      },
+    });
+    const byQ = new Map<string, typeof allParts>();
+    for (const p of allParts) {
+      const arr = byQ.get(p.quizId) ?? [];
+      arr.push(p);
+      byQ.set(p.quizId, arr);
+    }
+    for (const [qId, parts] of byQ) {
+      const sorted = [...parts].sort((a, b) => {
+        if (b.score !== a.score) return b.score - a.score;
+        const durA = a.completedAt!.getTime() - a.startedAt.getTime();
+        const durB = b.completedAt!.getTime() - b.startedAt.getTime();
+        return durA - durB;
+      });
+      const myInfo = myScoreByQuiz.get(qId);
+      if (myInfo) {
+        const idx = sorted.findIndex((p) => p.id === myInfo.participationId);
+        if (idx >= 0) {
+          rankByQuiz.set(qId, { rank: idx + 1, total: sorted.length });
+        }
+      }
+    }
   }
 
   return (
@@ -312,6 +365,9 @@ export default async function LibraryBrowserPage({
                 isNew={isNew}
                 alreadyPlayed={alreadyPlayed}
                 isWeeklyFeatured={q.id === weeklyQuizId}
+                myScore={myScoreByQuiz.get(q.id)?.score}
+                myRank={rankByQuiz.get(q.id)?.rank}
+                totalPlayers={rankByQuiz.get(q.id)?.total}
               />
             );
           })}
@@ -365,12 +421,18 @@ function QuizCard({
   isNew,
   alreadyPlayed,
   isWeeklyFeatured,
+  myScore,
+  myRank,
+  totalPlayers,
 }: {
   q: QuizCardData;
   isSubscriber: boolean;
   isNew?: boolean;
   alreadyPlayed?: boolean;
   isWeeklyFeatured?: boolean;
+  myScore?: number;
+  myRank?: number;
+  totalPlayers?: number;
 }) {
   const isLocked = q.libraryIsPremium && !isSubscriber;
   // V33 : si le quiz est actuellement le featured de la semaine, on le grise
@@ -492,6 +554,49 @@ function QuizCard({
           {q._count.questions} question
           {q._count.questions > 1 ? "s" : ""} · 📅 publié le {dateStr}
         </p>
+        {/* V47.21 : score + rang du user (cache si weekly featured) */}
+        {alreadyPlayed && !isWeeklyFeatured && typeof myScore === "number" && (
+          <div
+            className="rounded-lg p-2.5 border-2 flex items-center justify-between gap-2 mt-1"
+            style={{
+              borderColor: "rgba(245,158,11,0.4)",
+              background:
+                "linear-gradient(135deg, rgba(245,158,11,0.08), rgba(85,35,187,0.04))",
+            }}
+          >
+            <div>
+              <p
+                className="text-[10px] uppercase tracking-[2px] font-bold"
+                style={{ color: "var(--color-violet-primary)" }}
+              >
+                🎯 Ton score
+              </p>
+              <p
+                className="font-display font-bold text-xl leading-none mt-0.5"
+                style={{ color: "var(--color-violet-deep)" }}
+              >
+                {myScore}
+              </p>
+            </div>
+            {typeof myRank === "number" && typeof totalPlayers === "number" && (
+              <div className="text-right">
+                <p
+                  className="text-[10px] uppercase tracking-[2px] font-bold"
+                  style={{ color: "var(--color-violet-primary)" }}
+                >
+                  🏆 Rang
+                </p>
+                <p
+                  className="font-display font-bold text-xl leading-none mt-0.5"
+                  style={{ color: "var(--color-violet-deep)" }}
+                >
+                  #{myRank}
+                  <span className="text-xs opacity-70"> /{totalPlayers}</span>
+                </p>
+              </div>
+            )}
+          </div>
+        )}
         <div className="mt-auto pt-3 flex flex-col gap-2">
           {isLocked ? (
             <Link

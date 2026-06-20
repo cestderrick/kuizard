@@ -74,7 +74,7 @@ export function WeeklyFeaturedCard({ data }: { data: WeeklyFeaturedDTO }) {
 
               <div className="flex flex-wrap gap-3 items-center">
                 <Link
-                  href={`/q/${data.quizCode}`}
+                  href={`/q/${data.quizCode}/go`}
                   className="inline-flex items-center justify-center rounded-lg px-6 py-3 font-bold text-sm transition hover:opacity-90"
                   style={{
                     backgroundColor: "var(--color-gold)",

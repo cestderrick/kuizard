@@ -8,6 +8,7 @@ import { getQuizLeaderboard } from "@/lib/quiz/leaderboard";
 import { parsePrizes, prizesByRank, type Prize } from "@/lib/quiz/prizes";
 import { MyAnswersPanel } from "@/components/play/my-answers-panel";
 import { UpgradeCTA } from "@/components/marketing/upgrade-cta";
+import { ReplayQuizButton } from "@/components/quiz/replay-quiz-button";
 import { getActivePlans } from "@/lib/plans/config";
 
 // V47.2 — Format chrono "1m23s" pour afficher le temps mis sur chaque entrée
@@ -247,15 +248,16 @@ export default async function ClassementPage({
             </section>
           )}
 
+          {/* V47.21 : Retour à l'accueil Kuizard (au lieu du quiz lui-même) */}
           <Link
-            href={`/q/${data.code}`}
+            href="/"
             className="inline-block px-5 py-2.5 rounded-md font-semibold"
             style={{
               backgroundColor: "var(--color-gold)",
               color: "var(--color-violet-deep)",
             }}
           >
-            Retour au quizz
+            ← Retour à l'accueil Kuizard
           </Link>
         </div>
       </main>
@@ -532,7 +534,11 @@ export default async function ClassementPage({
 
         {/* Footer */}
         <footer className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-5 pt-3">
-          {/* V45 : Retour à l'accueil (au lieu du dashboard, plus pertinent côté joueur) */}
+          {/* V47.21 : Bouton "Rejouer" pour les quiz NON-SCHEDULED uniquement
+              (le quiz de la semaine reste à 1 essai par créneau) */}
+          {myEntry && myParticipationId && quizMeta?.mode !== "SCHEDULED" && (
+            <ReplayQuizButton code={data.code} />
+          )}
           <a
             href="/"
             target="_blank"

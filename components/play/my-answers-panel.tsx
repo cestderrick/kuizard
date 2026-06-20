@@ -69,10 +69,15 @@ export function MyAnswersPanel({
       <button
         type="button"
         onClick={toggle}
-        className="w-full flex items-center justify-between gap-3 text-sm font-bold py-2 hover:opacity-80"
+        className="w-full flex items-center justify-between gap-3 text-sm font-bold py-2.5 px-3 rounded-lg hover:opacity-90 transition"
         style={{
+          // V47.21 : fond sombre semi-transparent + texte or → visible sur
+          // TOUS les contextes (bloc gradient pâle "Tes résultats" SCHEDULED,
+          // bloc night-2 sombre du classement final, etc.)
           color: "var(--color-gold-light)",
           WebkitTextFillColor: "var(--color-gold-light)",
+          backgroundColor: "rgba(0,0,0,0.35)",
+          border: "1px solid rgba(245,158,11,0.4)",
         }}
         aria-expanded={open}
       >
