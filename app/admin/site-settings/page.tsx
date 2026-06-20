@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { requireAdmin } from "@/lib/auth/require-admin";
 import { getSettings, SETTING_KEYS } from "@/lib/site-settings";
 import { HomeVideosForm } from "@/components/admin/home-videos-form";
+import { DemoQuizForm } from "@/components/admin/demo-quiz-form";
 
 export const metadata: Metadata = {
   title: "Admin · Réglages du site",
@@ -15,6 +16,7 @@ export default async function AdminSiteSettingsPage() {
     SETTING_KEYS.videoIntro,
     SETTING_KEYS.videoCreation,
     SETTING_KEYS.videoJoueur,
+    SETTING_KEYS.demoQuizCode,
   ]);
 
   return (
@@ -29,6 +31,18 @@ export default async function AdminSiteSettingsPage() {
           placeholder &quot;à venir&quot;).
         </p>
       </header>
+
+      <section className="rounded-2xl bg-[var(--color-night-2)] border-2 p-5" style={{ borderColor: "var(--color-gold)" }}>
+        <h2 className="font-display text-xl tracking-wide text-[var(--color-lavender)] mb-3">
+          🎮 Quiz démo public
+        </h2>
+        <p className="text-xs text-[var(--color-lavender-2)] opacity-80 mb-4 leading-relaxed">
+          Indique le code d&apos;un quiz <strong>PUBLISHED</strong> qui devient
+          accessible sans compte via l&apos;URL <code className="px-1.5 py-0.5 rounded bg-[var(--color-night)] text-[var(--color-gold-light)]">{`${"" + "https://kuizard.com/demo"}`}</code> — parfait pour lier depuis tes posts Insta/TikTok.
+          Le classement est cumulé globalement (avec chrono du meilleur).
+        </p>
+        <DemoQuizForm initialCode={settings[SETTING_KEYS.demoQuizCode] ?? ""} />
+      </section>
 
       <section className="rounded-2xl bg-[var(--color-night-2)] border border-[rgba(167,139,250,0.2)] p-5">
         <h2 className="font-display text-xl tracking-wide text-[var(--color-lavender)] mb-4">

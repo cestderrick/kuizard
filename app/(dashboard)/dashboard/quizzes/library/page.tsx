@@ -492,7 +492,7 @@ function QuizCard({
           {q._count.questions} question
           {q._count.questions > 1 ? "s" : ""} · 📅 publié le {dateStr}
         </p>
-        <div className="mt-auto pt-3">
+        <div className="mt-auto pt-3 flex flex-col gap-2">
           {isLocked ? (
             <Link
               href="/tarifs#abonnements"
@@ -505,7 +505,38 @@ function QuizCard({
               🔒 S\'abonner pour débloquer
             </Link>
           ) : (
-            <DuplicateButton libraryQuizId={q.id} />
+            <>
+              {/* V47.2 : Bouton "Jouer" pour les abonnés — accède direct
+                  à la lecture du quiz avec classement chrono global cumulé */}
+              {isSubscriber && (
+                <Link
+                  href={`/q/${q.code}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-2 w-full rounded-lg px-4 py-2.5 text-sm font-bold transition hover:opacity-90"
+                  style={{
+                    backgroundColor: "var(--color-gold)",
+                    color: "var(--color-violet-deep)",
+                  }}
+                  title="Joue directement à ce quiz, ton score apparaît au classement chrono global"
+                >
+                  ▶️ Jouer ce quiz
+                  <span className="text-xs opacity-70" aria-hidden>↗</span>
+                </Link>
+              )}
+              <DuplicateButton libraryQuizId={q.id} />
+              {isSubscriber && (
+                <Link
+                  href={`/q/${q.code}/classement`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs underline-offset-2 hover:underline text-center"
+                  style={{ color: "var(--color-violet-primary)" }}
+                >
+                  🏆 Voir le classement chrono ↗
+                </Link>
+              )}
+            </>
           )}
         </div>
       </div>

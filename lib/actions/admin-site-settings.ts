@@ -56,3 +56,49 @@ export async function updateHomeVideosAction(
 
   return { ok: true, message: "Vidéos mises à jour." };
 }
+
+// =============================================
+// V47.1 — Update du quiz démo public
+// =============================================
+// L'admin choisit le code d'un quiz qui devient accessible sans compte
+// via l'URL /demo, parfait pour partager en démo sur les réseaux sociaux.
+
+export type DemoQuizState = SiteSettingsState;
+
+export async function updateDemoQuizAction(
+  _prev: DemoQuizState,
+  formData: FormData
+): Promise<DemoQuizState> {
+  const { user } = await requireAdmin();
+
+  const codeRaw = formData.get("demoQuizCode");
+  const code = typeof codeRaw === "string" ? codeRaw.trim() : "";
+
+  // Vide = on retire le quiz démo
+  if (!code) {
+    await setSetting(SETTING_KEYS.demoQuizCode, null, user.id);
+    return { ok: true, message: "Quiz démo retiré." };
+  }
+
+  // Vérification : le quiz existe et est PUBLISHED (jouable)
+  const { prisma } = await import("@/lib/db");
+  const quiz = await prisma.quiz.findUnique({
+    where: { code },
+    select: { id: true, status: true, title: true },
+  });
+  if (!quiz) {
+    return {
+      ok: false,
+      message: `Aucun quiz trouvé avec le code « ${code} ».`,
+    };
+  }
+  if (quiz.status !== "PUBLISHED" && quiz.status !== "RUNNING") {
+    return {
+      ok: false,
+      message: `Le quiz « ${quiz.title} » est en statut ${quiz.status}. Il doit être PUBLISHED pour servir de démo publique.`,
+    };
+  }
+
+  await setSetting(SETTING_KEYS.demoQuizCode, code, user.id);
+  return { ok: true, message: `Quiz démo défini : « ${quiz.title} ».` };
+}

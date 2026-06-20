@@ -12,6 +12,8 @@ export const SETTING_KEYS = {
   videoIntro: "home.video.intro",
   videoCreation: "home.video.creation",
   videoJoueur: "home.video.joueur",
+  // V47.1 : code du quiz utilisé comme démo publique sur /demo
+  demoQuizCode: "demo.quiz.code",
 } as const;
 
 export type SettingKey = (typeof SETTING_KEYS)[keyof typeof SETTING_KEYS];

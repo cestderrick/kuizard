@@ -10,6 +10,15 @@ import { MyAnswersPanel } from "@/components/play/my-answers-panel";
 import { UpgradeCTA } from "@/components/marketing/upgrade-cta";
 import { getActivePlans } from "@/lib/plans/config";
 
+// V47.2 — Format chrono "1m23s" pour afficher le temps mis sur chaque entrée
+function formatDuration(ms: number): string {
+  const totalSec = Math.max(0, Math.round(ms / 1000));
+  const m = Math.floor(totalSec / 60);
+  const s = totalSec % 60;
+  if (m === 0) return `${s}s`;
+  return `${m}m${String(s).padStart(2, "0")}s`;
+}
+
 export async function generateMetadata({
   params,
 }: {
@@ -361,7 +370,7 @@ export default async function ClassementPage({
                   </span>
                 </p>
                 <p className="text-xs text-[var(--color-lavender-2)] opacity-80 mt-1">
-                  Rang #{myEntry.rank}
+                  Rang #{myEntry.rank} · ⏱ {formatDuration(myEntry.durationMs)}
                 </p>
               </div>
             </div>
@@ -455,6 +464,9 @@ export default async function ClassementPage({
                             (toi)
                           </span>
                         )}
+                        <span className="ml-2 text-[10px] opacity-60">
+                          ⏱ {formatDuration(entry.durationMs)}
+                        </span>
                       </span>
                       {prize && (
                         <span className="text-xs text-[var(--color-gold-light)] flex items-center gap-1">
@@ -528,7 +540,7 @@ function PodiumStep({
   isMe,
   prize,
 }: {
-  entry: { rank: number; nickname: string; score: number };
+  entry: { rank: number; nickname: string; score: number; durationMs: number };
   isMe: boolean;
   prize: Prize | null;
 }) {
@@ -616,6 +628,11 @@ function PodiumStep({
         }}
       >
         {entry.score} pt{entry.score > 1 ? "s" : ""}
+        {entry.durationMs > 0 && (
+          <span className="block text-[10px] opacity-80">
+            ⏱ {formatDuration(entry.durationMs)}
+          </span>
+        )}
       </div>
       {prize && (
         <div
