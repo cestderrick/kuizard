@@ -282,6 +282,30 @@
   color: oklch(0.74 0.03 295) !important;
 }
 
+/* ====== V47.23 : exception navbar (data-theme="light") ======
+   Le PublicNavbar a un attribut data-theme="light" pour rester en mode clair
+   meme quand le user a active le dark mode. On force ici tout ce qui est
+   dans ce header a garder un fond blanc + texte sombre, peu importe les
+   overrides .dark .bg-white !important plus haut. */
+.dark header[data-theme="light"] {
+  background-color: #ffffff !important;
+  color: #0a0a0a !important;
+  color-scheme: light !important;
+}
+.dark header[data-theme="light"] .bg-white,
+.dark header[data-theme="light"].bg-white {
+  background-color: #ffffff !important;
+}
+.dark header[data-theme="light"] a,
+.dark header[data-theme="light"] button,
+.dark header[data-theme="light"] span,
+.dark header[data-theme="light"] p {
+  color: inherit;
+}
+.dark header[data-theme="light"] .text-muted-foreground {
+  color: #71717a !important;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

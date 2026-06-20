@@ -13,8 +13,11 @@ import { getActivePlans } from "@/lib/plans/config";
 import { getActiveWeeklyFeatured } from "@/lib/weekly/featured";
 
 // V47.2 — Format chrono "1m23s" pour afficher le temps mis sur chaque entrée
+// V47.23 — Cap à 99m59s : au-dela on affiche "–" (chrono aberrant : participation
+// reprise apres plusieurs heures/jours = donnee non significative)
 function formatDuration(ms: number): string {
   const totalSec = Math.max(0, Math.round(ms / 1000));
+  if (totalSec > 99 * 60 + 59) return "–";
   const m = Math.floor(totalSec / 60);
   const s = totalSec % 60;
   if (m === 0) return `${s}s`;
@@ -407,6 +410,13 @@ export default async function ClassementPage({
               code={data.code}
               participationId={myParticipationId}
             />
+            {/* V47.23 : bouton "Rejouer" visible directement dans le bloc resultats
+                (en plus du footer) pour qu'on n'ait pas a scroller. */}
+            {!isWeeklyFeatured && (
+              <div className="mt-4 flex justify-center">
+                <ReplayQuizButton code={data.code} />
+              </div>
+            )}
           </section>
         )}
 
@@ -541,9 +551,10 @@ export default async function ClassementPage({
 
         {/* Footer */}
         <footer className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-5 pt-3">
-          {/* V47.21 : Bouton "Rejouer" pour les quiz NON-SCHEDULED uniquement
-              (le quiz de la semaine reste à 1 essai par créneau) */}
-          {myEntry && myParticipationId && quizMeta?.mode !== "SCHEDULED" && (
+          {/* V47.23 : Bouton "Rejouer" pour TOUS les quiz sauf le weekly featured
+              (un seul essai pour le quiz de la semaine, mais on peut recommencer
+              les autres SCHEDULED de la quizztheque) */}
+          {myEntry && myParticipationId && !isWeeklyFeatured && (
             <ReplayQuizButton code={data.code} />
           )}
           <a

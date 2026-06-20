@@ -24,11 +24,13 @@ export async function replayQuizAction(formData: FormData): Promise<void> {
   });
   if (!quiz) throw new Error("Quiz introuvable.");
 
-  // V47.21 : interdit pour SCHEDULED (= quiz de la semaine ou tout autre
-  // quiz avec créneau horaire : 1 essai par créneau, pas de retry)
-  if (quiz.mode === "SCHEDULED") {
+  // V47.23 : on autorise rejouer pour TOUS les quiz, y compris SCHEDULED,
+  // SAUF le quiz hebdo featured (un seul essai par créneau pour celui-ci).
+  const { getActiveWeeklyFeatured } = await import("@/lib/weekly/featured");
+  const weekly = await getActiveWeeklyFeatured();
+  if (weekly?.quizCode === code) {
     throw new Error(
-      "Ce quiz n'est jouable qu'une seule fois par créneau. Reviens après la prochaine ouverture !"
+      "Le quiz de la semaine n'est jouable qu'une seule fois. Reviens la semaine prochaine !"
     );
   }
 
