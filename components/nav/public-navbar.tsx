@@ -26,7 +26,16 @@ export async function PublicNavbar() {
   // ============ Version NON CONNECTÉ ============
   if (!session?.user?.id) {
     return (
-      <header className="sticky top-0 z-40 border-b border-violet-100 bg-white/85 backdrop-blur supports-[backdrop-filter]:bg-white/70">
+      // V47.19 : bg-white OPAQUE (bg-white/85 translucide laissait passer
+      // le hero sombre derrière → contraste pourri). Shadow léger pour
+      // structurer + bordure plus visible.
+      <header
+        className="sticky top-0 z-40 border-b shadow-sm"
+        style={{
+          backgroundColor: "#ffffff",
+          borderColor: "rgba(167,139,250,0.3)",
+        }}
+      >
         <div className="mx-auto max-w-7xl flex items-center justify-between gap-3 px-4 py-2.5">
           <div className="flex items-center gap-4 min-w-0">
             <Link
@@ -43,6 +52,12 @@ export async function PublicNavbar() {
 
             <nav className="hidden md:flex items-center gap-1">
               <DashboardNavLink href="/" label="🏠 Accueil" exact />
+              {/* V47.19 : raccourci vers le quiz démo public */}
+              <DashboardNavLink href="/demo" label="🎮 Démo" />
+              <DashboardNavLink
+                href="/dashboard/quizzes/library"
+                label="📚 Quizzthèque"
+              />
               <DashboardNavLink href="/tarifs" label="💳 Tarifs" />
               <DashboardNavLink href="/escape" label="🗝️ Escape" />
             </nav>
@@ -51,14 +66,17 @@ export async function PublicNavbar() {
           <div className="flex items-center gap-2">
             <Link
               href="/login"
-              className="inline-flex items-center px-3 py-1.5 rounded-md text-sm font-semibold hover:bg-violet-50 transition"
-              style={{ color: "var(--color-violet-deep)" }}
+              className="inline-flex items-center px-3 py-1.5 rounded-md text-sm font-bold border transition hover:bg-violet-50"
+              style={{
+                color: "var(--color-violet-deep)",
+                borderColor: "rgba(85,35,187,0.3)",
+              }}
             >
               Se connecter
             </Link>
             <Link
               href="/signup"
-              className="inline-flex items-center px-4 py-1.5 rounded-md text-sm font-bold text-white transition hover:opacity-90"
+              className="inline-flex items-center px-4 py-1.5 rounded-md text-sm font-bold text-white transition hover:opacity-90 shadow-sm"
               style={{ backgroundColor: "var(--color-violet-primary)" }}
             >
               ✨ Créer un compte
