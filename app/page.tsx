@@ -169,6 +169,7 @@ export default async function Home() {
                   home: navT.home,
                   admin: navT.admin,
                   logout: navT.logout,
+                  stats: navT.stats,
                 }}
               />
             </div>

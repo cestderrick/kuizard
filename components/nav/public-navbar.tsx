@@ -78,6 +78,7 @@ export async function PublicNavbar() {
               home: navT.home,
               admin: navT.admin,
               logout: navT.logout,
+              stats: navT.stats,
             }}
           />
         </div>
