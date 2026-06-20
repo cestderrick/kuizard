@@ -162,3 +162,63 @@ export async function deleteTemplateAction(
   revalidatePath("/admin/templates");
   return { ok: true, message: "Template supprimé." };
 }
+
+// =============================================
+// V47.3 — Cloner un template hardcoded dans la BDD pour le rendre éditable
+// =============================================
+// Les 6 templates initiaux (mariage, EVJF, anniv, blind-test, naissance,
+// team-building) vivent dans lib/quiz/templates.ts. Pour qu'un admin puisse
+// les modifier sans toucher au code, on les copie dans la table QuizTemplate.
+
+export type CloneState = AdminTemplateState;
+
+export async function cloneHardcodedTemplateAction(
+  _prev: CloneState,
+  formData: FormData
+): Promise<CloneState> {
+  await requireAdmin();
+
+  const slug = (formData.get("slug") as string) ?? "";
+  if (!slug) return { ok: false, message: "Slug manquant." };
+
+  const { QUIZ_TEMPLATES } = await import("@/lib/quiz/templates");
+  const hard = QUIZ_TEMPLATES.find((t) => t.slug === slug);
+  if (!hard) return { ok: false, message: "Template hardcoded introuvable." };
+
+  // Si déjà cloné, on ne re-crée pas
+  const existing = await prisma.quizTemplate.findUnique({
+    where: { slug },
+    select: { id: true },
+  });
+  if (existing) {
+    return {
+      ok: true,
+      message: "Déjà cloné en BDD — édite la version BDD ci-dessous.",
+    };
+  }
+
+  try {
+    await prisma.quizTemplate.create({
+      data: {
+        slug: hard.slug,
+        title: hard.title,
+        description: hard.description,
+        category: hard.slug, // catégorie = slug pour les hardcoded
+        language: "fr",
+        theme: null,
+        tags: [],
+        coverImageUrl: null,
+        displayOrder: 0,
+        isActive: true,
+        questions: hard.questions as unknown as never,
+      },
+    });
+  } catch (err) {
+    console.error("[admin-templates] clone err:", err);
+    return { ok: false, message: "Erreur lors du clonage." };
+  }
+
+  revalidatePath("/admin/templates");
+  revalidatePath("/dashboard/quizzes/templates");
+  return { ok: true, message: `Template « ${hard.title} » cloné en BDD — tu peux maintenant le modifier.` };
+}

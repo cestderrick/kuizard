@@ -13,12 +13,12 @@ import { WeeklyFeaturedPill } from "@/components/weekly/weekly-featured-pill";
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://kuizard.com";
 
 export const metadata: Metadata = {
-  title: "Quizthèque — Des quizz prêts à l\'emploi",
+  title: "Quizzthèque — Des quizz prêts à l\'emploi",
   description:
     "Explore la quizthèque Kuizard : des quizz tout prêts (Star Wars, Friends, Harry Potter, cuisine, mode, et plus) à dupliquer dans ton compte.",
   alternates: { canonical: `${BASE_URL}/quiztheque` },
   openGraph: {
-    title: "📚 Quizthèque Kuizard — Quizz prêts à l\'emploi",
+    title: "📚 Quizzthèque Kuizard — Quizz prêts à l\'emploi",
     description:
       "Catalogue de quizz tout prêts à dupliquer en 1 clic pour ta soirée, mariage, EVJF, anniversaire ou bar.",
     url: `${BASE_URL}/quiztheque`,
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "📚 Quizthèque Kuizard",
+    title: "📚 Quizzthèque Kuizard",
     description: "Des quizz tout prêts pour ta soirée.",
     images: ["/og-image"],
   },
@@ -35,7 +35,7 @@ export const metadata: Metadata = {
 
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 
-export default async function PublicQuizthequePage({
+export default async function PublicQuizzthèquePage({
   searchParams,
 }: {
   searchParams: Promise<{ tag?: string; access?: string }>;
@@ -110,7 +110,7 @@ export default async function PublicQuizthequePage({
           </span>
         </Link>
         <p className="text-xs uppercase tracking-[3px] text-[var(--color-violet-primary)] font-semibold mb-2">
-          📚 Quizthèque
+          📚 Quizzthèque
         </p>
         <h1
           className="font-display text-3xl md:text-5xl font-bold tracking-wide mb-3"

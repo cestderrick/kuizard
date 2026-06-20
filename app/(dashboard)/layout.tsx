@@ -80,10 +80,11 @@ export default async function DashboardLayout({
               <DashboardNavLink
                 href="/dashboard/quizzes"
                 label={navT.quizzes}
+                notMatching={["/dashboard/quizzes/library", "/dashboard/mes-participations"]}
               />
               <DashboardNavLink
                 href="/dashboard/quizzes/library"
-                label="📚 Quizthèque"
+                label="📚 Quizzthèque"
               />
               <DashboardNavLink href="/escape" label="🗝️ Escape" />
               <DashboardNavLink href="/tarifs" label="💳 Tarifs" />

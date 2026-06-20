@@ -11,16 +11,26 @@ export function DashboardNavLink({
   href,
   label,
   exact,
+  notMatching,
 }: {
   href: string;
   label: string;
   /** Si true, match exact uniquement (utile pour /dashboard qui sinon match tout) */
   exact?: boolean;
+  /** V47.3 : sous-chemins à NE PAS considérer comme actifs. Par exemple
+   * `/dashboard/quizzes` ne doit pas être actif quand on est sur
+   * `/dashboard/quizzes/library` (qui a son propre lien). */
+  notMatching?: string[];
 }) {
   const pathname = usePathname() ?? "";
-  const isActive = exact
+  const baseActive = exact
     ? pathname === href
     : pathname === href || pathname.startsWith(href + "/");
+  const excluded =
+    notMatching?.some(
+      (p) => pathname === p || pathname.startsWith(p + "/")
+    ) ?? false;
+  const isActive = baseActive && !excluded;
 
   return (
     <Link

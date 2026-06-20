@@ -127,7 +127,7 @@ export default async function QuizzesPage({
             <Link href="/dashboard/mes-participations">🕘 Historique</Link>
           </Button>
           <Button asChild variant="outline">
-            <Link href="/dashboard/quizzes/library">📚 Quizthèque</Link>
+            <Link href="/dashboard/quizzes/library">📚 Quizzthèque</Link>
           </Button>
           <Button asChild variant="outline">
             <Link href="/dashboard/quizzes/templates">

@@ -7,7 +7,7 @@
 // - ou rien (free)
 //
 // V37 : corrige le bug où les GrantedPlan (cadeaux admin) n'étaient pas
-// pris en compte ici. Du coup les gates Quizthèque/lock/CTAs traitaient les
+// pris en compte ici. Du coup les gates Quizzthèque/lock/CTAs traitaient les
 // users gratifiés comme "free" même s'ils avaient l'équivalent d'un abo.
 
 import { prisma } from "@/lib/db";

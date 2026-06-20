@@ -96,7 +96,7 @@ export default async function MesParticipationsPage() {
           Mes quizz répondus
         </h1>
         <p className="mt-2 text-muted-foreground">
-          Retrouve tous les quizz auxquels tu as joué (Quizthèque, quizz de
+          Retrouve tous les quizz auxquels tu as joué (Quizzthèque, quizz de
           la semaine, liens d\'invitation…) avec ton score et ton classement.
         </p>
       </header>
@@ -108,7 +108,7 @@ export default async function MesParticipationsPage() {
             Tu n\'as pas encore joué à un quizz
           </p>
           <p className="text-sm text-muted-foreground mb-4">
-            Explore la Quizthèque pour découvrir des quizz prêts à l\'emploi.
+            Explore la Quizzthèque pour découvrir des quizz prêts à l\'emploi.
           </p>
           <Link
             href="/dashboard/quizzes/library"
@@ -118,7 +118,7 @@ export default async function MesParticipationsPage() {
               color: "white",
             }}
           >
-            📚 Aller à la Quizthèque
+            📚 Aller à la Quizzthèque
           </Link>
         </div>
       ) : (
@@ -234,7 +234,7 @@ function ParticipationRow({ data }: { data: EnrichedParticipation }) {
         <div className="flex items-center gap-2 mb-1 flex-wrap">
           {p.quiz.isLibrary && (
             <span className="text-[10px] uppercase tracking-[1.5px] px-1.5 py-0.5 rounded bg-violet-100 text-[var(--color-violet-primary)] font-semibold">
-              📚 Quizthèque
+              📚 Quizzthèque
             </span>
           )}
           <span className="text-xs text-muted-foreground">{dateStr}</span>

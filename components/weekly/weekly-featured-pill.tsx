@@ -4,7 +4,7 @@ import type { WeeklyFeaturedDTO } from "@/lib/weekly/featured";
 /**
  * Mini-bandeau / pill compact pour mettre en avant le quizz de la semaine
  * dans les endroits où la WeeklyFeaturedCard est trop grosse (navbar,
- * dessus de Quizthèque, etc.). Cliquable, mène à la page joueur du quizz.
+ * dessus de Quizzthèque, etc.). Cliquable, mène à la page joueur du quizz.
  */
 export function WeeklyFeaturedPill({
   data,
@@ -16,7 +16,7 @@ export function WeeklyFeaturedPill({
   const accentColor = data.quizColor ?? "var(--color-violet-primary)";
 
   if (variant === "banner") {
-    // Variante "banner" — large, pour le haut de la Quizthèque
+    // Variante "banner" — large, pour le haut de la Quizzthèque
     return (
       <Link
         href={`/q/${data.quizCode}`}

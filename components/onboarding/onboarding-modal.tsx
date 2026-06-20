@@ -35,8 +35,8 @@ const STEPS = [
   },
   {
     emoji: "📚",
-    title: "Astuce — La Quizthèque",
-    desc: "Pas envie de tout créer toi-même ? Pioche dans notre Quizthèque : 70+ quizz prêts à l'emploi (Star Wars, Friends, Tarantino…). Duplique en 1 clic.",
+    title: "Astuce — La Quizzthèque",
+    desc: "Pas envie de tout créer toi-même ? Pioche dans notre Quizzthèque : 70+ quizz prêts à l'emploi (Star Wars, Friends, Tarantino…). Duplique en 1 clic.",
     cta: "Suivant →",
     link: "/dashboard/quizzes/library" as string | null,
   },

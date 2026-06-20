@@ -12,7 +12,7 @@ import { WeeklyFeaturedPill } from "@/components/weekly/weekly-featured-pill";
 import { InstantSearchInput } from "@/components/search/instant-search-input";
 
 export const metadata: Metadata = {
-  title: "Quizthèque",
+  title: "Quizzthèque",
 };
 
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
@@ -150,7 +150,7 @@ export default async function LibraryBrowserPage({
         <div className="flex flex-wrap items-baseline justify-between gap-3 mt-4 mb-2">
           <div>
             <p className="text-sm uppercase tracking-[3px] text-[var(--color-violet-primary)] font-semibold mb-1">
-              📚 Quizthèque
+              📚 Quizzthèque
             </p>
             <h1
               className="font-display text-3xl md:text-4xl font-bold tracking-wide"
