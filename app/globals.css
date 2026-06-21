@@ -165,18 +165,11 @@
 }
 
 .dark {
-  /* V47.24 : VRAI dark mode pages marketing/dashboard.
-     On inverse les couleurs marque pales utilisees comme FOND
-     (lavender, lavender-2 deviennent sombres) et les couleurs sombres
-     utilisees comme TEXTE (violet-deep devient clair). Les sections
-     always-dark (player, TV, 404) utilisent --color-night, non touche. */
-  --color-lavender: #0f0a2e;
-  --color-lavender-2: #1f1b3a;
-  --color-violet-deep: #e9d5ff;
-  --color-violet-primary: #c4b5fd;
-  --color-violet-darker: #a78bfa;
-  --color-gold-pale: #4a2f0a;
-
+  /* V47.26 : REVERT — on NE TOUCHE PLUS aux variables marque (--color-lavender,
+     --color-violet-deep) car la page classement et autres pages always-dark les
+     utilisent comme texte clair / fond sombre, et l'inversion les rendait
+     invisibles. Le dark mode se fait UNIQUEMENT via les overrides .dark .bg-white
+     plus bas. */
   --background: oklch(0.165 0.025 280);
   --foreground: oklch(0.97 0.015 295);
   --card: oklch(0.21 0.03 280);
@@ -319,21 +312,11 @@
 }
 
 /* ============================================
-   V47.24 — VRAI dark mode pages marketing/dashboard
+   V47.26 — Dark mode overrides CHIRURGICAUX uniquement
    ============================================
-   On force les fonds blancs des cartes a devenir sombres, les bordures
-   pales a devenir sombres, et les textes violet-deep a etre claires.
-   But : tout reste lisible en dark mode. */
-
-/* Body / sections principales */
-.dark body {
-  background-color: #0f0a2e !important;
-  color: #f5f0ff !important;
-}
-.dark main {
-  background-color: transparent !important;
-  color: #f5f0ff;
-}
+   On ne touche QUE bg-white, inputs, borders blancs/pales — pas les
+   variables marque, pas le main, pas le body. Ainsi les pages always-dark
+   (classement, player, TV) restent inchangees. */
 
 /* Toutes les cards bg-white -> sombres */
 .dark .bg-white,
@@ -377,38 +360,21 @@
   border-color: rgba(167, 139, 250, 0.2) !important;
 }
 
-/* Texte sombre -> clair (sauf les boutons or qui ont fond gold) */
-.dark .text-zinc-600,
-.dark .text-zinc-700,
-.dark .text-zinc-800,
-.dark .text-zinc-900,
-.dark .text-slate-600,
-.dark .text-slate-700,
-.dark .text-slate-800,
-.dark .text-slate-900,
-.dark .text-foreground,
-.dark .text-gray-700,
-.dark .text-gray-800,
-.dark .text-gray-900 {
+/* Texte sombre -> clair UNIQUEMENT pour les composants dashboard (qui ont
+   un fond .bg-white deja override en sombre) — on cible via has() pour pas
+   casser la page classement / player TV. */
+.dark .bg-white .text-zinc-600,
+.dark .bg-white .text-zinc-700,
+.dark .bg-white .text-zinc-800,
+.dark .bg-white .text-zinc-900,
+.dark .bg-white .text-foreground,
+.dark .bg-zinc-50 .text-zinc-600,
+.dark .bg-zinc-50 .text-zinc-700 {
   color: #f5f0ff !important;
 }
-
-/* Texte secondaire */
-.dark .text-zinc-500,
-.dark .text-slate-500,
-.dark .text-gray-500,
-.dark .text-gray-600 {
+.dark .bg-white .text-zinc-500,
+.dark .bg-white .text-gray-500 {
   color: rgba(229, 220, 245, 0.7) !important;
-}
-
-/* Titres font-display avec gradient magic-show -> garder en clair en dark */
-.dark .font-display,
-.dark h1.font-display,
-.dark h2.font-display,
-.dark h3.font-display {
-  background: none !important;
-  -webkit-text-fill-color: #f5f0ff !important;
-  color: #f5f0ff !important;
 }
 
 /* Liens visites bg-violet hover */

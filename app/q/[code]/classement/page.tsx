@@ -87,8 +87,8 @@ export default async function ClassementPage({
     const topScore = completedCount > 0 ? data.entries[0].score : 0;
 
     return (
-      <main className="flex flex-col items-center px-4 pt-4 pb-12 bg-[var(--color-night)] text-[var(--color-lavender)]">
-        <div className="max-w-xl text-center w-full">
+      <main className="block px-4 pt-4 pb-12 bg-[var(--color-night)] text-[var(--color-lavender)] min-h-screen">
+        <div className="max-w-xl text-center w-full mx-auto">
           <div className="text-6xl mb-4" aria-hidden>
             🤫
           </div>
@@ -306,7 +306,7 @@ export default async function ClassementPage({
     : null;
 
   return (
-    <main className="flex flex-col items-center px-3 sm:px-4 pt-3 pb-8 sm:pt-4 sm:pb-12 bg-[var(--color-night)] text-[var(--color-lavender)] relative overflow-hidden">
+    <main className="block px-3 sm:px-4 pt-3 pb-8 sm:pt-4 sm:pb-12 bg-[var(--color-night)] text-[var(--color-lavender)] relative overflow-hidden min-h-screen">
       {/* Halos magiques */}
       <div
         aria-hidden
@@ -325,7 +325,7 @@ export default async function ClassementPage({
         }}
       />
 
-      <div className="relative z-10 w-full max-w-3xl flex flex-col gap-2 sm:gap-3">
+      <div className="relative z-10 w-full max-w-3xl mx-auto flex flex-col gap-2 sm:gap-3">
         {/* Header — compact sur mobile pour voir les résultats sans scroll */}
         <header className="text-center">
           <p className="text-[10px] sm:text-xs uppercase tracking-[3px] text-[var(--color-gold)] font-semibold mb-0.5">
