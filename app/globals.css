@@ -312,6 +312,23 @@
 }
 
 /* ============================================
+   V47.27 — Body bg sombre en dark mode (specifique pour la home)
+   ============================================ */
+.dark body {
+  background-color: #0f0a2e !important;
+  color: #f5f0ff !important;
+}
+.dark .text-\[var\(--color-violet-deep\)\] {
+  color: #e9d5ff !important;
+}
+.dark .text-\[var\(--color-violet-primary\)\] {
+  color: #c4b5fd !important;
+}
+.dark .text-\[var\(--color-foreground\)\] {
+  color: #f5f0ff !important;
+}
+
+/* ============================================
    V47.26 — Dark mode overrides CHIRURGICAUX uniquement
    ============================================
    On ne touche QUE bg-white, inputs, borders blancs/pales — pas les
