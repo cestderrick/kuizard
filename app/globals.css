@@ -328,6 +328,18 @@
   color: #f5f0ff !important;
 }
 
+/* V47.28 : force body a aligner ses enfants en haut + virer tout padding
+   parasite qui pourrait pousser le main vers le bas (debug page classement) */
+body {
+  justify-content: flex-start !important;
+  align-content: flex-start !important;
+  padding-top: 0 !important;
+  margin-top: 0 !important;
+}
+main {
+  margin-top: 0 !important;
+}
+
 /* ============================================
    V47.26 — Dark mode overrides CHIRURGICAUX uniquement
    ============================================

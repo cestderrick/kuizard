@@ -96,21 +96,18 @@ export function PlayerCodeCTA() {
                 // Pas de font-bold global ni letter-spacing élargi quand vide :
                 // sinon le placeholder ressemble à un vrai code tapé.
                 style={{
-                  backgroundColor: "#ffffff",
-                  color: "#2e1065",
-                  WebkitTextFillColor: "#2e1065",
                   caretColor: "#5b21b6",
                   letterSpacing: code ? "0.35em" : "0.05em",
                   textIndent: code ? "0.35em" : "0",
                   fontWeight: code ? 700 : 400,
                 }}
-                className="kz-code-input rounded-xl px-4 py-3 text-lg font-mono text-center border-2 border-transparent focus:outline-none focus:border-[var(--color-gold)] w-full sm:w-[200px]"
+                className="kz-code-input rounded-xl px-4 py-3 text-lg font-mono text-center border-2 border-transparent focus:outline-none focus:border-[var(--color-gold)] w-full sm:w-[200px] bg-white dark:bg-[#0f0a2e] text-[#2e1065] dark:text-white"
                 aria-label="Code du quizz (6 caractères)"
               />
               <style
                 dangerouslySetInnerHTML={{
                   __html:
-                    ".kz-code-input::placeholder{color:#c4b5fd;font-weight:400;font-style:italic;letter-spacing:.04em;opacity:.85}",
+                    ".kz-code-input{-webkit-text-fill-color:currentColor}.kz-code-input::placeholder{color:rgba(168,139,250,0.7);font-weight:400;font-style:italic;letter-spacing:.04em;opacity:.7}.dark .kz-code-input::placeholder{color:rgba(229,220,245,0.55)}",
                 }}
               />
               <button
