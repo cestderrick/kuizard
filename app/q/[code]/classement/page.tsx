@@ -87,7 +87,19 @@ export default async function ClassementPage({
     const topScore = completedCount > 0 ? data.entries[0].score : 0;
 
     return (
-      <main className="fixed inset-0 z-[100] overflow-y-auto px-4 pt-6 pb-12 bg-[var(--color-night)] text-[var(--color-lavender)]">
+      <main
+        className="px-4 pt-6 pb-12 text-[var(--color-lavender)]"
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          zIndex: 1000,
+          overflowY: "auto",
+          backgroundColor: "var(--color-night)",
+        }}
+      >
         <div className="max-w-xl text-center w-full mx-auto">
           <div className="text-6xl mb-4" aria-hidden>
             🤫
@@ -306,7 +318,19 @@ export default async function ClassementPage({
     : null;
 
   return (
-    <main className="fixed inset-0 z-[100] overflow-y-auto px-3 sm:px-4 pt-3 pb-12 bg-[var(--color-night)] text-[var(--color-lavender)]">
+    <main
+      className="px-3 sm:px-4 pt-3 pb-12 text-[var(--color-lavender)]"
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 1000,
+        overflowY: "auto",
+        backgroundColor: "var(--color-night)",
+      }}
+    >
       {/* Halos magiques */}
       <div
         aria-hidden
