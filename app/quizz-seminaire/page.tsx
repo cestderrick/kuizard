@@ -115,9 +115,9 @@ export default function Page() {
           {
                     question: "Les données sont-elles RGPD compliant ?",
                     answer: "Oui — données hébergées en France, pas de pub, pas de tracker tiers. Conformité RGPD garantie, c'est un must pour une entreprise."
-          }
-],
-      }
+          },
+        ],
+      }}
     />
   );
 }

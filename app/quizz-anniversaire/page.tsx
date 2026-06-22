@@ -115,9 +115,9 @@ export default function Page() {
           {
                     question: "Peut-on rejouer le quizz l'année suivante ?",
                     answer: "Oui, tu peux dupliquer ton quizz et ajouter de nouvelles questions chaque année. Tu construis un quizz familial qui devient une tradition."
-          }
-],
-      }
+          },
+        ],
+      }}
     />
   );
 }

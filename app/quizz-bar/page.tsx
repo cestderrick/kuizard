@@ -117,9 +117,9 @@ export default function Page() {
           {
                     question: "Puis-je voir les stats de fréquentation ?",
                     answer: "Oui, le dashboard te montre nombre de participants par soirée, scores moyens, fidélité — utile pour ajuster ta programmation."
-          }
-],
-      }
+          },
+        ],
+      }}
     />
   );
 }

@@ -73,6 +73,23 @@ export default async function PlayPage({
 
   if (!quiz) notFound();
 
+  // V48.1 : si user a deja une participation COMPLETEE, redirect classement
+  {
+    const { cookies: getCookies } = await import("next/headers");
+    const { redirect: doRedirect } = await import("next/navigation");
+    const cs = await getCookies();
+    const pid = cs.get(`kz_play_${quiz.id}`)?.value;
+    if (pid) {
+      const done = await prisma.participation.findUnique({
+        where: { id: pid },
+        select: { completedAt: true, quizId: true },
+      });
+      if (done?.completedAt && done.quizId === quiz.id) {
+        doRedirect(`/q/${code}/classement`);
+      }
+    }
+  }
+
   // Pas de question encore → affichage "en préparation" pour éviter de laisser
   // un joueur taper un pseudo dans le vide.
   if (quiz.questions.length === 0) {

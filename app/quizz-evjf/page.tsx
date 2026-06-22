@@ -115,9 +115,9 @@ export default function Page() {
           {
                     question: "Puis-je le réutiliser pour le mariage ?",
                     answer: "Oui ! Avec un compte tu peux dupliquer ton quizz EVJF et l'adapter pour le mariage. Économique et cohérent."
-          }
-],
-      }
+          },
+        ],
+      }}
     />
   );
 }
