@@ -74,6 +74,22 @@ model User {
   subscriptions    Subscription[]
   termsAcceptances TermsAcceptance[]
   grantedPlans     GrantedPlan[]
+  passwordResetTokens PasswordResetToken[]
+}
+
+// V47.31 : token de reinitialisation de mot de passe (lien email).
+// On stocke un HASH (sha256) du token, pas le token clair, pour limiter
+// l'impact d'une fuite de la BDD. Expiration courte (1h).
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  userId    String
+  tokenHash String   @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId])
+  @@index([expiresAt])
 }
 
 // ====================================================

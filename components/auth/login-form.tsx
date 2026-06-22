@@ -97,6 +97,16 @@ export function LoginForm({ texts }: { texts: Texts }) {
           >
             {isPending ? texts.connecting : texts.submit}
           </Button>
+
+          {/* V47.31 : lien mot de passe oublie */}
+          <p className="text-center text-sm -mt-1">
+            <Link
+              href="/forgot-password"
+              className="text-muted-foreground hover:text-[var(--color-violet-primary)] hover:underline underline-offset-4"
+            >
+              🔑 Mot de passe oublié ?
+            </Link>
+          </p>
         </form>
 
         <p className="mt-6 text-center text-sm text-muted-foreground">
