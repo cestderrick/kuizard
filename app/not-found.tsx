@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 
 export default function NotFoundPage() {
   return (
-    <main className="flex flex-col items-center px-4 pt-12 pb-12 relative overflow-hidden bg-[var(--color-night)] text-[var(--color-lavender)]">
+    <main className="fixed inset-0 z-[100] flex flex-col items-center pt-12 pb-12 px-4 overflow-y-auto bg-[var(--color-night)] text-[var(--color-lavender)]">
       <TopLocaleBar variant="night" />
 
       {/* Halos décoratifs cohérents avec /login & /signup */}
