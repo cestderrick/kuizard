@@ -328,18 +328,12 @@
   color: #f5f0ff !important;
 }
 
-/* V47.28-29 : force le main a remplir tout l'espace vertical disponible
-   dans le body flex-col, et le body a aligner ses enfants en haut. Ainsi
-   meme si le contenu est compact, il n'y a JAMAIS de vide visible. */
+/* V47.30 : on ne touche plus au layout du body (le user a des pages avec
+   justify-center sur le main qui fonctionnent normalement). Plus de
+   flex-grow forcé. Juste s'assurer que body et main n'ont pas de margin
+   parasite. */
 body {
-  justify-content: flex-start !important;
-  align-content: flex-start !important;
-  padding-top: 0 !important;
-  margin-top: 0 !important;
-}
-body > main {
-  flex-grow: 1 !important;
-  margin-top: 0 !important;
+  margin: 0 !important;
 }
 
 /* ============================================
