@@ -50,11 +50,7 @@ export async function requestPasswordResetAction(
   // Rate limit : 5 demandes / IP / heure
   const h = await headers();
   const ip = getClientIp(h);
-  const rl = await rateLimitWithCleanup({
-    key: `pwd-reset:${ip}`,
-    max: 5,
-    windowMs: 60 * 60 * 1000,
-  });
+  const rl = rateLimitWithCleanup(`pwd-reset:${ip}`, 5, 60 * 60 * 1000);
   if (!rl.ok) {
     return {
       ok: false,
