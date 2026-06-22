@@ -29,15 +29,7 @@ export async function PublicNavbar() {
       // V47.19 : bg-white OPAQUE (bg-white/85 translucide laissait passer
       // le hero sombre derrière → contraste pourri). Shadow léger pour
       // structurer + bordure plus visible.
-      <header
-        data-theme="light"
-        className="sticky top-0 z-40 border-b shadow-sm"
-        style={{
-          backgroundColor: "#ffffff",
-          borderColor: "rgba(167,139,250,0.3)",
-          colorScheme: "light",
-        }}
-      >
+      <header className="sticky top-0 z-40 border-b shadow-sm bg-white dark:bg-[#1f1b3a] border-violet-200 dark:border-[rgba(167,139,250,0.2)]">
         <div className="mx-auto max-w-7xl flex items-center justify-between gap-3 px-4 py-2.5">
           <div className="flex items-center gap-4 min-w-0">
             <Link
@@ -98,11 +90,7 @@ export async function PublicNavbar() {
   const isAdmin = me?.role === "ADMIN";
 
   return (
-    <header
-      data-theme="light"
-      className="sticky top-0 z-40 border-b border-violet-100 bg-white shadow-sm"
-      style={{ colorScheme: "light" }}
-    >
+    <header className="sticky top-0 z-40 border-b border-violet-100 dark:border-[rgba(167,139,250,0.2)] bg-white dark:bg-[#1f1b3a] shadow-sm">
       <div className="mx-auto max-w-7xl flex items-center justify-between gap-3 px-4 py-2.5">
         <div className="flex items-center gap-4 min-w-0">
           <Link
