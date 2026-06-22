@@ -64,7 +64,76 @@ export default function Page() {
         internalLinks: [
           { label: "Voir tous les tarifs", href: "/tarifs" },
           { label: "Idée pour un EVJF ?", href: "/quizz-evjf" },
+          { label: "Quizz anniversaire", href: "/quizz-anniversaire" },
+          { label: "30 idées de questions mariage", href: "/blog/idees-questions-quizz-mariage" },
           { label: "Centre d'aide", href: "/aide" },
+        ],
+        // V48 — SEO : rich snippet "Comment créer" en résultat Google
+        howTo: {
+          name: "Comment créer un quizz mariage en 5 minutes",
+          description:
+            "Le guide pas à pas pour préparer ton quizz mariage et l'afficher en QR code le jour J.",
+          totalTime: "PT5M",
+          steps: [
+            {
+              name: "Crée ton compte gratuit Kuizard",
+              text: "Inscris-toi en 30 secondes avec ton email. Aucune CB requise.",
+            },
+            {
+              name: "Rédige tes questions sur les mariés",
+              text: "10 à 20 questions sur la rencontre, les anecdotes, les projets. Inspire-toi de notre liste de 30 idées.",
+            },
+            {
+              name: "Personnalise ton quizz",
+              text: "Choisis tes couleurs, ajoute des photos, configure le mode (live ou créneau).",
+            },
+            {
+              name: "Imprime ton QR code et ton affiche",
+              text: "Télécharge l'affiche A4 prête à imprimer et pose-la sur chaque table.",
+            },
+            {
+              name: "Lance la partie le jour J",
+              text: "Tes invités scannent, jouent depuis leur smartphone, et tu projettes le classement sur écran.",
+            },
+          ],
+        },
+        // V48 — SEO : rich snippet FAQ Google
+        faqs: [
+          {
+            question: "Combien de temps pour préparer un quizz mariage ?",
+            answer:
+              "Compte 30 minutes à 1h pour écrire 15 à 20 questions sur les mariés. La création du quizz sur Kuizard se fait en 5 minutes. Tu peux modifier les questions à tout moment jusqu'au jour J.",
+          },
+          {
+            question: "Mes invités doivent-ils télécharger une app ?",
+            answer:
+              "Non. Aucune app à installer. Tes invités scannent le QR code avec l'appareil photo de leur téléphone, ça ouvre le quizz dans leur navigateur. Compatible iOS et Android.",
+          },
+          {
+            question: "Combien de personnes peuvent jouer en même temps ?",
+            answer:
+              "Jusqu'à 100 joueurs simultanés sur l'offre gratuite, jusqu'à 500 sur les offres payantes, et illimité sur l'abonnement Bar/Entreprise. Largement suffisant pour un mariage classique.",
+          },
+          {
+            question: "Le quizz fonctionne-t-il sans wifi à la salle ?",
+            answer:
+              "Tes invités ont besoin de la 4G/5G sur leur téléphone ou du wifi de la salle. La grande majorité des salles de réception ont aujourd'hui une connexion correcte. Prévois un repli de questions papier au cas où.",
+          },
+          {
+            question: "Combien coûte un quizz mariage Kuizard ?",
+            answer:
+              "Gratuit pour tester (max 10 questions et 100 participants). Pour un mariage avec photos, lots et mode TV, l'offre à 3€ suffit pour un quizz unique. Voir tous les tarifs.",
+          },
+          {
+            question: "Peut-on personnaliser les couleurs et ajouter des photos ?",
+            answer:
+              "Oui. Tu peux choisir une couleur principale, ajouter une photo de couverture, et insérer des photos dans tes questions (façon « C'est qui le bébé ? »). La charte de ton mariage est respectée.",
+          },
+          {
+            question: "Puis-je voir le classement sur grand écran pendant la soirée ?",
+            answer:
+              "Oui — le mode TV affiche un classement plein écran avec QR code géant. Idéal à diffuser sur la TV ou le projecteur de la salle pendant le cocktail ou avant le dessert.",
+          },
         ],
       }}
     />

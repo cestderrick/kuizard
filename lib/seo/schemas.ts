@@ -160,6 +160,40 @@ export function breadcrumbSchema(
 }
 
 /**
+ * Schema HowTo — Google adore. Permet d'afficher des étapes numérotées
+ * en rich snippet sous le titre du site. Parfait pour pages "comment créer
+ * un quizz mariage" etc.
+ */
+export function howToSchema(h: {
+  name: string;
+  description: string;
+  steps: { name: string; text: string }[];
+  totalTime?: string; // ISO 8601 duration ex: "PT5M" = 5 min
+  estimatedCost?: { currency: string; value: number };
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    name: h.name,
+    description: h.description,
+    ...(h.totalTime && { totalTime: h.totalTime }),
+    ...(h.estimatedCost && {
+      estimatedCost: {
+        "@type": "MonetaryAmount",
+        currency: h.estimatedCost.currency,
+        value: h.estimatedCost.value,
+      },
+    }),
+    step: h.steps.map((s, i) => ({
+      "@type": "HowToStep",
+      position: i + 1,
+      name: s.name,
+      text: s.text,
+    })),
+  };
+}
+
+/**
  * Schema Article — pour les pages de blog.
  */
 export function articleSchema(a: {

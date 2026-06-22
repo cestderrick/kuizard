@@ -68,7 +68,56 @@ export default function Page() {
           { label: "Idée pour un mariage ?", href: "/quizz-mariage" },
           { label: "Idée pour un anniversaire ?", href: "/quizz-anniversaire" },
         ],
-      }}
+        howTo: {
+          name: "Comment créer un quizz EVJF inoubliable",
+          description: "Prépare un quizz personnalisé sur la mariée pour son enterrement de vie de jeune fille.",
+          totalTime: "PT10M",
+          steps: [
+                    {
+                              name: "Crée ton compte gratuit",
+                              text: "Inscription en 30 secondes, pas de CB demandée pour tester."
+                    },
+                    {
+                              name: "Récolte des anecdotes auprès des proches",
+                              text: "Demande à la famille et amis d'enfance des anecdotes croustillantes sur la mariée."
+                    },
+                    {
+                              name: "Rédige 15-20 questions thématiques",
+                              text: "Mêle questions sur le couple, l'enfance, les goûts, les surprises. Garde quelques pépites pour la fin."
+                    },
+                    {
+                              name: "Personnalise avec des photos",
+                              text: "Ajoute une photo de bébé pour une question façon « C'est qui ? » — effet garanti."
+                    },
+                    {
+                              name: "Lance le quizz en mode live",
+                              text: "Pendant le brunch ou au début de la soirée. Tu pilotes les questions une par une depuis ton téléphone."
+                    }
+          ]
+},
+        faqs: [
+          {
+                    question: "Combien de joueuses peuvent participer ?",
+                    answer: "Jusqu'à 100 sur la version gratuite, jusqu'à 500 sur les offres payantes. Parfait pour un EVJF intime ou un grand groupe."
+          },
+          {
+                    question: "Comment surprendre la mariée avec le quizz ?",
+                    answer: "Récolte les anecdotes en cachette quelques semaines avant. Présente le quizz comme un « jeu surprise » et garde les questions les plus drôles pour la fin."
+          },
+          {
+                    question: "Peut-on faire le quizz avec un thème déguisé ?",
+                    answer: "Oui — personnalise les couleurs et la photo de couverture en fonction du thème de l'EVJF (Las Vegas, années 70, princesse Disney…)."
+          },
+          {
+                    question: "Le quizz fonctionne-t-il à l'étranger ?",
+                    answer: "Oui, tant que les joueuses ont une connexion data sur leur téléphone. Le quizz est multilingue (français, anglais, espagnol, italien, allemand…)."
+          },
+          {
+                    question: "Puis-je le réutiliser pour le mariage ?",
+                    answer: "Oui ! Avec un compte tu peux dupliquer ton quizz EVJF et l'adapter pour le mariage. Économique et cohérent."
+          }
+],
+      }
     />
   );
 }

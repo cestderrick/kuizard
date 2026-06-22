@@ -66,7 +66,60 @@ export default function Page() {
           { label: "Voir les abonnements bars", href: "/tarifs#abonnements" },
           { label: "Centre d'aide", href: "/aide" },
         ],
-      }}
+        howTo: {
+          name: "Comment lancer une soirée quizz dans ton bar",
+          description: "Le guide pour transformer un soir de semaine en soirée pleine grâce au quizz interactif.",
+          totalTime: "PT15M",
+          steps: [
+                    {
+                              name: "Crée ton compte Kuizard Pro",
+                              text: "Inscris-toi et choisis l'abonnement Bar pour avoir un quizz hebdomadaire renouvelable."
+                    },
+                    {
+                              name: "Prépare ton thème de la semaine",
+                              text: "Sport, années 80, cinéma… Choisis un thème et écris 15-20 questions de difficulté progressive."
+                    },
+                    {
+                              name: "Imprime ton affiche A4 avec QR code",
+                              text: "Pose l'affiche sur chaque table. Les clients scannent et rejoignent en 5 secondes."
+                    },
+                    {
+                              name: "Diffuse le mode TV sur l'écran",
+                              text: "Mets le classement live sur la TV du bar : ça crée du buzz et anime la salle."
+                    },
+                    {
+                              name: "Annonce les gagnants et le prochain rendez-vous",
+                              text: "Offre un verre / un repas aux 3 premiers. Annonce le thème de la semaine prochaine pour fidéliser."
+                    }
+          ]
+},
+        faqs: [
+          {
+                    question: "Combien coûte un abonnement quizz pour un bar ?",
+                    answer: "L'abonnement Bar Kuizard démarre à un tarif accessible avec un quizz hebdomadaire renouvelable, mode TV, classement live et statistiques clients. Voir les tarifs détaillés."
+          },
+          {
+                    question: "Combien de clients peuvent participer en même temps ?",
+                    answer: "Jusqu'à 500 participants simultanés sur l'offre Bar. Largement suffisant même pour un bar plein."
+          },
+          {
+                    question: "Faut-il du matériel particulier ?",
+                    answer: "Un téléphone côté gérant pour piloter, un écran ou TV pour afficher le classement, et la connexion 4G/wifi des clients. Aucune borne dédiée, aucun frais matériel."
+          },
+          {
+                    question: "Puis-je personnaliser le quizz aux couleurs de mon bar ?",
+                    answer: "Oui — logo, couleurs, thème, photos. Le quizz reprend l'identité visuelle de ton bar pour renforcer ta marque."
+          },
+          {
+                    question: "Comment fidéliser mes clients sur plusieurs semaines ?",
+                    answer: "Le classement annuel cumulé motive les habitués à revenir. Couple ça avec des lots progressifs (verre offert, repas, soirée privée pour le champion du mois) pour booster la rétention."
+          },
+          {
+                    question: "Puis-je voir les stats de fréquentation ?",
+                    answer: "Oui, le dashboard te montre nombre de participants par soirée, scores moyens, fidélité — utile pour ajuster ta programmation."
+          }
+],
+      }
     />
   );
 }

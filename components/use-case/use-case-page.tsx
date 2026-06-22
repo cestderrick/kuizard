@@ -6,7 +6,11 @@ import { KuizardLogo } from "@/components/brand/kuizard-logo";
 import { TopLocaleBar } from "@/components/i18n/top-locale-bar";
 import { SiteFooter } from "@/components/legal/site-footer";
 import { JsonLd } from "@/components/seo/json-ld";
-import { breadcrumbSchema } from "@/lib/seo/schemas";
+import {
+  breadcrumbSchema,
+  faqPageSchema,
+  howToSchema,
+} from "@/lib/seo/schemas";
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://kuizard.com";
 
@@ -21,6 +25,15 @@ export type UseCaseConfig = {
   whyKuizard: string[]; // bullets "pourquoi Kuizard"
   ctaPrimary?: string; // optionnel, override du CTA
   internalLinks?: { label: string; href: string }[]; // liens vers d'autres pages
+  // V48 — SEO boost : FAQ rich snippets Google
+  faqs?: { question: string; answer: string }[];
+  // V48 — HowTo rich snippets Google
+  howTo?: {
+    name: string;
+    description: string;
+    totalTime?: string; // ISO duration ex "PT5M"
+    steps: { name: string; text: string }[];
+  };
 };
 
 export async function UseCasePage({ config }: { config: UseCaseConfig }) {
@@ -42,6 +55,40 @@ export async function UseCasePage({ config }: { config: UseCaseConfig }) {
           { name: config.eyebrow, url },
         ])}
       />
+      {config.faqs && config.faqs.length > 0 && (
+        <JsonLd data={faqPageSchema(config.faqs)} />
+      )}
+      {config.howTo && (
+        <JsonLd
+          data={howToSchema({
+            name: config.howTo.name,
+            description: config.howTo.description,
+            totalTime: config.howTo.totalTime,
+            steps: config.howTo.steps,
+          })}
+        />
+      )}
+
+      {/* Breadcrumb visuel (UX + SEO) */}
+      <nav
+        aria-label="Fil d'Ariane"
+        className="max-w-5xl mx-auto px-4 pt-3 text-xs text-muted-foreground"
+      >
+        <ol className="flex flex-wrap items-center gap-1.5">
+          <li>
+            <Link
+              href="/"
+              className="hover:text-[var(--color-violet-primary)] hover:underline"
+            >
+              Accueil
+            </Link>
+          </li>
+          <li aria-hidden>›</li>
+          <li className="font-semibold text-[var(--color-violet-deep)]">
+            {config.eyebrow}
+          </li>
+        </ol>
+      </nav>
 
       {/* Hero */}
       <section className="px-4 pt-16 pb-12 text-center">
@@ -175,6 +222,93 @@ export async function UseCasePage({ config }: { config: UseCaseConfig }) {
           )}
         </div>
       </section>
+
+      {/* HowTo visuel (V48 — SEO rich snippet) */}
+      {config.howTo && (
+        <section className="px-4 py-12 bg-[var(--color-lavender-2)]/30">
+          <div className="max-w-3xl mx-auto">
+            <p className="text-xs uppercase tracking-[3px] text-[var(--color-violet-primary)] font-semibold mb-2 text-center">
+              📋 Mode d&apos;emploi
+            </p>
+            <h2
+              className="font-display text-2xl md:text-3xl font-bold tracking-wide mb-6 text-center"
+              style={{ color: "var(--color-violet-deep)" }}
+            >
+              {config.howTo.name}
+            </h2>
+            <p className="text-center text-sm text-muted-foreground mb-8 max-w-2xl mx-auto">
+              {config.howTo.description}
+            </p>
+            <ol className="grid gap-4 md:grid-cols-2">
+              {config.howTo.steps.map((s, i) => (
+                <li
+                  key={i}
+                  className="rounded-2xl bg-white border-2 border-violet-100 p-5 flex gap-4"
+                >
+                  <span
+                    className="shrink-0 w-10 h-10 rounded-full flex items-center justify-center font-display text-lg font-bold"
+                    style={{
+                      backgroundColor: "var(--color-gold)",
+                      color: "var(--color-violet-deep)",
+                    }}
+                  >
+                    {i + 1}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <h3
+                      className="font-bold mb-1"
+                      style={{ color: "var(--color-violet-deep)" }}
+                    >
+                      {s.name}
+                    </h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      {s.text}
+                    </p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </div>
+        </section>
+      )}
+
+      {/* FAQ visuelle (V48 — SEO rich snippet) */}
+      {config.faqs && config.faqs.length > 0 && (
+        <section className="px-4 py-12">
+          <div className="max-w-3xl mx-auto">
+            <p className="text-xs uppercase tracking-[3px] text-[var(--color-violet-primary)] font-semibold mb-2 text-center">
+              ❓ Questions fréquentes
+            </p>
+            <h2
+              className="font-display text-2xl md:text-3xl font-bold tracking-wide mb-8 text-center"
+              style={{ color: "var(--color-violet-deep)" }}
+            >
+              Tout ce que tu veux savoir
+            </h2>
+            <div className="space-y-3">
+              {config.faqs.map((f, i) => (
+                <details
+                  key={i}
+                  className="rounded-2xl bg-white border-2 border-violet-100 px-5 py-4 group"
+                >
+                  <summary
+                    className="font-bold cursor-pointer list-none flex items-center justify-between gap-3"
+                    style={{ color: "var(--color-violet-deep)" }}
+                  >
+                    <span>{f.question}</span>
+                    <span className="text-[var(--color-violet-primary)] group-open:rotate-180 transition-transform">
+                      ▾
+                    </span>
+                  </summary>
+                  <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
+                    {f.answer}
+                  </p>
+                </details>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* CTA final */}
       <section className="px-4 py-16 text-center bg-[var(--color-night)] text-[var(--color-lavender)]">

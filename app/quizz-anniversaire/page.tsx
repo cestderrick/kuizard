@@ -68,7 +68,56 @@ export default function Page() {
           { label: "Idée pour un EVJF ?", href: "/quizz-evjf" },
           { label: "Idée pour un mariage ?", href: "/quizz-mariage" },
         ],
-      }}
+        howTo: {
+          name: "Comment animer un anniversaire avec un quizz personnalisé",
+          description: "Le quizz qui réunit toutes les générations autour du même jeu.",
+          totalTime: "PT10M",
+          steps: [
+                    {
+                              name: "Crée ton compte Kuizard gratuit",
+                              text: "30 secondes, juste un email."
+                    },
+                    {
+                              name: "Recueille des questions sur la personne fêtée",
+                              text: "Demande aux proches : enfance, métier, voyages, anecdotes secrètes."
+                    },
+                    {
+                              name: "Mélange questions persos et culture générale",
+                              text: "Pour que les plus jeunes et les plus âgés trouvent leur compte, alterne questions sur la personne et culture générale."
+                    },
+                    {
+                              name: "Imprime ton QR code à mettre sur les tables",
+                              text: "Affiche A4 prête à imprimer fournie par Kuizard."
+                    },
+                    {
+                              name: "Lance le quizz au milieu du repas",
+                              text: "Idéal après l'entrée — l'attention est au max, et ça aide à la digestion."
+                    }
+          ]
+},
+        faqs: [
+          {
+                    question: "À partir de quel âge peut-on jouer ?",
+                    answer: "Dès que les enfants savent lire et utiliser un smartphone (env. 7-8 ans). Pour les plus petits, ils jouent en équipe avec un adulte."
+          },
+          {
+                    question: "Combien de questions pour un quizz anniversaire ?",
+                    answer: "Entre 10 et 20 questions, en comptant 30 secondes par question. Évite de dépasser 30 minutes total."
+          },
+          {
+                    question: "Comment faire participer les grands-parents qui n'ont pas de smartphone ?",
+                    answer: "Ils peuvent jouer en équipe avec un petit-enfant ou utiliser un téléphone partagé. Une équipe = un téléphone = un compte joueur."
+          },
+          {
+                    question: "Combien coûte un quizz anniversaire ?",
+                    answer: "Gratuit pour la version basique (10 questions, 100 joueurs). À partir de 3€ pour ajouter photos, couleurs et mode TV."
+          },
+          {
+                    question: "Peut-on rejouer le quizz l'année suivante ?",
+                    answer: "Oui, tu peux dupliquer ton quizz et ajouter de nouvelles questions chaque année. Tu construis un quizz familial qui devient une tradition."
+          }
+],
+      }
     />
   );
 }

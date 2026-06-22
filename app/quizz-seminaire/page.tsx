@@ -68,7 +68,56 @@ export default function Page() {
           { label: "Voir les abonnements pros", href: "/tarifs#abonnements" },
           { label: "Centre d'aide", href: "/aide" },
         ],
-      }}
+        howTo: {
+          name: "Comment organiser un quizz pour un séminaire d'entreprise",
+          description: "Boostez la cohésion d'équipe avec un quizz personnalisé pendant votre séminaire.",
+          totalTime: "PT20M",
+          steps: [
+                    {
+                              name: "Crée un compte Pro Kuizard",
+                              text: "Choisis l'abonnement Entreprise pour les fonctionnalités avancées et le branding."
+                    },
+                    {
+                              name: "Définis le thème du séminaire",
+                              text: "Culture d'entreprise, valeurs, anecdotes RH, jargon métier — choisis 2-3 axes."
+                    },
+                    {
+                              name: "Forme des équipes mixtes",
+                              text: "Mélange les services pour casser les silos. 4-6 personnes par équipe = idéal."
+                    },
+                    {
+                              name: "Lance le quizz en plénière",
+                              text: "Mode TV sur grand écran, classement live. Idéal en clôture de matinée ou de soirée."
+                    },
+                    {
+                              name: "Récompense les gagnants",
+                              text: "Bouteille, expérience, jour off — adapte selon ta culture. L'enjeu booste l'engagement."
+                    }
+          ]
+},
+        faqs: [
+          {
+                    question: "Combien de personnes peuvent jouer en simultané ?",
+                    answer: "Jusqu'à 500 participants simultanés sur l'offre Entreprise, et plus sur demande pour les grands groupes (1000+ collaborateurs)."
+          },
+          {
+                    question: "Le quizz est-il personnalisable aux couleurs de mon entreprise ?",
+                    answer: "Oui — logo, couleurs de la marque, photo de couverture. Le quizz reprend ton identité visuelle pour renforcer la cohérence."
+          },
+          {
+                    question: "Peut-on l'utiliser comme outil de team building récurrent ?",
+                    answer: "Oui, l'abonnement Entreprise inclut un nombre illimité de quizz. Tu peux faire un quizz par mois, par équipe, par projet."
+          },
+          {
+                    question: "Comment exploiter les résultats après le séminaire ?",
+                    answer: "Le dashboard te donne un export CSV avec scores, temps de réponse, taux de bonnes réponses par question. Utile pour identifier les sujets qui méritent une formation ou un rappel."
+          },
+          {
+                    question: "Les données sont-elles RGPD compliant ?",
+                    answer: "Oui — données hébergées en France, pas de pub, pas de tracker tiers. Conformité RGPD garantie, c'est un must pour une entreprise."
+          }
+],
+      }
     />
   );
 }
