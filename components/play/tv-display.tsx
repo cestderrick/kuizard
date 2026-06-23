@@ -411,7 +411,14 @@ export function TvDisplay({
                   {currentQuestion.points} pt
                   {currentQuestion.points > 1 ? "s" : ""}
                 </p>
-                <h2 className="font-display text-4xl sm:text-6xl leading-tight mb-8 max-w-4xl">
+                <h2
+                  className="font-display text-4xl sm:text-6xl leading-tight mb-8 max-w-4xl"
+                  style={{
+                    color: "#ffffff",
+                    WebkitTextFillColor: "#ffffff",
+                    background: "none",
+                  }}
+                >
                   {currentQuestion.text}
                 </h2>
                 {currentQuestion.type !== "TEXT" && (
@@ -429,7 +436,9 @@ export function TvDisplay({
                           className="font-display text-3xl font-bold w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
                           style={{
                             backgroundColor: theme.primaryColor,
-                            color: "white",
+                            color: "#ffffff",
+                            WebkitTextFillColor: "#ffffff",
+                            background: theme.primaryColor,
                           }}
                         >
                           {String.fromCharCode(65 + i)}
