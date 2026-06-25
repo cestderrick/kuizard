@@ -309,6 +309,7 @@ export function QuestionForm({
                     ? "var(--color-gold)"
                     : undefined,
                   backgroundColor: opt.isCorrect ? "#fffbeb" : undefined,
+                  color: opt.isCorrect ? "#1a0e3a" : undefined,
                 }}
               >
                 <button
@@ -345,6 +346,15 @@ export function QuestionForm({
                   maxLength={200}
                   disabled={type === "TRUE_FALSE"}
                   className="flex-1"
+                  style={
+                    opt.isCorrect
+                      ? {
+                          color: "#1a0e3a",
+                          WebkitTextFillColor: "#1a0e3a",
+                          backgroundColor: "transparent",
+                        }
+                      : undefined
+                  }
                 />
                 {type === "SINGLE_CHOICE" || type === "MULTIPLE_CHOICE" ? (
                   <button
