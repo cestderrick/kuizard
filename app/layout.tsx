@@ -8,6 +8,8 @@ import { getLocale } from "@/lib/i18n/get-locale";
 import { JsonLd } from "@/components/seo/json-ld";
 import { organizationSchema, websiteSchema } from "@/lib/seo/schemas";
 import { ThemeProvider } from "@/components/theme/theme-provider";
+import { HelpBot } from "@/components/chatbot/help-bot";
+import { auth } from "@/auth";
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
@@ -91,6 +93,8 @@ export default async function RootLayout({
 }>) {
   // Locale dynamique pour l'attribut <html lang="...">
   const locale = await getLocale();
+  const session = await auth();
+  const isLoggedIn = !!session?.user;
   return (
     <html
       lang={locale}
@@ -115,6 +119,7 @@ export default async function RootLayout({
             }}
           />
           <CookieBanner />
+          <HelpBot isLoggedIn={isLoggedIn} />
         </ThemeProvider>
       </body>
     </html>

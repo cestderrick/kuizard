@@ -194,8 +194,17 @@ export async function getMyQuiz(quizId: string) {
   const session = await auth();
   if (!session?.user?.id) return null;
 
+  // V49.1 : un admin peut éditer le quizz d'un autre user (modération / assistance)
+  const me = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { role: true },
+  });
+  const isAdmin = me?.role === "ADMIN";
+
   return prisma.quiz.findFirst({
-    where: { id: quizId, userId: session.user.id },
+    where: isAdmin
+      ? { id: quizId }
+      : { id: quizId, userId: session.user.id },
     include: {
       questions: { orderBy: { order: "asc" } },
     },
