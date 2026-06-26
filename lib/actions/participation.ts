@@ -237,7 +237,7 @@ export async function submitAnswersAction(
     let recomputedScore = 0;
     for (const q of quiz.questions) {
       const opts = isOptionArray(q.options) ? q.options : [];
-      recomputedScore += scoreAnswer(q.type, opts, merged[q.id], q.points);
+      recomputedScore += scoreAnswer(q.type, opts, merged[q.id], q.points, q.options);
     }
 
     if (recomputedScore !== (existing.score ?? 0)) {
@@ -262,7 +262,7 @@ export async function submitAnswersAction(
   let score = 0;
   for (const q of quiz.questions) {
     const opts = isOptionArray(q.options) ? q.options : [];
-    score += scoreAnswer(q.type, opts, answers[q.id], q.points);
+    score += scoreAnswer(q.type, opts, answers[q.id], q.points, q.options);
   }
 
   await prisma.participation.updateMany({

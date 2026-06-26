@@ -10,7 +10,8 @@ export type StoredOption = { label: string; isCorrect: boolean };
 
 export type Answer =
   | { type: "choice"; selectedIndices: number[] }
-  | { type: "text"; value: string };
+  | { type: "text"; value: string }
+  | { type: "score"; home: number; away: number };
 
 /**
  * Normalise un texte pour comparaison "tolérante" : sans accents, en
@@ -41,9 +42,20 @@ export function scoreAnswer(
   type: string,
   options: StoredOption[],
   answer: Answer | undefined,
-  points: number
+  points: number,
+  rawOptionsJson?: unknown
 ): number {
   if (!answer) return 0;
+
+  // V50 — SCORE_GUESS : config dans rawOptionsJson, pas dans options[]
+  if (type === "SCORE_GUESS") {
+    if (answer.type !== "score") return 0;
+    const sg = require("./score-guess") as typeof import("./score-guess");
+    const config = sg.parseScoreGuessConfig(rawOptionsJson);
+    const ans = sg.parseScoreGuessAnswer(answer);
+    if (!config || !ans) return 0;
+    return sg.computeScoreGuessPoints(config, ans);
+  }
 
   if (type === "TEXT") {
     if (answer.type !== "text") return 0;

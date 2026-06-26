@@ -75,6 +75,46 @@ model User {
   termsAcceptances TermsAcceptance[]
   grantedPlans     GrantedPlan[]
   passwordResetTokens PasswordResetToken[]
+  companyPromoCodes CompanyPromoCode[]
+}
+
+// V51 — Code promo de société pour les comptes pros (BUSINESS).
+// L'admin attribue 1 ou plusieurs codes à un user pro. Le créateur du
+// quiz peut alors choisir d'afficher un de ces codes en bandeau dans
+// son quiz (visible par tous les joueurs).
+model CompanyPromoCode {
+  id              String    @id @default(cuid())
+  userId          String    // société propriétaire (account_type=BUSINESS idéalement)
+  code            String    // ex: "EVENT50"
+  description     String    // ex: "50% sur l'abonnement Premium"
+  discountPercent Int?      // optionnel, pour affichage
+  validUntil      DateTime?
+  maxUses         Int?      // null = illimité
+  currentUses     Int       @default(0)
+  active          Boolean   @default(true)
+  createdByAdminId String   // qui a créé le code
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  usages          CompanyPromoCodeUsage[]
+  @@unique([userId, code])
+  @@index([userId])
+  @@index([active])
+}
+
+// V51 — Log d'utilisation des codes promo (vue / copie).
+// Permet de tracker le ROI côté admin.
+model CompanyPromoCodeUsage {
+  id           String   @id @default(cuid())
+  promoCodeId  String
+  quizId       String?  // optionnel : le quiz où ça a été vu
+  action       String   // "view" | "copy"
+  ipHash       String?  // hash de l'IP pour dédupliquer sans stocker l'IP
+  createdAt    DateTime @default(now())
+  promoCode    CompanyPromoCode @relation(fields: [promoCodeId], references: [id], onDelete: Cascade)
+  @@index([promoCodeId])
+  @@index([quizId])
+  @@index([createdAt])
 }
 
 // V47.31 : token de reinitialisation de mot de passe (lien email).
@@ -289,6 +329,10 @@ model Quiz {
   // est réservée aux abonnés, l'admin choisit explicitement ceux qui doivent
   // être gratuits en cochant la case (faux = gratuit).
   libraryIsPremium  Boolean    @default(true)
+  // V51 — id du code promo société à afficher en bandeau (null = pas de bandeau).
+  // Le créateur ne peut cocher cette option que si sa société a au moins un
+  // CompanyPromoCode actif (attribué par un admin).
+  displayCompanyPromoId String?
   // Description courte pour le browser library côté user
   libraryDescription String?   @db.Text
   // Tags pour le filtre côté user (array de string)
@@ -363,6 +407,7 @@ enum QuestionType {
   MULTIPLE_CHOICE
   TRUE_FALSE
   TEXT
+  SCORE_GUESS
 }
 
 // ====================================================
