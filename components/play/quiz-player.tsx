@@ -789,6 +789,7 @@ function RecapCard({
     const a = answers[q.id];
     if (!a) return true;
     if (a.type === "text") return !a.value.trim();
+    if (a.type === "score") return false;
     return a.selectedIndices.length === 0;
   });
 
