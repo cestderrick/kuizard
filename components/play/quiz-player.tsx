@@ -185,6 +185,7 @@ export function QuizPlayer({
     const a = answers[q.id];
     if (!a) return false;
     if (a.type === "text") return a.value.trim().length > 0;
+    if (a.type === "score") return true;
     return a.selectedIndices.length > 0;
   }
 
