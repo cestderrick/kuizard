@@ -17,13 +17,16 @@ import {
   setQuestionImageFromUrlAction,
 } from "@/lib/actions/upload";
 import { ImageUploader } from "@/components/quiz/image-uploader";
+import { ScoreGuessEditor } from "@/components/quiz/score-guess-editor";
+import type { ScoreGuessConfig } from "@/lib/quiz/score-guess";
 import { useActionToast } from "@/lib/hooks/use-action-toast";
 
 type QuestionType =
   | "SINGLE_CHOICE"
   | "MULTIPLE_CHOICE"
   | "TRUE_FALSE"
-  | "TEXT";
+  | "TEXT"
+  | "SCORE_GUESS";
 
 type Option = { label: string; isCorrect: boolean };
 
@@ -96,6 +99,8 @@ export function QuestionForm({
     return parsed;
   });
 
+  const [scoreGuessConfig, setScoreGuessConfig] = useState<ScoreGuessConfig | null>(null);
+
   const [state, formAction, isPending] = useActionState(
     updateQuestionAction,
     initialState
@@ -105,6 +110,10 @@ export function QuestionForm({
   // Quand l'utilisateur change le type, on adapte les options
   function handleTypeChange(newType: QuestionType) {
     setType(newType);
+    if (newType === "SCORE_GUESS") {
+      // Pas d options[] pour ce type, tout est dans scoreGuessConfig
+      return;
+    }
     if (newType === "TRUE_FALSE") {
       setOptions([
         { label: "Vrai", isCorrect: true },
@@ -160,7 +169,15 @@ export function QuestionForm({
     <form action={formAction} className="flex flex-col gap-6">
       <input type="hidden" name="quizId" value={quizId} />
       <input type="hidden" name="questionId" value={question.id} />
-      <input type="hidden" name="optionsJson" value={JSON.stringify(options)} />
+      <input
+        type="hidden"
+        name="optionsJson"
+        value={
+          type === "SCORE_GUESS"
+            ? JSON.stringify(scoreGuessConfig ?? {})
+            : JSON.stringify(options)
+        }
+      />
 
       {/* V47.4 : Bandeau si question hors limite du plan */}
       {isBeyondPlanLimit && (
@@ -221,6 +238,7 @@ export function QuestionForm({
           <option value="TEXT" disabled>
             Réponse texte libre — fonctionnalité à venir
           </option>
+          <option value="SCORE_GUESS">⚽ Find the score (foot, rugby...)</option>
         </select>
         {type === "MULTIPLE_CHOICE" && (
           <p
@@ -282,10 +300,19 @@ export function QuestionForm({
       {/* Options selon le type */}
       <div className="flex flex-col gap-3">
         <Label>
-          {type === "TEXT" ? "Réponse attendue" : "Réponses possibles"}
+          {type === "SCORE_GUESS"
+            ? "Score à pronostiquer + barème"
+            : type === "TEXT"
+            ? "Réponse attendue"
+            : "Réponses possibles"}
         </Label>
 
-        {type === "TEXT" ? (
+        {type === "SCORE_GUESS" ? (
+          <ScoreGuessEditor
+            initialJson={question.options}
+            onChange={setScoreGuessConfig}
+          />
+        ) : type === "TEXT" ? (
           <div className="flex flex-col gap-2">
             <Input
               type="text"

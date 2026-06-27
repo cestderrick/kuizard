@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useTransition } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ScoreGuessPlayer } from "@/components/play/score-guess-player";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
@@ -30,11 +31,14 @@ type Question = {
   timerSeconds: number | null;
   options: { label: string }[]; // sans isCorrect
   imageUrl: string | null;
+  // V50 : config brute pour SCORE_GUESS (envoyee non sanitizee depuis la page)
+  rawOptions?: unknown;
 };
 
 type Answer =
   | { type: "choice"; selectedIndices: number[] }
-  | { type: "text"; value: string };
+  | { type: "text"; value: string }
+  | { type: "score"; home: number; away: number };
 
 type Phase = "intro" | "playing" | "recap" | "result";
 
@@ -264,6 +268,13 @@ export function QuizPlayer({
     }));
   }
 
+  function setScoreAnswer(qid: string, home: number, away: number) {
+    setAnswers((prev) => ({
+      ...prev,
+      [qid]: { type: "score", home, away },
+    }));
+  }
+
   // --- Soumission finale
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -378,6 +389,9 @@ export function QuizPlayer({
                   !locked && toggleChoice(q.id, i, multi)
                 }
                 onSetText={(v) => !locked && setTextAnswer(q.id, v)}
+                onSetScore={(home, away) =>
+                  !locked && setScoreAnswer(q.id, home, away)
+                }
                 texts={texts}
                 locked={locked}
                 startedAtMs={startedAt}
@@ -589,6 +603,7 @@ function QuestionBlock({
   answer,
   onToggleChoice,
   onSetText,
+  onSetScore,
   texts,
   locked,
   startedAtMs,
@@ -598,6 +613,7 @@ function QuestionBlock({
   answer: Answer | undefined;
   onToggleChoice: (i: number, multi: boolean) => void;
   onSetText: (v: string) => void;
+  onSetScore?: (home: number, away: number) => void;
   texts: PlayerTexts;
   locked?: boolean;
   startedAtMs?: number | null;
@@ -663,7 +679,18 @@ function QuestionBlock({
         </p>
       )}
 
-      {question.type === "TEXT" ? (
+      {question.type === "SCORE_GUESS" ? (
+        <ScoreGuessPlayer
+          rawConfig={question.rawOptions ?? null}
+          initialAnswer={
+            answer?.type === "score"
+              ? { type: "score", home: answer.home, away: answer.away }
+              : null
+          }
+          onChange={(a) => onSetScore?.(a.home, a.away)}
+          locked={locked}
+        />
+      ) : question.type === "TEXT" ? (
         <Input
           type="text"
           value={answer?.type === "text" ? answer.value : ""}

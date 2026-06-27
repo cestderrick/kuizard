@@ -69,6 +69,7 @@ export default async function AdminLayout({
             </div>
             <AdminNavLink href="/admin/plans" label="💳 Plans & tarifs" />
             <AdminNavLink href="/admin/promos" label="🎟️ Codes promos" />
+            <AdminNavLink href="/admin/company-promos" label="🎁 Codes promo société" />
             <AdminNavLink href="/admin/payments" label="💰 Paiements" />
             <AdminNavLink
               href="/admin/subscriptions"

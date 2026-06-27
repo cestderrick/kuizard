@@ -8,6 +8,8 @@ import { getMessages } from "@/lib/i18n/get-locale";
 // ré-évalué à chaque requête, sinon le HTML est cached et la langue ne change pas.
 export const dynamic = "force-dynamic";
 import { QuizPlayer } from "@/components/play/quiz-player";
+import { getQuizCompanyPromo } from "@/lib/promo/company-promo";
+import { CompanyPromoBanner } from "@/components/promo/company-promo-banner";
 import { LivePlayer } from "@/components/play/live-player";
 import { parseTheme } from "@/lib/quiz/theme";
 import { parseLiveState } from "@/lib/live/state";
@@ -194,10 +196,16 @@ export default async function PlayPage({
       imageUrl: q.imageUrl,
       // Pour TEXT, on n'envoie pas la réponse attendue (sinon c'est trichable)
       options: q.type === "TEXT" ? [] : opts,
+      // V50 : pour SCORE_GUESS on envoie la config brute (labels equipes + scores + bareme)
+      // Note : pas trichable car le scoring se fait cote serveur sur les vraies attendues
+      rawOptions: q.type === "SCORE_GUESS" ? q.options : undefined,
     };
   });
 
   const theme = parseTheme(quiz.theme);
+
+  // V51 : recupere le code promo societe a afficher en banniere (si quiz.displayCompanyPromoId)
+  const companyPromo = await getQuizCompanyPromo(quiz.id);
 
   // Reprise de session : si le joueur a déjà un cookie de participation, on
   // récupère son pseudo + id + ses réponses pour reprendre exactement là où il
@@ -243,10 +251,28 @@ export default async function PlayPage({
     }
   }
 
+  // V51 : banniere code promo societe (rendue en haut du quiz, si applicable)
+  const promoBanner = companyPromo ? (
+    <div className="max-w-xl mx-auto px-4 pt-4">
+      <CompanyPromoBanner
+        promo={{
+          id: companyPromo.id,
+          code: companyPromo.code,
+          description: companyPromo.description,
+          discountPercent: companyPromo.discountPercent,
+          validUntil: companyPromo.validUntil?.toISOString() ?? null,
+        }}
+        quizId={quiz.id}
+      />
+    </div>
+  ) : null;
+
   // Mode LIVE_MANUAL → composant dédié avec gating par SSE
   if (quiz.mode === "LIVE_MANUAL") {
     const live = parseLiveState(quiz.liveState);
     return (
+      <>
+        {promoBanner}
       <LivePlayer
         code={quiz.code}
         title={quiz.title}
@@ -262,12 +288,15 @@ export default async function PlayPage({
         }}
         existingParticipation={existingParticipation}
       />
+      </>
     );
   }
 
   const messages = await getMessages();
 
   return (
+    <>
+      {promoBanner}
     <QuizPlayer
       code={quiz.code}
       title={quiz.title}
@@ -294,5 +323,6 @@ export default async function PlayPage({
           : null,
       }}
     />
+    </>
   );
 }
