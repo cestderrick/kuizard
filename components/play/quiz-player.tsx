@@ -773,6 +773,7 @@ function RecapCard({
     const a = answers[q.id];
     if (!a) return "— Pas de réponse —";
     if (a.type === "text") return a.value.trim() || "— Pas de réponse —";
+    if (a.type === "score") return `${a.home} - ${a.away}`;
     if (a.selectedIndices.length === 0) return "— Pas de réponse —";
     return a.selectedIndices
       .sort((x, y) => x - y)
