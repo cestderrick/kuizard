@@ -6,6 +6,12 @@
 // car Next 16 exige que tous les exports d'un fichier "use server" soient
 // des fonctions async — ce qui cassait le build Turbopack.
 
+import {
+  parseScoreGuessConfig,
+  parseScoreGuessAnswer,
+  computeScoreGuessPoints,
+} from "./score-guess";
+
 export type StoredOption = { label: string; isCorrect: boolean };
 
 export type Answer =
@@ -50,11 +56,10 @@ export function scoreAnswer(
   // V50 — SCORE_GUESS : config dans rawOptionsJson, pas dans options[]
   if (type === "SCORE_GUESS") {
     if (answer.type !== "score") return 0;
-    const sg = require("./score-guess") as typeof import("./score-guess");
-    const config = sg.parseScoreGuessConfig(rawOptionsJson);
-    const ans = sg.parseScoreGuessAnswer(answer);
+    const config = parseScoreGuessConfig(rawOptionsJson);
+    const ans = parseScoreGuessAnswer(answer);
     if (!config || !ans) return 0;
-    return sg.computeScoreGuessPoints(config, ans);
+    return computeScoreGuessPoints(config, ans);
   }
 
   if (type === "TEXT") {
