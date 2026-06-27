@@ -816,7 +816,9 @@ function RecapCard({
           const hasAnswer = a
             ? a.type === "text"
               ? !!a.value.trim()
-              : a.selectedIndices.length > 0
+              : a.type === "score"
+                ? true
+                : a.selectedIndices.length > 0
             : false;
           return (
             <li
