@@ -142,7 +142,11 @@ Aucun commentaire, aucun markdown, JSON pur uniquement.`;
           label: o.label.slice(0, 200),
           isCorrect: o.isCorrect,
         }));
-      if (opts.length < 2 || !opts.some((o) => o.isCorrect)) continue;
+      if (
+        opts.length < 2 ||
+        !opts.some((o: { label: string; isCorrect: boolean }) => o.isCorrect)
+      )
+        continue;
       questions.push({
         text: q.text.slice(0, 200),
         type:
