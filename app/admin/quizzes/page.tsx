@@ -4,6 +4,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { requireAdmin } from "@/lib/auth/require-admin";
 import { AdminQuizDeleteButton } from "@/components/admin/admin-quiz-delete-button";
+import { SeedFakeButton } from "@/components/admin/seed-fake-button";
 
 export const metadata: Metadata = {
   title: "Admin · Quizz",
@@ -219,6 +220,11 @@ export default async function AdminQuizzesPage({
                         >
                           ✏️
                         </Link>
+                        <SeedFakeButton
+                          quizId={q.id}
+                          code={q.code}
+                          title={q.title}
+                        />
                         <AdminQuizDeleteButton
                           quizId={q.id}
                           code={q.code}
