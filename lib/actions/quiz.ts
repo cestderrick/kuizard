@@ -11,6 +11,7 @@ import type { Prisma } from "@prisma/client";
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
+import { getEditableQuizWhere } from "@/lib/auth/can-edit-quiz";
 import { generateUniqueQuizCode } from "@/lib/quiz/generate-code";
 import { getTemplateBySlugUnified } from "@/lib/quiz/templates-source";
 
@@ -309,9 +310,13 @@ export async function updateQuizMetaAction(
       ? new Date(scheduledCloseAt)
       : null;
 
-  // updateMany pour garantir qu'on touche uniquement nos quizz
+  // V53.3 : admin peut editer le quizz d'un autre user (modération/assistance)
+  const editWhere = await getEditableQuizWhere(quizId, session.user.id);
+  if (!editWhere) {
+    return { ok: false, message: "Quizz introuvable ou non autorisé." };
+  }
   const result = await prisma.quiz.updateMany({
-    where: { id: quizId, userId: session.user.id },
+    where: editWhere,
     data: {
       title,
       description: description || null,
@@ -382,8 +387,12 @@ export async function updateThemeAction(
     };
   }
 
+  const editWhere2 = await getEditableQuizWhere(quizId, session.user.id);
+  if (!editWhere2) {
+    return { ok: false, message: "Quizz introuvable ou non autorisé." };
+  }
   const result = await prisma.quiz.updateMany({
-    where: { id: quizId, userId: session.user.id },
+    where: editWhere2,
     data: {
       theme: { primaryColor, background } as unknown as Prisma.InputJsonValue,
     },
@@ -473,8 +482,12 @@ export async function updatePrizesAction(
     }))
     .sort((a, b) => a.rank - b.rank);
 
+  const editWhere3 = await getEditableQuizWhere(parsed.data.quizId, session.user.id);
+  if (!editWhere3) {
+    return { ok: false, message: "Quizz introuvable ou non autorisé." };
+  }
   const result = await prisma.quiz.updateMany({
-    where: { id: parsed.data.quizId, userId: session.user.id },
+    where: editWhere3,
     data: {
       // Cast vers le type Prisma JSON
       prizes: cleaned as unknown as Prisma.InputJsonValue,
@@ -697,15 +710,4 @@ export async function duplicateOwnQuizAction(
       }
       return q;
     });
-    newId = created.id;
-  } catch (err) {
-    console.error("[duplicateOwnQuiz] failed:", err);
-    return {
-      ok: false,
-      message: "Erreur lors de la duplication. Réessaie plus tard.",
-    };
-  }
-
-  revalidatePath("/dashboard/quizzes");
-  redirect(`/dashboard/quizzes/${newId}/edit`);
-}
+    newId = creat
