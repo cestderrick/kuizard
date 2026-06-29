@@ -35,6 +35,8 @@ import { parsePrizes } from "@/lib/quiz/prizes";
 import { parseTheme } from "@/lib/quiz/theme";
 import { getEffectivePlan } from "@/lib/plans/gating";
 import { getQuizLockState } from "@/lib/quiz/lock";
+import { AIGenerateButton } from "@/components/quiz/ai-generate-button";
+import { getBillingContext } from "@/lib/billing/context";
 
 export const metadata: Metadata = {
   title: "Éditer un quizz",
@@ -116,6 +118,10 @@ export default async function EditQuizPage({
   const limitUsed = sp.used ?? String(usedQuestions);
   const limitMax = sp.max ?? String(maxQuestions);
   const limitPlanName = sp.plan ?? plan.name;
+
+  // V53 : gating AI (premium)
+  const billing = await getBillingContext(quiz.userId);
+  const hasActiveSubscription = !!billing?.hasActiveSubscription;
 
   return (
     <div className="max-w-4xl mx-auto flex flex-col gap-6">
@@ -343,7 +349,11 @@ export default async function EditQuizPage({
         badge={`${quiz.questions.length}/${maxQuestions === Infinity ? "∞" : maxQuestions}`}
         defaultOpen
       >
-        <div className="mb-4 flex justify-end">
+        <div className="mb-4 flex justify-end gap-2 flex-wrap">
+          <AIGenerateButton
+            quizId={quiz.id}
+            hasActiveSubscription={hasActiveSubscription}
+          />
           <form action={createQuestionAction}>
             <input type="hidden" name="quizId" value={quiz.id} />
             <Button

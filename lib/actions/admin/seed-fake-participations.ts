@@ -17,15 +17,61 @@ import { isOptionArray, scoreAnswer, type Answer } from "@/lib/quiz/scoring";
 
 // Pool de pseudos cool (français, anglo, fun)
 const NICKNAMES = [
-  "TheoZ", "Mariana", "Lola91", "BatmanFR", "Kévin", "Sophie L.",
-  "PetitOurs", "FlashMax", "Nina95", "JulieG", "RaphMrz", "Camille",
-  "Thomas", "DJWolf", "Inès", "Mehdi", "LaurineP", "Adam",
-  "Charlotte", "Zoé", "Quentin", "Manon", "GaspardA", "Eliott",
-  "AntoineT", "Léa", "RomainM", "JadeB", "Maxime", "ChloéV",
-  "Lucas", "Sarah", "OctaveK", "EnzoR", "Mathilde", "Yanis",
-  "Pauline", "Hugo", "Anaïs", "Mehdi92", "Léon", "Suzy",
-  "Capitaine", "Trolldu13", "MissPiou", "BarbieDev", "PandaWok",
-  "JoyD", "SamFinch", "Lily22", "BobLeChat",
+  // Prénoms FR classiques
+  "Théo", "Mariana", "Lola91", "Kévin", "Sophie L.", "Camille", "Thomas",
+  "Inès", "Mehdi", "Adam", "Charlotte", "Zoé", "Quentin", "Manon",
+  "Eliott", "Léa", "Maxime", "Lucas", "Sarah", "Mathilde", "Yanis",
+  "Pauline", "Hugo", "Anaïs", "Léon", "Suzy", "Jade", "Tom",
+  "Emma", "Nathan", "Louise", "Gabriel", "Alice", "Raphaël", "Chloé",
+  "Arthur", "Inès B.", "Jules", "Léna", "Paul", "Romane", "Antoine T.",
+  "Margot", "Victor", "Salomé", "Sacha", "Ambre", "Noah", "Mila",
+  "Tiago", "Capucine", "Maël", "Élise", "Aaron", "Olivia", "Liam",
+  "Iris", "Robin", "Lina", "Naël", "Eva", "Soan", "Apolline",
+  // Initiales / formats avec chiffres
+  "Théo Z.", "RaphMrz", "Nina95", "JulieG", "LaurineP", "GaspardA",
+  "ChloéV", "RomainM", "JadeB", "OctaveK", "EnzoR", "Mehdi92",
+  "Lily22", "Tom75", "Sarah_06", "Léo69", "Mat59", "Cam33",
+  "Alex77", "Léa14", "Théo38", "Jul44", "Pauline31",
+  // Pseudos fun / geek
+  "BatmanFR", "PetitOurs", "FlashMax", "DJWolf", "Capitaine",
+  "Trolldu13", "MissPiou", "BarbieDev", "PandaWok", "JoyD",
+  "SamFinch", "BobLeChat", "PoulpyCorp", "NinjaFromage", "ZebraKing",
+  "DragonRosé", "PiouPiou", "MasterChef", "FoxyLady", "Spartiate",
+  "TigreBleu", "RoiSinge", "ChevalDeFer", "Pingouin42", "Hibou_007",
+  "Goblin77", "ElfeNoir", "LapinBleu", "Renardeau", "GrosOurs",
+  "BananaSplit", "FraisierMaster", "CroustiPouletteFTW", "Tartiflette",
+  "RaclettePower", "BiscuitRose", "CafeNoir", "ThéVert", "ChocoBon",
+  // Sport/musique/cinéma fans
+  "OMforever", "PSG_77", "JuvFan", "TifoBleu", "Verdeau_75",
+  "BarcaForever", "MadridLover", "AjaxXI", "RossoSognante",
+  "MetalHead", "ReggaeMan", "JazzCat", "SkaPunk2k", "RapFrLover",
+  "DiscoQueen", "TechnoBoy", "ClassicGirl", "RockOrDie", "BassDropFr",
+  "CinéLover", "Cinéphile88", "MarvelGirl", "DCBoy",
+  // Surnoms régionaux/typés
+  "Bigouden", "Marseillais13", "Stéphanois42", "BordelLover", "LilloisFR",
+  "Niçoise06", "Toulousain31", "Strasbourgeois", "RennesPapa", "ChtiPower",
+  "Corsuvellu", "Alsacien67", "Provençale", "Auvergnatte", "Breton22",
+  "Normand76", "Picard80", "Béarnais", "Périgourdine", "Gascon32",
+  // Internet & memes
+  "404NotFound", "ItsLit", "Boomer92", "ZRosé", "Yolo2k",
+  "VibeCheck", "TrueBro", "ICanDoThis", "MoodForever", "Slay25",
+  "JustVibing", "PartyMode", "ChillOnly", "GamerLife", "MemeKing",
+  "OkayBoomer", "TilTBot", "FrenchGeek", "WonderBoy", "InfinityFan",
+  // Animaux / nature
+  "PetitChat", "GrosNounours", "RoiLion", "PandaRoux", "SingeMalin",
+  "LapinFou", "Hérisson75", "CrocoBleu", "DauphinMagic", "LoutreCool",
+  "AbeilleZZZ", "PapillonRose", "TortueSage", "ChouetteHibou",
+  // Nourriture
+  "PainAuChoc", "CrêpeMaster", "RaclettePro", "FromageMan", "Saucisson13",
+  "Croissant75", "BouletteSauce", "PattedFromage", "TarteTatin",
+  "CrumbleAux", "PateÀTartiner", "ChocolatBlanc",
+  // Mix / aléatoires
+  "Echo", "Phoenix", "Atlas", "Nova", "Orion",
+  "Aria", "Solène", "Zéphir", "Calypso", "Luna",
+  "Maverick", "Joker", "Phantom", "Shadow", "Striker",
+  "Mystik", "Vortex", "Saphir", "Onyx", "Jade42",
+  "Aki", "Yuki", "Hana", "Mei", "Sora",
+  "Tofik", "Léna B.", "Naël 88", "Soraya", "Inaya",
 ];
 
 function randomNickname(usedSet: Set<string>): string {
