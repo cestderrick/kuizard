@@ -209,7 +209,7 @@ export default async function LibraryBrowserPage({
               className="font-display text-3xl md:text-4xl font-bold tracking-wide"
               style={{ color: "var(--color-violet-deep)" }}
             >
-              Quizz tout faits, prêts à l\'emploi
+              Quizz tout faits, prêts à l&apos;emploi
             </h1>
           </div>
           <Link
