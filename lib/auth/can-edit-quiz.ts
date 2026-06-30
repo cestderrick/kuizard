@@ -35,11 +35,17 @@ export async function getEditableQuizWhere(
   quizId: string,
   sessionUserId: string
 ): Promise<{ id: string; userId?: string } | null> {
-  if (!sessionUserId) return null;
+  if (!sessionUserId) {
+    console.log("[canEditQuiz] no sessionUserId");
+    return null;
+  }
   const me = await prisma.user.findUnique({
     where: { id: sessionUserId },
-    select: { role: true },
+    select: { role: true, email: true },
   });
+  console.log(
+    `[canEditQuiz] quizId=${quizId} userId=${sessionUserId} email=${me?.email} role=${me?.role}`
+  );
   if (me?.role === "ADMIN") {
     return { id: quizId };
   }
