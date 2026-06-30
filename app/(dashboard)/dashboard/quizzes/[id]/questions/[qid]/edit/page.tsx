@@ -48,6 +48,8 @@ export default async function EditQuestionPage({
           timerSeconds: true,
           options: true,
           imageUrl: true,
+          // V54 — explication facultative
+          explanation: true,
         },
       },
     },

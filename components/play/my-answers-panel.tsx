@@ -14,6 +14,8 @@ type BreakdownItem = {
   userText: string | null;
   isCorrect: boolean;
   answered: boolean;
+  // V54 — explication facultative
+  explanation?: string | null;
 };
 
 type ApiResponse =
@@ -208,6 +210,21 @@ export function MyAnswersPanel({
                         );
                       })}
                     </ul>
+                  )}
+
+                  {/* V54 — Explication de la bonne reponse */}
+                  {q.explanation && (
+                    <div
+                      className="mt-2 rounded-md px-2.5 py-2 text-xs leading-relaxed"
+                      style={{
+                        backgroundColor: "rgba(85,35,187,0.06)",
+                        border: "1px solid rgba(85,35,187,0.2)",
+                        color: "#1a0e3a",
+                      }}
+                    >
+                      <span className="font-bold mr-1">💡 Explication :</span>
+                      {q.explanation}
+                    </div>
                   )}
                 </li>
               ))}

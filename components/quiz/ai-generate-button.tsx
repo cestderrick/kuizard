@@ -4,7 +4,7 @@
 // V53 — Bouton "Générer avec IA" pour l'éditeur de quiz
 // =============================================
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
@@ -31,6 +31,18 @@ export function AIGenerateButton({
     generateQuizQuestionsAction,
     { ok: false } as AIGenerateState
   );
+
+  // V54 — Auto-ferme le popup quand la generation a reussi (avec un petit
+  // delai pour que l'utilisateur voie le message de succes).
+  useEffect(() => {
+    if (state.ok && !isPending && open) {
+      const t = setTimeout(() => {
+        setOpen(false);
+        setTheme("");
+      }, 1200);
+      return () => clearTimeout(t);
+    }
+  }, [state.ok, isPending, open]);
 
   return (
     <>

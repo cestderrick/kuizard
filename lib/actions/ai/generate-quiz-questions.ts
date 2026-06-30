@@ -100,6 +100,8 @@ export async function generateQuizQuestionsAction(
           text: q.text,
           options: q.options as unknown as object,
           points: q.points,
+          // V54 — explication facultative generee par l'IA
+          explanation: q.explanation ?? null,
         },
       });
       added++;

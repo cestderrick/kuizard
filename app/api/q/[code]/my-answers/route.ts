@@ -51,6 +51,8 @@ export async function GET(
           text: true,
           points: true,
           options: true,
+          // V54 — explication facultative pour le panneau "Mes reponses"
+          explanation: true,
         },
       },
     },
@@ -144,6 +146,8 @@ export async function GET(
       userText,
       isCorrect,
       answered: !!userAns,
+      // V54 — explication facultative
+      explanation: q.explanation ?? null,
     };
   });
 

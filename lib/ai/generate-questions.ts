@@ -12,6 +12,8 @@ export type AIQuestion = {
   type: "SINGLE_CHOICE" | "MULTIPLE_CHOICE";
   options: { label: string; isCorrect: boolean }[];
   points: number;
+  // V54 — explication facultative generee par l'IA
+  explanation?: string | null;
 };
 
 export type AIGenerateResult =
@@ -56,6 +58,7 @@ Critères :
 - Réponses courtes (max 100 caractères chacune)
 - Évite les réponses ambiguës ou les pièges injustes
 - Points par question selon difficulté : facile=1, moyen=2, difficile=3
+- IMPORTANT : pour chaque question, fournis une explication courte (1-3 phrases, max 400 caracteres) qui justifie la bonne reponse — anecdote, contexte historique, chiffre cle. Ton pedagogique et leger.
 
 Réponds STRICTEMENT en JSON valide avec ce format :
 {
@@ -69,7 +72,8 @@ Réponds STRICTEMENT en JSON valide avec ce format :
         { "label": "Réponse C", "isCorrect": false },
         { "label": "Réponse D", "isCorrect": false }
       ],
-      "points": 2
+      "points": 2,
+      "explanation": "Une phrase ou deux qui explique pourquoi la reponse B est la bonne, avec une petite anecdote ou un chiffre cle."
     }
   ]
 }
@@ -147,12 +151,18 @@ Aucun commentaire, aucun markdown, JSON pur uniquement.`;
         !opts.some((o: { label: string; isCorrect: boolean }) => o.isCorrect)
       )
         continue;
+      // V54 — explication facultative renvoyee par l'IA
+      const explanation =
+        typeof q.explanation === "string" && q.explanation.trim().length > 0
+          ? q.explanation.trim().slice(0, 500)
+          : null;
       questions.push({
         text: q.text.slice(0, 200),
         type:
           q.type === "MULTIPLE_CHOICE" ? "MULTIPLE_CHOICE" : "SINGLE_CHOICE",
         options: opts,
         points: Math.max(1, Math.min(10, Math.floor(q.points ?? 1))),
+        explanation,
       });
     }
 

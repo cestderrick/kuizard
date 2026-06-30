@@ -392,6 +392,8 @@ model Question {
   options      Json         @default("[]")
   points       Int          @default(1)
   timerSeconds Int?
+  // V54 — Explication affichee au joueur apres sa reponse (anecdote / pedagogie).
+  explanation  String?      @db.Text
 
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt

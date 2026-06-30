@@ -41,6 +41,8 @@ type Props = {
     options: unknown; // venant de Prisma JSONB
     imageUrl: string | null;
     order?: number;
+    // V54 — explication facultative
+    explanation?: string | null;
   };
   /** V43 : si le plan ne permet pas les images, on grise la zone + CTA upgrade */
   allowImages?: boolean;
@@ -293,6 +295,34 @@ export function QuestionForm({
         {state.errors?.text && (
           <p className="text-sm text-destructive">
             {state.errors.text.join(" ")}
+          </p>
+        )}
+      </div>
+
+      {/* V54 — Explication (affichee au joueur apres sa reponse) */}
+      <div className="flex flex-col gap-2">
+        <Label htmlFor="explanation">
+          Explication (optionnel)
+          <span className="ml-1 text-xs font-normal opacity-70">
+            — affichee apres la reponse
+          </span>
+        </Label>
+        <textarea
+          id="explanation"
+          name="explanation"
+          rows={2}
+          maxLength={2000}
+          defaultValue={question.explanation ?? ""}
+          placeholder="ex : Paris est la capitale de la France depuis 508 apres JC (Clovis Ier)."
+          className="border-input bg-background flex w-full rounded-md border px-3 py-2 text-sm shadow-xs focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-2 resize-y min-h-[60px]"
+        />
+        <p className="text-xs text-muted-foreground -mt-1">
+          Donne du contexte, une anecdote ou la source de la bonne reponse —
+          parfait pour rendre le quizz plus pedagogique.
+        </p>
+        {state.errors?.explanation && (
+          <p className="text-sm text-destructive">
+            {state.errors.explanation.join(" ")}
           </p>
         )}
       </div>

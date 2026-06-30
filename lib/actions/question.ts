@@ -110,6 +110,12 @@ const updateQuestionSchema = z.object({
     .optional()
     .transform((v) => (v === "" || v === undefined ? null : v)),
   optionsJson: z.string(),
+  // V54 — Explication facultative affichee au joueur apres sa reponse.
+  explanation: z
+    .string()
+    .max(2000, "Max 2000 caracteres pour l'explication.")
+    .optional()
+    .transform((v) => (v && v.trim().length > 0 ? v.trim() : null)),
 });
 
 export type UpdateQuestionState = {
@@ -135,6 +141,8 @@ export async function updateQuestionAction(
     points: formData.get("points") ?? 1,
     timerSeconds: formData.get("timerSeconds") ?? "",
     optionsJson: formData.get("optionsJson") ?? "[]",
+    // V54 — explication facultative
+    explanation: formData.get("explanation") ?? "",
   });
 
   if (!parsed.success) {
@@ -145,8 +153,16 @@ export async function updateQuestionAction(
     };
   }
 
-  const { quizId, questionId, type, text, points, timerSeconds, optionsJson } =
-    parsed.data;
+  const {
+    quizId,
+    questionId,
+    type,
+    text,
+    points,
+    timerSeconds,
+    optionsJson,
+    explanation,
+  } = parsed.data;
 
   // Vérifier que le quizz appartient à l'utilisateur
   const quiz = await assertOwnQuiz(quizId, session.user.id);
@@ -241,6 +257,7 @@ export async function updateQuestionAction(
       options,
       points,
       timerSeconds,
+      explanation,
     },
   });
 
