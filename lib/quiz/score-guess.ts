@@ -28,8 +28,10 @@
 export type ScoreGuessConfig = {
   labelHome?: string;
   labelAway?: string;
-  expectedHome: number;
-  expectedAway: number;
+  // V55 : null = score reel pas encore saisi (a renseigner apres match).
+  // Quand null, la question rapporte 0 point a tous les joueurs.
+  expectedHome: number | null;
+  expectedAway: number | null;
   exactPoints: number;
   brackets: { maxDiff: number; points: number }[];
 };
@@ -44,14 +46,19 @@ export type ScoreGuessAnswer = {
 export function parseScoreGuessConfig(raw: unknown): ScoreGuessConfig | null {
   if (typeof raw !== "object" || raw === null) return null;
   const o = raw as Record<string, unknown>;
-  if (
-    typeof o.expectedHome !== "number" ||
-    typeof o.expectedAway !== "number" ||
-    typeof o.exactPoints !== "number" ||
-    !Array.isArray(o.brackets)
-  ) {
+  // V55 : expectedHome/Away peuvent etre absents ou null → score reel pas
+  // encore saisi. Seul exactPoints + brackets restent obligatoires.
+  if (typeof o.exactPoints !== "number" || !Array.isArray(o.brackets)) {
     return null;
   }
+  const expHome =
+    typeof o.expectedHome === "number"
+      ? Math.max(0, Math.floor(o.expectedHome))
+      : null;
+  const expAway =
+    typeof o.expectedAway === "number"
+      ? Math.max(0, Math.floor(o.expectedAway))
+      : null;
   const brackets = o.brackets
     .map((b: unknown) => {
       if (typeof b !== "object" || b === null) return null;
@@ -67,11 +74,19 @@ export function parseScoreGuessConfig(raw: unknown): ScoreGuessConfig | null {
   return {
     labelHome: typeof o.labelHome === "string" ? o.labelHome : undefined,
     labelAway: typeof o.labelAway === "string" ? o.labelAway : undefined,
-    expectedHome: Math.max(0, Math.floor(o.expectedHome)),
-    expectedAway: Math.max(0, Math.floor(o.expectedAway)),
+    expectedHome: expHome,
+    expectedAway: expAway,
     exactPoints: Math.max(0, Math.floor(o.exactPoints)),
     brackets,
   };
+}
+
+/**
+ * V55 — Helper : true si le score reel a deja ete saisi par l'organisateur.
+ * Quand false, la question SCORE_GUESS rapporte 0 point a tous les joueurs.
+ */
+export function hasScoreGuessResult(config: ScoreGuessConfig): boolean {
+  return config.expectedHome !== null && config.expectedAway !== null;
 }
 
 /** Valide une réponse joueur */
@@ -100,6 +115,8 @@ export function computeScoreGuessPoints(
   config: ScoreGuessConfig,
   answer: ScoreGuessAnswer
 ): number {
+  // V55 : si le score reel n'a pas encore ete saisi, personne ne marque.
+  if (config.expectedHome === null || config.expectedAway === null) return 0;
   const homeDiff = Math.abs(answer.home - config.expectedHome);
   const awayDiff = Math.abs(answer.away - config.expectedAway);
   if (homeDiff === 0 && awayDiff === 0) return config.exactPoints;
@@ -117,5 +134,8 @@ export function computeScoreGuessPoints(
 export function formatScoreGuessExpected(config: ScoreGuessConfig): string {
   const left = config.labelHome ? `${config.labelHome} ` : "";
   const right = config.labelAway ? ` ${config.labelAway}` : "";
-  return `${left}${config.expectedHome} - ${config.expectedAway}${right}`;
+  // V55 : "?" si pas encore saisi
+  const h = config.expectedHome ?? "?";
+  const a = config.expectedAway ?? "?";
+  return `${left}${h} - ${a}${right}`;
 }

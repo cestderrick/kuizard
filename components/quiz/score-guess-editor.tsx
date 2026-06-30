@@ -15,11 +15,14 @@ import {
   type ScoreGuessConfig,
 } from "@/lib/quiz/score-guess";
 
+// V55 : par defaut on cree un pronostic SANS score reel — il sera saisi
+// apres le match via le bouton "🏆 Saisir le resultat" sur la liste des
+// questions du quiz.
 const DEFAULT_CONFIG: ScoreGuessConfig = {
   labelHome: "Équipe A",
   labelAway: "Équipe B",
-  expectedHome: 2,
-  expectedAway: 1,
+  expectedHome: null,
+  expectedAway: null,
   exactPoints: 10,
   brackets: [
     { maxDiff: 1, points: 6 },
@@ -112,34 +115,61 @@ export function ScoreGuessEditor({
         </div>
       </div>
 
-      {/* Score attendu */}
+      {/* V55 — Score reel : optionnel a la creation, saisi apres match */}
+      <div className="rounded-lg p-3 text-xs leading-relaxed" style={{
+        backgroundColor: "rgba(85,35,187,0.06)",
+        border: "1px solid rgba(85,35,187,0.18)",
+        color: "#1a0e3a",
+      }}>
+        <p className="font-bold mb-1">⏳ Score reel a saisir apres le match</p>
+        <p className="opacity-80">
+          Les joueurs pronostiquent <strong>avant</strong> que le score soit
+          connu. Tu pourras saisir le resultat final via le bouton{" "}
+          <strong>🏆 Saisir le score</strong> sur la liste des questions, une
+          fois le match termine. Tous les scores des participants seront alors
+          recalcules automatiquement.
+        </p>
+        <p className="opacity-80 mt-1">
+          Tu peux quand meme pre-remplir un score ci-dessous si tu veux (utile
+          pour tester ou si tu connais deja le resultat).
+        </p>
+      </div>
+
       <div className="grid grid-cols-2 gap-3">
         <div className="flex flex-col gap-1">
           <Label htmlFor="sg-expHome" className="text-xs">
-            Score Équipe A *
+            Score Équipe A (optionnel)
           </Label>
           <Input
             id="sg-expHome"
             type="number"
             min={0}
-            value={cfg.expectedHome}
-            onChange={(e) =>
-              patch({ expectedHome: Math.max(0, parseInt(e.target.value) || 0) })
-            }
+            value={cfg.expectedHome ?? ""}
+            placeholder="?"
+            onChange={(e) => {
+              const v = e.target.value.trim();
+              patch({
+                expectedHome: v === "" ? null : Math.max(0, parseInt(v) || 0),
+              });
+            }}
           />
         </div>
         <div className="flex flex-col gap-1">
           <Label htmlFor="sg-expAway" className="text-xs">
-            Score Équipe B *
+            Score Équipe B (optionnel)
           </Label>
           <Input
             id="sg-expAway"
             type="number"
             min={0}
-            value={cfg.expectedAway}
-            onChange={(e) =>
-              patch({ expectedAway: Math.max(0, parseInt(e.target.value) || 0) })
-            }
+            value={cfg.expectedAway ?? ""}
+            placeholder="?"
+            onChange={(e) => {
+              const v = e.target.value.trim();
+              patch({
+                expectedAway: v === "" ? null : Math.max(0, parseInt(v) || 0),
+              });
+            }}
           />
         </div>
       </div>

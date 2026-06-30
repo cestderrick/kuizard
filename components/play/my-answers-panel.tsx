@@ -2,6 +2,16 @@
 
 import { useState } from "react";
 
+type ScoreGuessBreakdown = {
+  labelHome: string | null;
+  labelAway: string | null;
+  expectedHome: number | null;
+  expectedAway: number | null;
+  userHome: number | null;
+  userAway: number | null;
+  hasResult: boolean;
+};
+
 type BreakdownItem = {
   id: string;
   order: number;
@@ -16,6 +26,8 @@ type BreakdownItem = {
   answered: boolean;
   // V54 — explication facultative
   explanation?: string | null;
+  // V55 — SCORE_GUESS : details pronostic vs score reel
+  scoreGuess?: ScoreGuessBreakdown | null;
 };
 
 type ApiResponse =
@@ -25,6 +37,65 @@ type ApiResponse =
       participation: { nickname: string; score: number; completedAt: string };
     }
   | { ok: false; error: string; waiting?: boolean };
+
+/**
+ * V55 — Mini-rendu du detail SCORE_GUESS : ton pronostic vs score reel
+ * (ou message "en attente" si le score reel n'a pas encore ete saisi).
+ */
+function ScoreGuessBreakdownView({ sg }: { sg: ScoreGuessBreakdown }) {
+  const lh = sg.labelHome || "Équipe A";
+  const la = sg.labelAway || "Équipe B";
+  const userScore =
+    sg.userHome !== null && sg.userAway !== null
+      ? `${sg.userHome} - ${sg.userAway}`
+      : "Pas de pronostic";
+  return (
+    <div className="flex flex-col gap-1.5">
+      <div className="flex items-center justify-between gap-2 rounded-md bg-white border border-zinc-200 px-2.5 py-1.5">
+        <span className="text-[11px] uppercase tracking-wide opacity-60 font-semibold">
+          Ton pronostic
+        </span>
+        <span className="text-sm font-bold">
+          {lh}{" "}
+          <span style={{ color: "var(--color-violet-primary)" }}>
+            {userScore}
+          </span>{" "}
+          {la}
+        </span>
+      </div>
+      {sg.hasResult ? (
+        <div
+          className="flex items-center justify-between gap-2 rounded-md px-2.5 py-1.5 border"
+          style={{
+            backgroundColor: "rgba(34,197,94,0.08)",
+            borderColor: "rgba(34,197,94,0.4)",
+          }}
+        >
+          <span className="text-[11px] uppercase tracking-wide opacity-70 font-semibold text-green-800">
+            🏆 Score final
+          </span>
+          <span className="text-sm font-bold text-green-800">
+            {lh} {sg.expectedHome} - {sg.expectedAway} {la}
+          </span>
+        </div>
+      ) : (
+        <div
+          className="flex items-center gap-2 rounded-md px-2.5 py-1.5 border"
+          style={{
+            backgroundColor: "rgba(245,158,11,0.1)",
+            borderColor: "rgba(245,158,11,0.4)",
+          }}
+        >
+          <span className="text-sm">⏳</span>
+          <span className="text-xs text-amber-900 italic">
+            Le score réel n'a pas encore été saisi par l'organisateur. Les
+            points seront attribués dès qu'il sera renseigné.
+          </span>
+        </div>
+      )}
+    </div>
+  );
+}
 
 /**
  * Panneau dépliable "Mes réponses" qui apparait sur la page de score à la fin
@@ -137,7 +208,9 @@ export function MyAnswersPanel({
                   className={`rounded-lg p-3 text-sm border ${
                     q.type === "TEXT"
                       ? "bg-zinc-50 border-zinc-200"
-                      : q.isCorrect
+                      : q.type === "SCORE_GUESS" && !q.scoreGuess?.hasResult
+                      ? "bg-amber-50 border-amber-200"
+                      : q.isCorrect || (q.type === "SCORE_GUESS" && q.points > 0)
                       ? "bg-green-50 border-green-300"
                       : "bg-red-50 border-red-200"
                   }`}
@@ -151,7 +224,11 @@ export function MyAnswersPanel({
                         <span className="text-zinc-600">
                           📝 Réponse libre (non auto-évaluée)
                         </span>
-                      ) : q.isCorrect ? (
+                      ) : q.type === "SCORE_GUESS" && !q.scoreGuess?.hasResult ? (
+                        <span className="text-amber-700 font-semibold">
+                          ⏳ Résultat en attente
+                        </span>
+                      ) : q.isCorrect || (q.type === "SCORE_GUESS" && q.points > 0) ? (
                         <span className="text-green-700 font-bold">
                           ✓ +{q.points} pt{q.points > 1 ? "s" : ""}
                         </span>
@@ -182,6 +259,8 @@ export function MyAnswersPanel({
                         Tu n'as pas répondu.
                       </p>
                     )
+                  ) : q.type === "SCORE_GUESS" && q.scoreGuess ? (
+                    <ScoreGuessBreakdownView sg={q.scoreGuess} />
                   ) : (
                     <ul className="flex flex-col gap-1">
                       {q.options.map((opt, i) => {

@@ -1,13 +1,19 @@
 import { NextResponse } from "next/server";
 
 import { prisma } from "@/lib/db";
+// V55 — Affichage SCORE_GUESS dans le panneau "Mes reponses"
+import {
+  parseScoreGuessConfig,
+  parseScoreGuessAnswer,
+} from "@/lib/quiz/score-guess";
 
 export const dynamic = "force-dynamic";
 
 type Option = { label: string; isCorrect?: boolean };
 type Answer =
   | { type: "choice"; selectedIndices: number[] }
-  | { type: "text"; value: string };
+  | { type: "text"; value: string }
+  | { type: "score"; home: number; away: number };
 
 /**
  * GET /api/q/[code]/my-answers?participationId=xxx
@@ -134,6 +140,32 @@ export async function GET(
       }
     }
 
+    // V55 — SCORE_GUESS : details pronostic vs score reel
+    let scoreGuess: {
+      labelHome: string | null;
+      labelAway: string | null;
+      expectedHome: number | null;
+      expectedAway: number | null;
+      userHome: number | null;
+      userAway: number | null;
+      hasResult: boolean;
+    } | null = null;
+    if (q.type === "SCORE_GUESS") {
+      const cfg = parseScoreGuessConfig(q.options);
+      const ua = userAns ? parseScoreGuessAnswer(userAns) : null;
+      scoreGuess = {
+        labelHome: cfg?.labelHome ?? null,
+        labelAway: cfg?.labelAway ?? null,
+        expectedHome: cfg?.expectedHome ?? null,
+        expectedAway: cfg?.expectedAway ?? null,
+        userHome: ua?.home ?? null,
+        userAway: ua?.away ?? null,
+        hasResult:
+          (cfg?.expectedHome ?? null) !== null &&
+          (cfg?.expectedAway ?? null) !== null,
+      };
+    }
+
     return {
       id: q.id,
       order: q.order,
@@ -148,6 +180,8 @@ export async function GET(
       answered: !!userAns,
       // V54 — explication facultative
       explanation: q.explanation ?? null,
+      // V55 — SCORE_GUESS
+      scoreGuess,
     };
   });
 

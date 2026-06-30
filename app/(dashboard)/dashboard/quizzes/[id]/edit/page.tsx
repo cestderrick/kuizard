@@ -20,6 +20,9 @@ import {
 import { QuizMetaForm } from "@/components/quiz/quiz-meta-form";
 import { CollapsibleSection } from "@/components/ui/collapsible-section";
 import { DeleteQuestionButton } from "@/components/quiz/delete-question-button";
+// V55 — Saisir le score reel apres match (questions SCORE_GUESS)
+import { ScoreGuessResultButton } from "@/components/quiz/score-guess-result-button";
+import { parseScoreGuessConfig } from "@/lib/quiz/score-guess";
 import { DeleteQuizButton } from "@/components/quiz/delete-quiz-button";
 import { ShareSection } from "@/components/quiz/share-section";
 import { AdminLeaderboard } from "@/components/quiz/admin-leaderboard";
@@ -47,6 +50,7 @@ const QUESTION_TYPE_LABEL: Record<string, string> = {
   MULTIPLE_CHOICE: "QCM choix multiples",
   TRUE_FALSE: "Vrai / Faux",
   TEXT: "Texte libre",
+  SCORE_GUESS: "⚽ Find the score",
 };
 
 export default async function EditQuizPage({
@@ -446,6 +450,20 @@ export default async function EditQuizPage({
                         )}
                       </p>
                     </div>
+                    {/* V55 — Bouton "Saisir le score" pour les SCORE_GUESS */}
+                    {q.type === "SCORE_GUESS" && (() => {
+                      const sg = parseScoreGuessConfig(q.options);
+                      return (
+                        <ScoreGuessResultButton
+                          quizId={quiz.id}
+                          questionId={q.id}
+                          labelHome={sg?.labelHome ?? null}
+                          labelAway={sg?.labelAway ?? null}
+                          currentHome={sg?.expectedHome ?? null}
+                          currentAway={sg?.expectedAway ?? null}
+                        />
+                      );
+                    })()}
                     <Button asChild variant="outline" size="sm">
                       <Link
                         href={`/dashboard/quizzes/${quiz.id}/questions/${q.id}/edit`}
