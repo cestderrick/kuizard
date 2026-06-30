@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,8 @@ import {
   updateQuizMetaAction,
   type UpdateQuizMetaState,
 } from "@/lib/actions/quiz";
+// V56 — Suggestion IA pour la description du quiz
+import { suggestQuizDescriptionAction } from "@/lib/actions/ai/suggest-quiz-description";
 import { useActionToast } from "@/lib/hooks/use-action-toast";
 
 const initialState: UpdateQuizMetaState = { ok: false };
@@ -56,6 +58,15 @@ export function QuizMetaForm({
   defaultOpenAt,
   defaultCloseAt,
 }: Props) {
+  // V56 — On rend le titre et la description controles pour pouvoir
+  // (a) envoyer le draft du titre a l'IA, (b) injecter le texte suggere.
+  const [title, setTitle] = useState(defaultTitle);
+  const [description, setDescription] = useState(defaultDescription ?? "");
+  const titleRef = useRef(defaultTitle);
+  titleRef.current = title;
+  const [aiError, setAiError] = useState<string | null>(null);
+  const [isSuggesting, startSuggest] = useTransition();
+
   const [mode, setMode] = useState<"LIVE_MANUAL" | "SCHEDULED">(defaultMode);
   const [openLocal, setOpenLocal] = useState(
     toDatetimeLocalValue(defaultOpenAt)
@@ -67,6 +78,14 @@ export function QuizMetaForm({
   // 🔄 Sync avec les nouvelles props quand la page revalide après save.
   // Sans ça, après modif des dates, le mode revenait sur "live" en affichage
   // alors qu'il était bien SCHEDULED en BDD.
+  // V56 : resync title/description si les props changent (apres save)
+  useEffect(() => {
+    setTitle(defaultTitle);
+  }, [defaultTitle]);
+  useEffect(() => {
+    setDescription(defaultDescription ?? "");
+  }, [defaultDescription]);
+
   useEffect(() => {
     setMode(defaultMode);
   }, [defaultMode]);
@@ -124,7 +143,8 @@ export function QuizMetaForm({
           type="text"
           required
           maxLength={80}
-          defaultValue={defaultTitle}
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
         />
         {state.errors?.title && (
           <p className="text-sm text-destructive">
@@ -134,21 +154,70 @@ export function QuizMetaForm({
       </div>
 
       <div className="flex flex-col gap-2">
-        <Label htmlFor="description">Description (optionnel)</Label>
+        <div className="flex items-center justify-between gap-2">
+          <Label htmlFor="description">Description (optionnel)</Label>
+          {/* V56 — Bouton de suggestion IA. Le clic envoie titre+quizId a
+              une server action Groq et remplace le contenu du textarea. */}
+          <button
+            type="button"
+            disabled={isSuggesting || title.trim().length < 3}
+            onClick={() => {
+              setAiError(null);
+              startSuggest(async () => {
+                const fd = new FormData();
+                fd.set("quizId", quizId);
+                fd.set("draftTitle", titleRef.current);
+                const res = await suggestQuizDescriptionAction(
+                  { ok: false, error: "" },
+                  fd
+                );
+                if (res.ok) {
+                  setDescription(res.description);
+                } else {
+                  setAiError(res.error);
+                }
+              });
+            }}
+            className="inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-bold transition hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
+            style={{
+              background: "linear-gradient(135deg, #5523bb, #f59e0b)",
+              color: "white",
+            }}
+            title={
+              title.trim().length < 3
+                ? "Renseigne d'abord un titre pour activer la suggestion"
+                : "Generer une description avec l'IA (a partir du titre + premieres questions)"
+            }
+          >
+            {isSuggesting ? "Generation…" : "✨ Suggérer avec IA"}
+          </button>
+        </div>
         <textarea
           id="description"
           name="description"
           rows={3}
           maxLength={500}
-          defaultValue={defaultDescription ?? ""}
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
           placeholder="Quelques mots pour annoncer le quizz aux participants…"
           className="border-input bg-background flex w-full rounded-md border px-3 py-2 text-sm shadow-xs focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-2 resize-none"
         />
-        {state.errors?.description && (
-          <p className="text-sm text-destructive">
-            {state.errors.description.join(" ")}
-          </p>
-        )}
+        <div className="flex items-center justify-between gap-2 text-xs">
+          {state.errors?.description ? (
+            <p className="text-destructive">
+              {state.errors.description.join(" ")}
+            </p>
+          ) : aiError ? (
+            <p className="text-destructive">{aiError}</p>
+          ) : (
+            <span className="text-muted-foreground opacity-70">
+              💡 L'IA peut t'aider — clique sur « Suggérer avec IA » au-dessus.
+            </span>
+          )}
+          <span className="text-muted-foreground opacity-60">
+            {description.length}/500
+          </span>
+        </div>
       </div>
 
       <div className="flex flex-col gap-2">
