@@ -710,4 +710,15 @@ export async function duplicateOwnQuizAction(
       }
       return q;
     });
-    newId = creat
+    newId = created.id;
+  } catch (err) {
+    console.error("[duplicateOwnQuiz] failed:", err);
+    return {
+      ok: false,
+      message: "Erreur lors de la duplication. Réessaie plus tard.",
+    };
+  }
+
+  revalidatePath("/dashboard/quizzes");
+  redirect(`/dashboard/quizzes/${newId}/edit`);
+}
