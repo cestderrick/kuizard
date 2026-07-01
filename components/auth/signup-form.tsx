@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useState, useTransition, useActionState } from "react";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-import { signupAction, type SignupState } from "@/lib/actions/auth";
+import {
+  signupAction,
+  verifyPromoCodeAction,
+  type SignupState,
+  type VerifyPromoState,
+} from "@/lib/actions/auth";
 
 const initialState: SignupState = { ok: false };
 
@@ -44,6 +49,30 @@ export function SignupForm({ texts }: { texts: Texts }) {
     signupAction,
     initialState
   );
+  // V57 — Champ code promo optionnel, replie par defaut pour ne pas surcharger.
+  const [showPromo, setShowPromo] = useState(false);
+  // V57.1 — Verification du code AVANT signup : le user tape, clique
+  // "Verifier", on lui montre l'offre debloquee ou l'erreur.
+  const [promoInput, setPromoInput] = useState("");
+  const [promoResult, setPromoResult] = useState<VerifyPromoState | null>(null);
+  const [isVerifying, startVerify] = useTransition();
+
+  async function handleVerify() {
+    const code = promoInput.trim().toUpperCase();
+    if (code.length < 3) {
+      setPromoResult({ ok: false, message: "Saisis un code." });
+      return;
+    }
+    startVerify(async () => {
+      const fd = new FormData();
+      fd.set("code", code);
+      const res = await verifyPromoCodeAction(
+        { ok: false, message: "" },
+        fd
+      );
+      setPromoResult(res);
+    });
+  }
 
   return (
     <Card className="border-0 shadow-2xl shadow-violet-900/40">
@@ -125,6 +154,112 @@ export function SignupForm({ texts }: { texts: Texts }) {
               <option value="INDIVIDUAL">{texts.account_type_individual}</option>
               <option value="BUSINESS">{texts.account_type_business}</option>
             </select>
+          </div>
+
+          {/* V57 — Code promo optionnel (repliable) + verification en direct */}
+          <div className="flex flex-col gap-2">
+            {!showPromo ? (
+              <button
+                type="button"
+                onClick={() => setShowPromo(true)}
+                className="text-xs font-semibold underline underline-offset-2 self-start opacity-80 hover:opacity-100"
+                style={{ color: "var(--color-violet-primary)" }}
+              >
+                🎁 J&apos;ai un code promo
+              </button>
+            ) : (
+              <div className="flex flex-col gap-2 rounded-lg border p-3"
+                style={{
+                  borderColor: "rgba(245,158,11,0.3)",
+                  backgroundColor: "rgba(245,158,11,0.05)",
+                }}
+              >
+                <Label htmlFor="promoCode" className="text-xs">
+                  🎁 Code promo (optionnel)
+                </Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="promoCode"
+                    name="promoCode"
+                    type="text"
+                    maxLength={40}
+                    placeholder="Ex: LANCEMENT2026"
+                    autoCapitalize="characters"
+                    className="uppercase flex-1"
+                    value={promoInput}
+                    onChange={(e) => {
+                      setPromoInput(e.target.value);
+                      // Reset le resultat des que l'user modifie le code
+                      if (promoResult) setPromoResult(null);
+                    }}
+                    onKeyDown={(e) => {
+                      // Enter dans le champ = verifier (pas submit du form)
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleVerify();
+                      }
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleVerify}
+                    disabled={isVerifying || promoInput.trim().length < 3}
+                    className="rounded-md px-3 py-1.5 text-xs font-bold transition hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap"
+                    style={{
+                      backgroundColor: "var(--color-gold)",
+                      color: "var(--color-violet-deep)",
+                    }}
+                  >
+                    {isVerifying ? "Verification…" : "Verifier"}
+                  </button>
+                </div>
+
+                {/* Feedback verification */}
+                {promoResult?.ok === true && (
+                  <div
+                    className="rounded-md p-2.5 text-xs leading-relaxed"
+                    style={{
+                      backgroundColor: "rgba(34,197,94,0.1)",
+                      border: "1px solid rgba(34,197,94,0.4)",
+                      color: "#166534",
+                    }}
+                  >
+                    <p className="font-bold mb-0.5">
+                      ✅ Code valide — <span className="font-mono">{promoResult.code}</span>
+                    </p>
+                    <p>
+                      🎁 Tu benefiques du plan{" "}
+                      <strong className="uppercase">{promoResult.planSlug}</strong>{" "}
+                      pendant <strong>{promoResult.durationDays} jours</strong>{" "}
+                      des la creation de ton compte.
+                    </p>
+                    {promoResult.description && (
+                      <p className="italic opacity-80 mt-1">
+                        « {promoResult.description} »
+                      </p>
+                    )}
+                  </div>
+                )}
+                {promoResult?.ok === false && (
+                  <div
+                    className="rounded-md p-2.5 text-xs"
+                    style={{
+                      backgroundColor: "rgba(239,68,68,0.08)",
+                      border: "1px solid rgba(239,68,68,0.35)",
+                      color: "#991b1b",
+                    }}
+                  >
+                    ❌ {promoResult.message}
+                  </div>
+                )}
+                {!promoResult && (
+                  <p className="text-[11px] text-muted-foreground leading-snug">
+                    Clique sur <strong>Verifier</strong> pour voir l&apos;offre debloquee
+                    avant de creer ton compte.
+                  </p>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Acceptation explicite CGU + CGV — obligatoire */}
