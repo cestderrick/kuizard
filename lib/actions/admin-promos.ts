@@ -34,6 +34,8 @@ const promoSchema = z
     amountOffCents: z.coerce.number().int().min(0).optional(),
     planSlug: z.string().max(40).optional().or(z.literal("")),
     giftPlanSlug: z.string().max(40).optional().or(z.literal("")),
+    // V57 — Duree en jours du plan cadeau applique a l'inscription (signup promo).
+    giftDurationDays: z.coerce.number().int().min(0).max(3650).optional(),
     maxRedemptions: z.coerce.number().int().min(0).optional(),
     expiresAt: z.string().optional().or(z.literal("")),
     isActive: z.boolean().optional().default(true),
@@ -71,6 +73,7 @@ export async function upsertPromoAction(
     amountOffCents: formData.get("amountOffCents") || undefined,
     planSlug: formData.get("planSlug") || "",
     giftPlanSlug: formData.get("giftPlanSlug") || "",
+    giftDurationDays: formData.get("giftDurationDays") || undefined,
     maxRedemptions: formData.get("maxRedemptions") || undefined,
     expiresAt: formData.get("expiresAt") || "",
     isActive: checkbox(formData.get("isActive")),
@@ -144,6 +147,8 @@ export async function upsertPromoAction(
     stripeCouponId,
     planSlug: v.planSlug || null,
     giftPlanSlug: v.giftPlanSlug || null,
+    giftDurationDays:
+      v.giftDurationDays && v.giftDurationDays > 0 ? v.giftDurationDays : null,
     maxRedemptions:
       v.maxRedemptions && v.maxRedemptions > 0 ? v.maxRedemptions : null,
     expiresAt,

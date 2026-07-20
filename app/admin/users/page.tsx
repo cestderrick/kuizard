@@ -4,6 +4,8 @@ import Link from "next/link";
 
 import { prisma } from "@/lib/db";
 import { requireAdmin } from "@/lib/auth/require-admin";
+// V58 — Creation manuelle de compte user
+import { AdminCreateUserForm } from "@/components/admin/admin-create-user-form";
 
 export const metadata: Metadata = {
   title: "Admin · Utilisateurs",
@@ -45,6 +47,16 @@ export default async function AdminUsersPage() {
           </p>
         </div>
       </header>
+
+      {/* V58 — Formulaire de creation manuelle de compte user */}
+      <details className="rounded-2xl bg-[var(--color-night-2)] border border-[rgba(167,139,250,0.15)]">
+        <summary className="cursor-pointer px-5 py-3 font-semibold text-sm text-[var(--color-lavender)] hover:text-[var(--color-gold)]">
+          + Ajouter un utilisateur manuellement
+        </summary>
+        <div className="p-2">
+          <AdminCreateUserForm />
+        </div>
+      </details>
 
       <div className="rounded-2xl bg-[var(--color-night-2)] border border-[rgba(167,139,250,0.15)] overflow-hidden">
         <div className="overflow-x-auto">

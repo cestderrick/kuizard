@@ -19,6 +19,7 @@ type Promo = {
   amountOffCents?: number | null;
   planSlug?: string | null;
   giftPlanSlug?: string | null;
+  giftDurationDays?: number | null;
   maxRedemptions?: number | null;
   redemptions?: number;
   expiresAt?: Date | null;
@@ -129,7 +130,7 @@ export function PromoForm({
           </Field>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 rounded-lg p-3 bg-[rgba(245,158,11,0.05)] border border-[rgba(245,158,11,0.2)]">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 rounded-lg p-3 bg-[rgba(245,158,11,0.05)] border border-[rgba(245,158,11,0.2)]">
           <Field label="🎁 Plan offert (code cadeau)">
             <select
               name="giftPlanSlug"
@@ -144,9 +145,22 @@ export function PromoForm({
               ))}
             </select>
           </Field>
-          <p className="text-[11px] opacity-70 self-end pb-2">
-            Si renseigné, ce code débloque DIRECTEMENT un quizz au plan choisi
-            (sans paiement Stripe). Utile pour offrir.
+          {/* V57 — Duree en jours si utilise a l'inscription */}
+          <Field label="Durée cadeau à l'inscription (jours)">
+            <input
+              name="giftDurationDays"
+              type="number"
+              min={0}
+              max={3650}
+              placeholder="ex : 30"
+              defaultValue={promo?.giftDurationDays ?? ""}
+              className="kz-input"
+            />
+          </Field>
+          <p className="text-[11px] opacity-70 self-end pb-2 md:col-span-1">
+            Si renseigné, ce code débloque DIRECTEMENT un plan à la création
+            du compte pour la durée indiquée. Sinon, code cadeau classique
+            (à appliquer sur un quiz existant).
           </p>
         </div>
 

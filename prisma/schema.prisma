@@ -505,6 +505,11 @@ model PromoCode {
   expiresAt       DateTime?
   isActive        Boolean  @default(true)
 
+  // V57 — Duree du plan cadeau en JOURS quand le code est saisi a l'inscription.
+  // Ex: giftPlanSlug="magique" + giftDurationDays=30 → nouveau user recoit 30 jours
+  // de plan Magique. Null = pas de duree definie (comportement legacy "one_shot").
+  giftDurationDays Int?
+
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
