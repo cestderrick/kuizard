@@ -1,56 +1,93 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # =============================================
-# Backup Postgres Kuizard
+# V58.2 — Backup quotidien BDD Kuizard vers FTP distant
 # =============================================
-# Dump compressé de la BDD avec rotation 14 jours.
-# Exécuté par cron sur le VPS (voir docs/backup-setup.md).
+# Utilise : pg_dump -Fc (format custom compresse) + lftp put
+# Credentials FTP dans /home/ubuntu/.kuizard-backup.env (chmod 600)
 #
-# Variables d'env attendues (depuis /etc/kuizard.env ou .env loadé) :
-#   POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB
-#   BACKUP_DIR (default: /home/ubuntu/kuizard-backups)
-#   BACKUP_KEEP_DAYS (default: 14)
+# Rotation :
+#   - Local : 7 dumps (une semaine glissante)
+#   - FTP   : 30 dumps (un mois glissant)
+#
+# Deploiement :
+#   sudo cp scripts/backup-db.sh /usr/local/bin/kuizard-backup.sh
+#   sudo chmod +x /usr/local/bin/kuizard-backup.sh
+#   sudo apt install -y lftp postgresql-client
+#   Puis creer /home/ubuntu/.kuizard-backup.env (voir README ci-dessous)
+#   Puis cron : sudo crontab -e -u ubuntu
+#     0 3 * * * /usr/local/bin/kuizard-backup.sh >> /var/log/kuizard-backup.log 2>&1
 
 set -euo pipefail
 
-BACKUP_DIR="${BACKUP_DIR:-/home/ubuntu/kuizard-backups}"
-BACKUP_KEEP_DAYS="${BACKUP_KEEP_DAYS:-14}"
-DOCKER_CONTAINER="${DOCKER_CONTAINER:-kuizard-postgres}"
+# --- Config par defaut (override via .env) ---
+LOCAL_DIR="${LOCAL_DIR:-/home/ubuntu/backups}"
+LOCAL_RETENTION_DAYS="${LOCAL_RETENTION_DAYS:-7}"
+FTP_RETENTION_DAYS="${FTP_RETENTION_DAYS:-30}"
+FTP_REMOTE_DIR="${FTP_REMOTE_DIR:-/kuizard-backups}"
 
-# Vérifs essentielles
-if [[ -z "${POSTGRES_USER:-}" || -z "${POSTGRES_DB:-}" ]]; then
-  echo "[backup] POSTGRES_USER ou POSTGRES_DB manquant dans l'env." >&2
+# --- Charger les credentials ---
+ENV_FILE="/home/ubuntu/.kuizard-backup.env"
+if [ ! -f "$ENV_FILE" ]; then
+  echo "[ERR] Fichier $ENV_FILE manquant." >&2
+  echo "Cree-le avec :" >&2
+  echo "  DATABASE_URL=postgresql://user:pass@localhost:5432/kuizard_prod" >&2
+  echo "  FTP_HOST=ftp.example.com" >&2
+  echo "  FTP_USER=monuser" >&2
+  echo "  FTP_PASS=monmdp" >&2
+  echo "  FTP_REMOTE_DIR=/kuizard-backups   # optionnel" >&2
   exit 1
 fi
+# shellcheck disable=SC1090
+source "$ENV_FILE"
 
-mkdir -p "${BACKUP_DIR}"
-TIMESTAMP=$(date +"%Y%m%d-%H%M%S")
-FILENAME="${BACKUP_DIR}/kuizard-${POSTGRES_DB}-${TIMESTAMP}.sql.gz"
+: "${DATABASE_URL:?DATABASE_URL manquant dans $ENV_FILE}"
+: "${FTP_HOST:?FTP_HOST manquant dans $ENV_FILE}"
+: "${FTP_USER:?FTP_USER manquant dans $ENV_FILE}"
+: "${FTP_PASS:?FTP_PASS manquant dans $ENV_FILE}"
 
-echo "[backup] $(date) → dump vers ${FILENAME}"
+# --- Setup dossier local ---
+mkdir -p "$LOCAL_DIR"
 
-# Dump via Docker. PGPASSWORD passé dans l'env du container.
-docker exec -e PGPASSWORD="${POSTGRES_PASSWORD:-}" "${DOCKER_CONTAINER}" \
-  pg_dump -U "${POSTGRES_USER}" -d "${POSTGRES_DB}" \
-  --no-owner --no-acl --format=plain \
-  | gzip -9 > "${FILENAME}"
+TS=$(date +%Y%m%d_%H%M%S)
+FILENAME="kuizard_${TS}.dump"
+LOCAL_PATH="${LOCAL_DIR}/${FILENAME}"
 
-# Vérifier que le dump n'est pas vide (au moins 1 ko, sinon problème)
-SIZE=$(stat -c%s "${FILENAME}")
-if [[ "${SIZE}" -lt 1024 ]]; then
-  echo "[backup] ⚠ Dump suspect (${SIZE} octets). Conservé pour analyse." >&2
-  exit 1
-fi
+echo "[$(date -Iseconds)] === Backup Kuizard start ==="
 
-echo "[backup] ✓ Dump OK (${SIZE} octets)"
+# --- 1) pg_dump ---
+echo "[$(date -Iseconds)] pg_dump -> $LOCAL_PATH"
+pg_dump -Fc "$DATABASE_URL" > "$LOCAL_PATH"
 
-# Rotation : supprime les dumps > BACKUP_KEEP_DAYS
-DELETED=$(find "${BACKUP_DIR}" -name "kuizard-${POSTGRES_DB}-*.sql.gz" \
-  -type f -mtime "+${BACKUP_KEEP_DAYS}" -print -delete | wc -l)
-if [[ "${DELETED}" -gt 0 ]]; then
-  echo "[backup] 🗑 ${DELETED} ancien(s) dump(s) supprimé(s)"
-fi
+SIZE=$(du -h "$LOCAL_PATH" | cut -f1)
+echo "[$(date -Iseconds)] Dump OK ($SIZE)"
 
-# Stats finales
-COUNT=$(find "${BACKUP_DIR}" -name "kuizard-${POSTGRES_DB}-*.sql.gz" -type f | wc -l)
-TOTAL_SIZE=$(du -sh "${BACKUP_DIR}" | cut -f1)
-echo "[backup] 📦 ${COUNT} backup(s) conservé(s), ${TOTAL_SIZE} au total"
+# --- 2) Upload FTP + rotation distante ---
+echo "[$(date -Iseconds)] Upload FTP vers $FTP_HOST:$FTP_REMOTE_DIR/"
+
+lftp -u "$FTP_USER,$FTP_PASS" "$FTP_HOST" <<LFTP_EOF
+set ssl:verify-certificate no
+set net:timeout 20
+set net:max-retries 3
+mkdir -pf "$FTP_REMOTE_DIR"
+cd "$FTP_REMOTE_DIR"
+put "$LOCAL_PATH" -o "$FILENAME"
+
+# Rotation FTP : supprimer les fichiers > FTP_RETENTION_DAYS jours
+# lftp n'a pas de "mtime > N days" natif -> on le fait via cls | awk
+cls --sort=date -1 kuizard_*.dump > /tmp/lftp-list.txt
+LFTP_EOF
+
+# Rotation distante : trie par date dans le nom (YYYYMMDD_HHMMSS), garde les N plus recents
+FTP_KEEP=$FTP_RETENTION_DAYS
+lftp -u "$FTP_USER,$FTP_PASS" "$FTP_HOST" -e "
+set ssl:verify-certificate no
+cd $FTP_REMOTE_DIR
+find . -name 'kuizard_*.dump' | sort | head -n -$FTP_KEEP | xargs -r -I{} rm {}
+bye
+" 2>/dev/null || echo "[WARN] Rotation FTP echouee (non fatale)"
+
+# --- 3) Rotation locale ---
+echo "[$(date -Iseconds)] Rotation locale > $LOCAL_RETENTION_DAYS jours"
+find "$LOCAL_DIR" -name "kuizard_*.dump" -mtime +$LOCAL_RETENTION_DAYS -delete
+
+echo "[$(date -Iseconds)] === Backup Kuizard OK ==="
