@@ -51,6 +51,13 @@ const planSchema = z.object({
   tvDisplay: z.boolean().optional().default(false),
   maxActiveQuizzes: z.coerce.number().int().min(0).optional(),
   maxTemplatesPerMonth: z.coerce.number().int().min(0).optional(),
+  // V60.3 — Limites escape
+  maxEscapes: z.coerce.number().int().min(0).optional(),
+  maxEscapeSteps: z.coerce.number().int().min(0).optional(),
+  maxTeamsPerEscape: z.coerce.number().int().min(0).optional(),
+  escapeChrono: z.boolean().optional().default(false),
+  escapeHints: z.boolean().optional().default(false),
+  escapeCustomTheme: z.boolean().optional().default(false),
 });
 
 function checkbox(v: FormDataEntryValue | null): boolean {
@@ -63,11 +70,15 @@ const FORM_FIELDS = [
   "slug", "name", "tagline", "description",
   "type", "interval", "priceCents", "stripePriceId", "displayOrder",
   "maxQuestions", "maxParticipants", "maxActiveQuizzes", "maxTemplatesPerMonth",
+  // V60.3 — escape
+  "maxEscapes", "maxEscapeSteps", "maxTeamsPerEscape",
 ] as const;
 const CHECKBOX_FIELDS = [
   "isActive", "isHighlighted",
   "customColors", "customPrizes", "finalMessage", "coverImage",
   "questionImages", "scheduledMode", "liveMode", "ranking", "tvDisplay",
+  // V60.3 — escape
+  "escapeChrono", "escapeHints", "escapeCustomTheme",
 ] as const;
 
 function extractFormValues(formData: FormData): Record<string, string> {
@@ -114,6 +125,13 @@ export async function upsertPlanAction(
     tvDisplay: checkbox(formData.get("tvDisplay")),
     maxActiveQuizzes: formData.get("maxActiveQuizzes") || undefined,
     maxTemplatesPerMonth: formData.get("maxTemplatesPerMonth") || undefined,
+    // V60.3 — escape
+    maxEscapes: formData.get("maxEscapes") || undefined,
+    maxEscapeSteps: formData.get("maxEscapeSteps") || undefined,
+    maxTeamsPerEscape: formData.get("maxTeamsPerEscape") || undefined,
+    escapeChrono: checkbox(formData.get("escapeChrono")),
+    escapeHints: checkbox(formData.get("escapeHints")),
+    escapeCustomTheme: checkbox(formData.get("escapeCustomTheme")),
   });
 
   if (!parsed.success) {
@@ -152,6 +170,14 @@ export async function upsertPlanAction(
     limits.maxActiveQuizzes = v.maxActiveQuizzes;
   if (v.maxTemplatesPerMonth !== undefined)
     limits.maxTemplatesPerMonth = v.maxTemplatesPerMonth;
+  // V60.3 — escape limits
+  if (v.maxEscapes !== undefined) limits.maxEscapes = v.maxEscapes;
+  if (v.maxEscapeSteps !== undefined) limits.maxEscapeSteps = v.maxEscapeSteps;
+  if (v.maxTeamsPerEscape !== undefined)
+    limits.maxTeamsPerEscape = v.maxTeamsPerEscape;
+  limits.escapeChrono = v.escapeChrono;
+  limits.escapeHints = v.escapeHints;
+  limits.escapeCustomTheme = v.escapeCustomTheme;
 
   const baseData = {
     slug: v.slug,

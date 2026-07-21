@@ -25,6 +25,18 @@ export type PlanLimits = {
   maxTemplatesPerMonth?: number;
   // Nombre max de quizz actifs simultanément (abos)
   maxActiveQuizzes?: number;
+  // V60.3 — Escape games digitaux
+  // Nombre max d'escapes qu'un user peut avoir (undefined = illimité, 0 = pas
+  // le droit). Le plan free vaut 0 (payant/abo requis).
+  maxEscapes?: number;
+  // Nombre max d'etapes (steps) par escape
+  maxEscapeSteps?: number;
+  // Nombre max d'equipes par escape
+  maxTeamsPerEscape?: number;
+  // Features escape-specifiques debloquables selon plan
+  escapeChrono?: boolean;      // active le chrono global
+  escapeHints?: boolean;       // active les indices deblocables
+  escapeCustomTheme?: boolean; // personnalisation couleurs escape
 };
 
 export type PlanConfigDTO = {

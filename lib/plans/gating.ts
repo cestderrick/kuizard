@@ -24,6 +24,13 @@ const FREE_FALLBACK: PlanLimits = {
   liveMode: false,
   ranking: true,
   tvDisplay: false,
+  // V60.3 — Escape verrouille par defaut (plan payant requis)
+  maxEscapes: 0,
+  maxEscapeSteps: 5,
+  maxTeamsPerEscape: 4,
+  escapeChrono: false,
+  escapeHints: false,
+  escapeCustomTheme: false,
 };
 
 function toLimits(json: unknown): PlanLimits {
@@ -141,6 +148,57 @@ export async function getEffectivePlan(
   });
   if (freePlan) return toDTO(freePlan);
 
+  return makeFreeFallback();
+}
+
+// =============================================
+// V60.3 — Plan effectif pour les escape games
+// =============================================
+// Escape n'est pas encore vendu au shot (comme les quizzes payes). On regarde
+// donc uniquement : (1) abo actif, (2) plan offert admin (subscription), (3)
+// fallback free (qui bloque a maxEscapes=0).
+
+export async function getEffectiveEscapePlan(
+  userId: string
+): Promise<PlanConfigDTO> {
+  // 1. Abo actif ?
+  const activeSub = await prisma.subscription.findFirst({
+    where: {
+      userId,
+      status: { in: ["active", "trialing"] },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+  if (activeSub) {
+    const plan = await prisma.planConfig.findUnique({
+      where: { slug: activeSub.planSlug },
+    });
+    if (plan) return toDTO(plan);
+  }
+
+  // 1.bis. Plan offert admin en cours ?
+  const now = new Date();
+  const giftedSub = await prisma.grantedPlan.findFirst({
+    where: {
+      userId,
+      type: "subscription",
+      revokedAt: null,
+      OR: [{ endsAt: null }, { endsAt: { gte: now } }],
+    },
+    orderBy: { createdAt: "desc" },
+  });
+  if (giftedSub) {
+    const plan = await prisma.planConfig.findUnique({
+      where: { slug: giftedSub.planSlug },
+    });
+    if (plan) return toDTO(plan);
+  }
+
+  // 2. Fallback : plan free
+  const freePlan = await prisma.planConfig.findUnique({
+    where: { slug: "free" },
+  });
+  if (freePlan) return toDTO(freePlan);
   return makeFreeFallback();
 }
 

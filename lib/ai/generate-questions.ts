@@ -46,7 +46,57 @@ export async function generateQuizQuestions(
     };
   }
 
-  const count = Math.max(3, Math.min(30, Math.floor(params.count)));
+  const wanted = Math.max(3, Math.min(30, Math.floor(params.count)));
+
+  // V62.1 — Boucle de retry : Groq/Llama a tendance a produire moins de
+  // questions que demande (souvent 20-27 au lieu de 30). On boucle jusqu'a 3
+  // tentatives pour completer, en donnant a chaque fois les textes deja
+  // generes pour eviter les doublons.
+  const collected: AIQuestion[] = [];
+  const MAX_ATTEMPTS = 3;
+  for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+    const missing = wanted - collected.length;
+    if (missing <= 0) break;
+    const batchResult = await fetchGroqBatch({
+      apiKey,
+      params,
+      count: missing,
+      avoidTexts: collected.map((q) => q.text),
+    });
+    if (!batchResult.ok) {
+      // Si on a deja quelques questions, on renvoie ce qu'on a plutot que
+      // de tout perdre. Sinon on renvoie l'erreur.
+      if (collected.length > 0) break;
+      return batchResult;
+    }
+    for (const q of batchResult.questions) {
+      // Evite les doublons (comparaison sur texte normalise)
+      const norm = q.text.toLowerCase().trim();
+      const dup = collected.some(
+        (c) => c.text.toLowerCase().trim() === norm
+      );
+      if (!dup) collected.push(q);
+      if (collected.length >= wanted) break;
+    }
+    // Si l'IA n'a rien renvoye ce tour-ci, on arrete d'insister
+    if (batchResult.questions.length === 0) break;
+  }
+
+  if (collected.length === 0) {
+    return { ok: false, error: "Aucune question generee." };
+  }
+  return { ok: true, questions: collected.slice(0, wanted) };
+}
+
+// V62.1 — Fait un unique appel a Groq pour generer `count` questions.
+// Isolable pour permettre le retry.
+async function fetchGroqBatch(args: {
+  apiKey: string;
+  params: AIGenerateParams;
+  count: number;
+  avoidTexts: string[];
+}): Promise<AIGenerateResult> {
+  const { apiKey, params, count } = args;
   const lang = params.language ?? "fr";
 
   // V62 — Instructions differenciees et bien plus strictes par niveau.
@@ -77,8 +127,13 @@ export async function generateQuizQuestions(
   };
   const defaultPoints = pointsByDifficulty[params.difficulty] ?? 2;
 
-  const prompt = `Tu es un expert createur de quizz interactifs. Genere exactement ${count} questions de quizz sur le theme : « ${params.theme} ».
+  // V62.1 — Injecter les textes deja generes pour eviter les doublons au retry
+  const avoidBlock =
+    args.avoidTexts.length > 0
+      ? `\n\nATTENTION : ces questions ont deja ete generees, ne les repete PAS :\n${args.avoidTexts.map((t, i) => `${i + 1}. ${t}`).join("\n")}\n\n`
+      : "";
 
+  const prompt = `Tu es un expert createur de quizz interactifs. Genere exactement ${count} questions de quizz sur le theme : « ${params.theme} ».${avoidBlock}
 ${difficultyInstruction}
 
 Langue : ${lang === "fr" ? "francais" : lang}
@@ -86,6 +141,7 @@ Format : QCM avec 4 reponses dont 1 SEULE bonne
 Longueur : questions <= 200 caracteres, reponses <= 100 caracteres chacune
 
 REGLES STRICTES :
+- Genere EXACTEMENT ${count} questions, ni plus ni moins.
 - CHAQUE question DOIT correspondre au niveau demande ci-dessus, sans exception.
 - Interdit les questions "quel est le nom du personnage principal" si niveau > moyen.
 - Interdit les questions dont la reponse est evidente pour quelqu'un qui n'a jamais suivi le sujet, si niveau >= difficile.
@@ -128,17 +184,18 @@ Aucun commentaire, aucun markdown, JSON pur uniquement.`;
           {
             role: "system",
             content:
-              "Tu réponds uniquement en JSON valide, aucun texte additionnel.",
+              "Tu reponds uniquement en JSON valide, aucun texte additionnel.",
           },
           { role: "user", content: prompt },
         ],
         response_format: { type: "json_object" },
-        // V62 — temperature plus basse pour niveaux hard (moins de creativite,
-        // plus de faits precis). Facile/moyen peuvent tolerer plus de variete.
         temperature:
           params.difficulty === "expert" || params.difficulty === "hardcore"
             ? 0.5
             : 0.75,
+        // V62.1 — Groq/Llama tronque parfois faute de tokens si count eleve.
+        // 8000 tokens permettent facilement 30 questions completes + explications.
+        max_tokens: 8000,
       }),
     });
 

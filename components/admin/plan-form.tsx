@@ -31,6 +31,13 @@ type PlanLimits = {
   liveMode?: boolean;
   ranking?: boolean;
   tvDisplay?: boolean;
+  // V60.3 — Escape
+  maxEscapes?: number;
+  maxEscapeSteps?: number;
+  maxTeamsPerEscape?: number;
+  escapeChrono?: boolean;
+  escapeHints?: boolean;
+  escapeCustomTheme?: boolean;
 };
 
 type Plan = {
@@ -107,6 +114,13 @@ export function PlanForm({ plan }: { plan?: Plan }) {
     if (v.liveMode !== undefined) setLiveMode(v.liveMode === "1");
     if (v.ranking !== undefined) setRanking(v.ranking === "1");
     if (v.tvDisplay !== undefined) setTvDisplay(v.tvDisplay === "1");
+    // V60.3 — Escape
+    if (v.maxEscapes !== undefined) setMaxEscapes(v.maxEscapes);
+    if (v.maxEscapeSteps !== undefined) setMaxEscapeSteps(v.maxEscapeSteps);
+    if (v.maxTeamsPerEscape !== undefined) setMaxTeamsPerEscape(v.maxTeamsPerEscape);
+    if (v.escapeChrono !== undefined) setEscapeChrono(v.escapeChrono === "1");
+    if (v.escapeHints !== undefined) setEscapeHints(v.escapeHints === "1");
+    if (v.escapeCustomTheme !== undefined) setEscapeCustomTheme(v.escapeCustomTheme === "1");
   }, [state.values]);
 
   const initLimits = (plan?.limits ?? {}) as PlanLimits;
@@ -144,6 +158,25 @@ export function PlanForm({ plan }: { plan?: Plan }) {
   const [liveMode, setLiveMode] = useState(!!initLimits.liveMode);
   const [ranking, setRanking] = useState(initLimits.ranking !== false);
   const [tvDisplay, setTvDisplay] = useState(!!initLimits.tvDisplay);
+  // V60.3 — Escape
+  const [maxEscapes, setMaxEscapes] = useState(
+    toNumStr((initLimits as PlanLimits & { maxEscapes?: number }).maxEscapes)
+  );
+  const [maxEscapeSteps, setMaxEscapeSteps] = useState(
+    toNumStr((initLimits as PlanLimits & { maxEscapeSteps?: number }).maxEscapeSteps)
+  );
+  const [maxTeamsPerEscape, setMaxTeamsPerEscape] = useState(
+    toNumStr((initLimits as PlanLimits & { maxTeamsPerEscape?: number }).maxTeamsPerEscape)
+  );
+  const [escapeChrono, setEscapeChrono] = useState(
+    !!(initLimits as PlanLimits & { escapeChrono?: boolean }).escapeChrono
+  );
+  const [escapeHints, setEscapeHints] = useState(
+    !!(initLimits as PlanLimits & { escapeHints?: boolean }).escapeHints
+  );
+  const [escapeCustomTheme, setEscapeCustomTheme] = useState(
+    !!(initLimits as PlanLimits & { escapeCustomTheme?: boolean }).escapeCustomTheme
+  );
 
   return (
     <form
@@ -308,6 +341,34 @@ export function PlanForm({ plan }: { plan?: Plan }) {
         <Toggle name="liveMode" label="Mode live" value={liveMode} onChange={setLiveMode} />
         <Toggle name="ranking" label="Classement" value={ranking} onChange={setRanking} />
         <Toggle name="tvDisplay" label="Affichage TV" value={tvDisplay} onChange={setTvDisplay} />
+      </fieldset>
+
+      {/* V60.3 — Fieldset dedie aux limites Escape games */}
+      <fieldset className="grid grid-cols-2 md:grid-cols-3 gap-2 border border-[rgba(167,139,250,0.15)] rounded-lg p-3">
+        <legend className="text-xs uppercase tracking-[2px] text-[var(--color-gold)] px-2">
+          🗝️ Escape games
+        </legend>
+        <NumberLimit
+          name="maxEscapes"
+          label="Max escapes (0 = interdit)"
+          value={maxEscapes}
+          onChange={setMaxEscapes}
+        />
+        <NumberLimit
+          name="maxEscapeSteps"
+          label="Max etapes / escape"
+          value={maxEscapeSteps}
+          onChange={setMaxEscapeSteps}
+        />
+        <NumberLimit
+          name="maxTeamsPerEscape"
+          label="Max equipes / escape"
+          value={maxTeamsPerEscape}
+          onChange={setMaxTeamsPerEscape}
+        />
+        <Toggle name="escapeChrono" label="Chrono global" value={escapeChrono} onChange={setEscapeChrono} />
+        <Toggle name="escapeHints" label="Indices deblocables" value={escapeHints} onChange={setEscapeHints} />
+        <Toggle name="escapeCustomTheme" label="Theme couleurs escape" value={escapeCustomTheme} onChange={setEscapeCustomTheme} />
       </fieldset>
 
       <div className="grid grid-cols-2 gap-3">

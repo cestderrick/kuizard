@@ -11,6 +11,7 @@ import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
+import { getEffectiveEscapePlan } from "@/lib/plans/gating";
 
 // -----------------------------------------------------
 // Helpers
@@ -45,6 +46,22 @@ export async function createEscapeAction(formData: FormData) {
   const title = String(formData.get("title") ?? "").trim();
   if (title.length < 2 || title.length > 100) {
     throw new Error("Titre invalide (2 a 100 caracteres).");
+  }
+
+  // V60.3 — Gating : nombre max d'escapes selon plan effectif
+  const plan = await getEffectiveEscapePlan(session.user.id);
+  const maxEscapes = plan.limits.maxEscapes;
+  if (maxEscapes !== undefined) {
+    const currentCount = await prisma.escape.count({
+      where: { userId: session.user.id },
+    });
+    if (currentCount >= maxEscapes) {
+      throw new Error(
+        maxEscapes === 0
+          ? "Les escape games ne sont pas inclus dans ton plan actuel. Souscris a un abonnement pour les debloquer."
+          : `Tu as atteint la limite de ton plan (${maxEscapes} escape${maxEscapes > 1 ? "s" : ""}). Passe a un plan superieur pour en creer plus.`
+      );
+    }
   }
 
   // Genere un code unique (10 essais max, quasi impossible de collisionner)
@@ -162,6 +179,18 @@ export async function addEscapeStepAction(formData: FormData) {
   const escapeId = String(formData.get("escapeId") ?? "");
   const own = await assertOwnEscape(escapeId, session.user.id);
   if (!own) throw new Error("Escape introuvable.");
+
+  // V60.3 — Gating : nombre max de steps par escape selon plan effectif
+  const plan = await getEffectiveEscapePlan(session.user.id);
+  const maxSteps = plan.limits.maxEscapeSteps;
+  if (maxSteps !== undefined) {
+    const currentSteps = await prisma.escapeStep.count({ where: { escapeId } });
+    if (currentSteps >= maxSteps) {
+      throw new Error(
+        `Tu as atteint la limite de ${maxSteps} etape${maxSteps > 1 ? "s" : ""} par escape sur ton plan. Passe a un plan superieur pour en ajouter plus.`
+      );
+    }
+  }
 
   const last = await prisma.escapeStep.findFirst({
     where: { escapeId },
