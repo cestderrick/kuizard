@@ -86,7 +86,10 @@ export default async function DashboardLayout({
                 href="/dashboard/quizzes/library"
                 label="📚 Quizzthèque"
               />
-              <DashboardNavLink href="/escape" label="🗝️ Escape" />
+              <DashboardNavLink
+                href="/dashboard/escapes"
+                label="🗝️ Mes escapes"
+              />
               <DashboardNavLink href="/tarifs" label="💳 Tarifs" />
             </nav>
           </div>
