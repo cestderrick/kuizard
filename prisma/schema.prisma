@@ -76,6 +76,8 @@ model User {
   grantedPlans     GrantedPlan[]
   passwordResetTokens PasswordResetToken[]
   companyPromoCodes CompanyPromoCode[]
+  // V60 — Escape games digitaux
+  escapes           Escape[]
 }
 
 // V51 — Code promo de société pour les comptes pros (BUSINESS).
@@ -711,6 +713,127 @@ model Participation {
 
   @@index([quizId])
   @@index([quizId, score(sort: Desc)])
+}
+
+
+
+// ====================================================
+// V60 — ESCAPE GAMES DIGITAUX
+// ====================================================
+// Escape sequenciel multi-equipes. Chaque equipe progresse d'etape en etape
+// (une seule voie sequentielle par escape). Chrono global optionnel. Les
+// equipes peuvent debloquer des indices moyennant une penalite de points.
+// Le classement final ordonne par : (1) escape termine ? (2) score le plus
+// haut, (3) temps le plus court.
+
+model Escape {
+  id                String       @id @default(cuid())
+  userId            String
+  // Code court pour que les equipes rejoignent (unique global)
+  code              String       @unique
+  title             String
+  description       String?      @db.Text
+  coverImageUrl     String?
+  theme             Json         @default("{}")
+
+  // Config gameplay
+  maxTeamsCount     Int?         // null = illimite
+  timerMinutes      Int?         // duree max en minutes (null = pas de chrono)
+  hintCostPoints    Int          @default(10)   // pts deduits par indice debloque
+
+  status            EscapeStatus @default(DRAFT)
+  // Quand l'admin declenche le "GO" (multi-equipes en simultane). Sert de
+  // t0 pour le chrono partage entre toutes les equipes rejoints.
+  startedAt         DateTime?
+  scheduledOpenAt   DateTime?
+  scheduledCloseAt  DateTime?
+
+  finalMessage      String?      @db.Text
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  steps             EscapeStep[]
+  teams             EscapeTeam[]
+
+  @@index([userId])
+  @@index([code])
+  @@index([status])
+}
+
+enum EscapeStatus {
+  DRAFT
+  PUBLISHED
+  RUNNING
+  FINISHED
+  ARCHIVED
+}
+
+model EscapeStep {
+  id             String         @id @default(cuid())
+  escapeId       String
+  order          Int            // sequentiel 1, 2, 3...
+  type           EscapeStepType
+
+  title          String?        // titre optionnel de l'enigme
+  body           String         @db.Text  // enonce
+
+  imageUrl       String?        // pour type IMAGE ou illustration
+  audioUrl       String?        // pour type AUDIO
+
+  // Reponse attendue selon type :
+  //   - TEXT / IMAGE / AUDIO -> expectedAnswer (compare normalise)
+  //   - CHOICE -> options JSON [{label, isCorrect}]
+  expectedAnswer String?
+  options        Json           @default("[]")
+
+  points         Int            @default(10)   // gain de base pour cette etape
+  // Indices : array de string ex ["Regarde en bas", "C'est un nombre pair"]
+  // Cout = escape.hintCostPoints par indice debloque
+  hints          Json           @default("[]")
+
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  escape         Escape         @relation(fields: [escapeId], references: [id], onDelete: Cascade)
+
+  @@index([escapeId, order])
+}
+
+enum EscapeStepType {
+  TEXT     // reponse texte libre
+  CHOICE   // choix unique/multiples
+  IMAGE    // enigme avec image + reponse texte
+  AUDIO    // enigme avec audio + reponse texte
+}
+
+model EscapeTeam {
+  id               String    @id @default(cuid())
+  escapeId         String
+  name             String    // nom d'equipe
+  // Liste des prenoms/pseudos ["Marie", "Paul", ...]. Optionnel mais chouette.
+  playerNames      Json      @default("[]")
+
+  // Progression
+  currentStepOrder Int       @default(1)
+  score            Int       @default(0)   // peut etre negatif si beaucoup d'indices
+  hintsUsed        Int       @default(0)
+
+  // Historique des tentatives et indices, pour debug + rediffusion
+  // attempts : { [stepId]: [{ answer, correct, at }] }
+  attempts         Json      @default("{}")
+  // usedHints : { [stepId]: [indexIndicesDebloques] }
+  usedHints        Json      @default("{}")
+
+  startedAt        DateTime  @default(now())
+  finishedAt       DateTime?
+  lastActivityAt   DateTime  @default(now()) @updatedAt
+
+  escape           Escape    @relation(fields: [escapeId], references: [id], onDelete: Cascade)
+
+  @@index([escapeId])
+  @@index([escapeId, score(sort: Desc)])
+  @@index([escapeId, finishedAt])
 }
 
 // ====================================================
