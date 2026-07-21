@@ -14,6 +14,9 @@ export type AdminPlanState = {
   ok: boolean;
   message?: string;
   errors?: Record<string, string[]>;
+  // V61.2 — Valeurs saisies renvoyees pour re-hydrater le form apres erreur
+  // (evite que l'admin doive tout retaper si un seul champ pete).
+  values?: Record<string, string>;
 };
 
 // Schéma de limites — schema-libre, on parse en JSON. Tous nullables/optionnels.
@@ -54,6 +57,31 @@ function checkbox(v: FormDataEntryValue | null): boolean {
   return v === "on" || v === "true" || v === "1";
 }
 
+// V61.2 — Extrait toutes les valeurs du form pour les renvoyer dans le state
+// en cas d'erreur (permet au client de re-hydrater les inputs sans tout perdre).
+const FORM_FIELDS = [
+  "slug", "name", "tagline", "description",
+  "type", "interval", "priceCents", "stripePriceId", "displayOrder",
+  "maxQuestions", "maxParticipants", "maxActiveQuizzes", "maxTemplatesPerMonth",
+] as const;
+const CHECKBOX_FIELDS = [
+  "isActive", "isHighlighted",
+  "customColors", "customPrizes", "finalMessage", "coverImage",
+  "questionImages", "scheduledMode", "liveMode", "ranking", "tvDisplay",
+] as const;
+
+function extractFormValues(formData: FormData): Record<string, string> {
+  const values: Record<string, string> = {};
+  for (const f of FORM_FIELDS) {
+    const raw = formData.get(f);
+    if (raw !== null && raw !== undefined) values[f] = String(raw);
+  }
+  for (const f of CHECKBOX_FIELDS) {
+    values[f] = checkbox(formData.get(f)) ? "1" : "0";
+  }
+  return values;
+}
+
 export async function upsertPlanAction(
   _prev: AdminPlanState,
   formData: FormData
@@ -90,8 +118,6 @@ export async function upsertPlanAction(
 
   if (!parsed.success) {
     const fieldErrors = z.flattenError(parsed.error).fieldErrors;
-    // V61 — Message detaille : liste les champs en erreur pour aider l'admin
-    // a comprendre pourquoi le submit echoue (au lieu du generique "verifie les champs")
     const errorFields = Object.entries(fieldErrors)
       .filter(([, msgs]) => Array.isArray(msgs) && msgs.length > 0)
       .map(([field]) => field);
@@ -103,6 +129,8 @@ export async function upsertPlanAction(
       ok: false,
       errors: fieldErrors,
       message: `Verifie les champs.${detail}`,
+      // V61.2 — Renvoyer TOUT ce qui a ete saisi pour re-hydrater le form
+      values: extractFormValues(formData),
     };
   }
 
@@ -148,7 +176,11 @@ export async function upsertPlanAction(
     }
   } catch (err) {
     console.error("[admin-plans] upsert err:", err);
-    return { ok: false, message: "Slug déjà utilisé ou erreur BDD." };
+    return {
+      ok: false,
+      message: "Slug deja utilise ou erreur BDD.",
+      values: extractFormValues(formData),
+    };
   }
 
   revalidatePath("/admin/plans");

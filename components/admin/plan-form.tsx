@@ -78,6 +78,37 @@ export function PlanForm({ plan }: { plan?: Plan }) {
     if (state.ok) router.refresh();
   }, [state.ok, router]);
 
+  // V61.2 — Re-hydrate les inputs depuis les valeurs renvoyees par le server
+  // action apres une erreur, pour ne rien perdre de ce qui a ete saisi.
+  useEffect(() => {
+    const v = state.values;
+    if (!v) return;
+    if (v.slug !== undefined) setSlug(v.slug);
+    if (v.name !== undefined) setName(v.name);
+    if (v.tagline !== undefined) setTagline(v.tagline);
+    if (v.description !== undefined) setDescription(v.description);
+    if (v.type !== undefined) setType(v.type);
+    if (v.interval !== undefined) setInterval(v.interval);
+    if (v.priceCents !== undefined) setPriceCents(v.priceCents);
+    if (v.stripePriceId !== undefined) setStripePriceId(v.stripePriceId);
+    if (v.displayOrder !== undefined) setDisplayOrder(v.displayOrder);
+    if (v.maxQuestions !== undefined) setMaxQuestions(v.maxQuestions);
+    if (v.maxParticipants !== undefined) setMaxParticipants(v.maxParticipants);
+    if (v.maxActiveQuizzes !== undefined) setMaxActiveQuizzes(v.maxActiveQuizzes);
+    if (v.maxTemplatesPerMonth !== undefined) setMaxTemplatesPerMonth(v.maxTemplatesPerMonth);
+    if (v.isActive !== undefined) setIsActive(v.isActive === "1");
+    if (v.isHighlighted !== undefined) setIsHighlighted(v.isHighlighted === "1");
+    if (v.customColors !== undefined) setCustomColors(v.customColors === "1");
+    if (v.customPrizes !== undefined) setCustomPrizes(v.customPrizes === "1");
+    if (v.finalMessage !== undefined) setFinalMessage(v.finalMessage === "1");
+    if (v.coverImage !== undefined) setCoverImage(v.coverImage === "1");
+    if (v.questionImages !== undefined) setQuestionImages(v.questionImages === "1");
+    if (v.scheduledMode !== undefined) setScheduledMode(v.scheduledMode === "1");
+    if (v.liveMode !== undefined) setLiveMode(v.liveMode === "1");
+    if (v.ranking !== undefined) setRanking(v.ranking === "1");
+    if (v.tvDisplay !== undefined) setTvDisplay(v.tvDisplay === "1");
+  }, [state.values]);
+
   const initLimits = (plan?.limits ?? {}) as PlanLimits;
 
   // ------- Etats controles pour TOUS les champs -------
