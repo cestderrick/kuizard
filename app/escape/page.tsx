@@ -1,486 +1,267 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { auth } from "@/auth";
-import { SiteFooter } from "@/components/legal/site-footer";
 import { PublicNavbar } from "@/components/nav/public-navbar";
+import { SiteFooter } from "@/components/legal/site-footer";
 
 export const metadata: Metadata = {
-  title: "Escape — Escape games imprimables · Kuizard",
+  title: "🗝️ Escape games digitaux multi-équipes — Kuizard",
   description:
-    "Bientôt sur Kuizard : des escape games complets à imprimer chez toi. Énigmes, personnages personnalisables avec les surnoms de tes amis, et actions au choix selon l'ambiance que tu veux.",
+    "Lance un escape game 100% digital sur smartphone : énigmes séquentielles, chrono live, indices déblocables, classement des équipes en temps réel. Parfait pour mariages, EVJF, team building, anniversaires.",
   openGraph: {
-    title: "🗝️ Kuizard Escape — Escape games personnalisés à imprimer",
+    title: "🗝️ Kuizard Escape — Escape games digitaux multi-équipes",
     description:
-      "Bêta privée bientôt ouverte. Kits escape game avec surnoms perso + ambiance au choix, à imprimer chez toi en 2 minutes.",
+      "Énigmes en séquence, chrono, indices déblocables, classement live. Rejoins avec un simple code.",
     url: "/escape",
     type: "website",
-    images: [{ url: "/og-image", width: 1200, height: 630 }],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "🗝️ Kuizard Escape — Beta bientôt",
-    description: "Escape games personnalisés à imprimer chez toi.",
-    images: ["/og-image"],
   },
 };
 
-// V41 — Page teasing Escape. Pas encore d'implémentation réelle, juste un
-// topo "la beta arrive" + teasing des futures personnalisations + capture
-// d'intérêt (lien vers le formulaire suggestions/messages).
-
 const FEATURES = [
   {
-    icon: "🖨️",
-    title: "À imprimer chez toi",
-    desc: "PDF prêt à imprimer en couleur ou noir & blanc. Tu déplies, tu joues. Pas d'app, pas d'écran.",
+    icon: "🧩",
+    title: "Énigmes en séquence",
+    desc: "Chaque équipe déroule les énigmes une par une. Réponds correctement pour passer à la suivante. Format QCM ou réponse libre.",
   },
   {
     icon: "👥",
-    title: "Personnalisé avec tes joueurs",
-    desc: "Saisis les surnoms de tes amis avant de générer ton kit. Les énigmes les nomment, ils sont les héros de l'aventure.",
-  },
-  {
-    icon: "🎭",
-    title: "Actions au choix",
-    desc: "À chaque étape, tu choisis l'ambiance (humour, frisson, romantique, déjanté). Le scénario s'adapte avant l'impression.",
+    title: "Multi-équipes en simultané",
+    desc: "Toutes les équipes rejoignent avec le même code, jouent en même temps. Classement live en fin de partie.",
   },
   {
     icon: "⏱️",
-    title: "30 à 90 minutes",
-    desc: "Kits de différentes durées selon ton créneau. Idéal apéro, soirée, anniversaire surprise, EVJF/EVG.",
+    title: "Chrono partagé",
+    desc: "Chaque escape a son propre chrono global (ex: 60 min). Course contre la montre pour tout le monde.",
+  },
+  {
+    icon: "💡",
+    title: "Indices déblocables",
+    desc: "Une équipe bloquée peut débloquer un indice — mais au prix de quelques points. Balance parfaite entre challenge et progression.",
+  },
+  {
+    icon: "📱",
+    title: "Zéro app à installer",
+    desc: "Chaque joueur ouvre le lien dans son navigateur. QR code partageable, cookie session pour reprendre après une coupure.",
+  },
+  {
+    icon: "🎨",
+    title: "Bibliothèque de scénarios",
+    desc: "Choisis un scénario prêt à l'emploi dans la bibliothèque (mariage, EVJF, halloween…) ou crée le tien avec l'éditeur intuitif.",
   },
 ];
 
-const SCENARIOS = [
-  { emoji: "🕵️", title: "Le mystère du manoir", tagline: "Enquête classique" },
-  { emoji: "🚀", title: "Évasion spatiale", tagline: "SF & énigmes logiques" },
-  { emoji: "🏴‍☠️", title: "Trésor des Caraïbes", tagline: "Aventure pour enfants" },
-  { emoji: "💀", title: "Maison hantée", tagline: "Halloween, frissons légers" },
-  { emoji: "💑", title: "Le rendez-vous secret", tagline: "Saint-Valentin / couples" },
-  { emoji: "🎩", title: "Soirée magique", tagline: "Anniversaire & enfants" },
+const HOWTO = [
+  {
+    n: 1,
+    title: "Crée ton escape ou pioche dans la bibliothèque",
+    desc: "Éditeur simple : titre, chrono, énigmes séquentielles avec type texte/QCM. Ou duplique un scénario prêt.",
+  },
+  {
+    n: 2,
+    title: "Partage le code aux équipes",
+    desc: "Chaque équipe rentre le code, choisit son nom + les prénoms. Elles jouent en simultané sans se voir.",
+  },
+  {
+    n: 3,
+    title: "Chrono tourne, énigmes défilent",
+    desc: "Les équipes progressent à leur rythme, débloquent des indices si nécessaire. Toi tu vois le classement live.",
+  },
+  {
+    n: 4,
+    title: "Classement final",
+    desc: "L'équipe la plus rapide + qui a le meilleur score gagne. Les prénoms des joueurs apparaissent au tableau.",
+  },
 ];
 
-export default async function EscapePage() {
-  const session = await auth();
-  const isAuth = !!session?.user?.id;
+const USE_CASES = [
+  { emoji: "💍", label: "Mariage" },
+  { emoji: "🎉", label: "EVJF / EVG" },
+  { emoji: "🏢", label: "Team building" },
+  { emoji: "🎂", label: "Anniversaire" },
+  { emoji: "🎃", label: "Halloween" },
+  { emoji: "🎄", label: "Noël" },
+];
 
+export default function EscapePage() {
   return (
-    <div className="min-h-screen flex flex-col bg-[var(--color-night)] text-[var(--color-lavender)]">
-      {/* V41.3 : Si connecté, on affiche le menu global (sticky en haut). */}
-      {/* Si non connecté, fallback minimal pour avoir un lien retour. */}
+    <>
       <PublicNavbar />
-      {!isAuth && (
-        <header className="border-b border-[rgba(167,139,250,0.15)] bg-[var(--color-night-2)]">
-          <div className="mx-auto max-w-6xl flex items-center justify-between px-4 py-3 gap-4">
-            <Link
-              href="/"
-              className="font-display text-lg font-bold tracking-[2px]"
-              style={{ color: "var(--color-lavender)" }}
-            >
-              ✨ Kuizard
-            </Link>
-            <div className="flex items-center gap-3 text-sm">
-              <Link
-                href="/"
-                className="text-[var(--color-lavender-2)] hover:text-[var(--color-gold)] text-xs uppercase tracking-[2px]"
-              >
-                ← Retour
-              </Link>
-              <Link
-                href="/login?from=/escape"
-                className="text-xs uppercase tracking-[2px] px-3 py-1.5 rounded-lg font-semibold"
-                style={{
-                  backgroundColor: "var(--color-gold)",
-                  color: "var(--color-violet-deep)",
-                }}
-              >
-                Se connecter
-              </Link>
-            </div>
-          </div>
-        </header>
-      )}
-
-      {/* HERO */}
-      <section className="relative overflow-hidden py-20 sm:py-28">
-        {/* Halos magiques */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -top-32 left-1/4 w-[420px] h-[420px] rounded-full"
+      <main className="min-h-screen">
+        {/* HERO */}
+        <section
+          className="py-16 md:py-24 text-center px-4"
           style={{
             background:
-              "radial-gradient(circle, rgba(245,158,11,0.25) 0%, transparent 70%)",
+              "linear-gradient(180deg, var(--color-lavender) 0%, transparent 100%)",
           }}
-        />
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -bottom-32 right-1/4 w-[420px] h-[420px] rounded-full"
-          style={{
-            background:
-              "radial-gradient(circle, rgba(124,58,237,0.3) 0%, transparent 70%)",
-          }}
-        />
-
-        <div className="relative z-10 max-w-4xl mx-auto px-6 text-center">
-          <p
-            className="text-xs uppercase tracking-[3px] font-semibold mb-3"
-            style={{ color: "var(--color-gold)" }}
-          >
-            ✨ Bientôt en bêta sur Kuizard ✨
-          </p>
-          <h1
-            className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-wide mb-4"
-            style={{
-              color: "var(--color-lavender)",
-              WebkitTextFillColor: "var(--color-lavender)",
-              fontFamily: "var(--font-display, inherit)",
-            }}
-          >
-            🗝️ Escape
-          </h1>
-          <p
-            className="text-xl sm:text-2xl tracking-wide mb-6"
-            style={{ color: "var(--color-gold-light)" }}
-          >
-            Des escape games à imprimer chez toi.
-          </p>
-          <p className="text-base sm:text-lg text-[var(--color-lavender-2)] opacity-90 max-w-2xl mx-auto leading-relaxed">
-            Choisis un scénario, saisis les <strong>surnoms de tes joueurs</strong>,
-            sélectionne <strong>les actions qui collent à ton ambiance</strong>,
-            paie une fois, télécharge ton PDF. Tu imprimes, tu déplies, tu joues.
-            Aucune app, aucun écran.
-          </p>
-
-          {/* Statut beta */}
-          <div
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs uppercase tracking-[2px] font-semibold mt-8"
-            style={{
-              background: "rgba(245,158,11,0.15)",
-              border: "1px solid var(--color-gold)",
-              color: "var(--color-gold-light)",
-            }}
-          >
-            <span className="w-2 h-2 rounded-full bg-[var(--color-gold)] animate-pulse" />
-            Bêta privée ouverte cet été
-          </div>
-        </div>
-      </section>
-
-      {/* TOPO BETA */}
-      <section className="py-16 bg-[var(--color-night-2)] border-y border-[rgba(167,139,250,0.15)]">
-        <div className="max-w-3xl mx-auto px-6">
-          <div
-            className="rounded-2xl p-6 sm:p-8 border-2"
-            style={{
-              borderColor: "var(--color-gold)",
-              background:
-                "linear-gradient(135deg, rgba(245,158,11,0.08), rgba(85,35,187,0.05))",
-            }}
-          >
+        >
+          <div className="max-w-3xl mx-auto flex flex-col gap-5">
             <p
-              className="text-xs uppercase tracking-[3px] font-bold mb-3"
-              style={{ color: "var(--color-gold)" }}
-            >
-              📣 Le topo de la bêta
-            </p>
-            <h2
-              className="text-2xl sm:text-3xl font-bold mb-4 tracking-wide"
-              style={{
-                color: "var(--color-lavender)",
-                WebkitTextFillColor: "var(--color-lavender)",
-                fontFamily: "var(--font-display, inherit)",
-              }}
-            >
-              Une nouvelle catégorie débarque
-            </h2>
-            <div className="space-y-3 text-[var(--color-lavender-2)] opacity-90 leading-relaxed">
-              <p>
-                On est en train de concevoir une <strong>collection d'escape
-                games imprimables</strong> qui exploiteront la même magie que les
-                quizz Kuizard : <strong>personnalisation par joueur</strong>,
-                <strong> ambiance modulable</strong>, design soigné, et accessible
-                en un clic depuis ton compte.
-              </p>
-              <p>
-                Les premiers kits seront <strong>achetables à l'unité</strong>
-                {" "}(comme nos quizz one-shot, prix indicatif <strong>6 à 12 €</strong>),
-                ou inclus dans un futur <strong>abonnement Kuizard+</strong> qui
-                débloquera la collection complète.
-              </p>
-              <p>
-                Tu veux faire partie des <strong>premiers testeurs</strong> et
-                avoir un kit offert ? Envoie-nous un message via la messagerie
-                de ton compte, on garde une short-list 💌
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-3 mt-6">
-              {isAuth ? (
-                <Link
-                  href="/dashboard/messages"
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg font-bold text-sm"
-                  style={{
-                    backgroundColor: "var(--color-gold)",
-                    color: "var(--color-violet-deep)",
-                  }}
-                >
-                  💌 Me prévenir au lancement
-                </Link>
-              ) : (
-                <Link
-                  href="/signup?from=/escape"
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg font-bold text-sm"
-                  style={{
-                    backgroundColor: "var(--color-gold)",
-                    color: "var(--color-violet-deep)",
-                  }}
-                >
-                  💌 Créer un compte pour être prévenu
-                </Link>
-              )}
-              <Link
-                href="/tarifs"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold border-2"
-                style={{
-                  borderColor: "rgba(245,158,11,0.4)",
-                  color: "var(--color-lavender)",
-                }}
-              >
-                Voir les tarifs Quizz →
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* CE QUE TU VAS POUVOIR FAIRE */}
-      <section className="py-20">
-        <div className="max-w-5xl mx-auto px-6">
-          <div className="text-center mb-12">
-            <p
-              className="text-xs uppercase tracking-[3px] font-semibold mb-2"
-              style={{ color: "var(--color-gold)" }}
-            >
-              ✨ Ce qui rend Kuizard Escape différent
-            </p>
-            <h2
-              className="text-3xl md:text-4xl font-bold tracking-wide"
-              style={{
-                color: "var(--color-lavender)",
-                WebkitTextFillColor: "var(--color-lavender)",
-                fontFamily: "var(--font-display, inherit)",
-              }}
-            >
-              Imprimable, personnalisable, prêt en 2 minutes
-            </h2>
-          </div>
-
-          <div className="grid gap-5 sm:grid-cols-2">
-            {FEATURES.map((f) => (
-              <div
-                key={f.title}
-                className="rounded-2xl p-5 border border-[rgba(167,139,250,0.2)] bg-[var(--color-night-2)]"
-              >
-                <div className="text-4xl mb-3" aria-hidden>
-                  {f.icon}
-                </div>
-                <h3
-                  className="text-lg font-bold tracking-wide mb-2"
-                  style={{
-                    color: "var(--color-lavender)",
-                    WebkitTextFillColor: "var(--color-lavender)",
-                    fontFamily: "var(--font-display, inherit)",
-                  }}
-                >
-                  {f.title}
-                </h3>
-                <p className="text-sm text-[var(--color-lavender-2)] opacity-80 leading-relaxed">
-                  {f.desc}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* SCÉNARIOS EN PRÉPARATION */}
-      <section className="py-20 bg-[var(--color-night-2)] border-t border-[rgba(167,139,250,0.15)]">
-        <div className="max-w-5xl mx-auto px-6">
-          <div className="text-center mb-12">
-            <p
-              className="text-xs uppercase tracking-[3px] font-semibold mb-2"
+              className="text-xs uppercase tracking-[3px] font-bold"
               style={{ color: "var(--color-violet-primary)" }}
             >
-              🎲 En préparation
+              🗝️ Escape games digitaux
             </p>
-            <h2
-              className="text-3xl md:text-4xl font-bold tracking-wide"
-              style={{
-                color: "var(--color-lavender)",
-                WebkitTextFillColor: "var(--color-lavender)",
-                fontFamily: "var(--font-display, inherit)",
-              }}
+            <h1
+              className="font-display text-4xl md:text-6xl font-bold leading-tight tracking-wide"
+              style={{ color: "var(--color-violet-deep)" }}
             >
-              Les premiers scénarios
-            </h2>
-            <p className="text-sm text-[var(--color-lavender-2)] opacity-70 mt-3">
-              Liste susceptible d'évoluer selon vos retours de la bêta
+              L&apos;escape game qui tient dans une poche
+            </h1>
+            <p className="text-lg md:text-xl opacity-80 leading-relaxed">
+              Énigmes en séquence, chrono live, indices déblocables, classement
+              multi-équipes en temps réel. Sur smartphone, zéro app. Pour
+              mariage, EVJF, team building, anniversaire.
             </p>
-          </div>
-
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {SCENARIOS.map((s) => (
-              <div
-                key={s.title}
-                className="rounded-xl p-4 border border-[rgba(167,139,250,0.15)] bg-[var(--color-night)] hover:border-[var(--color-gold)]/40 transition-colors"
+            <div className="flex flex-wrap gap-3 justify-center mt-4">
+              <Link
+                href="/dashboard/escapes/library"
+                className="rounded-lg px-6 py-3 text-base font-bold hover:opacity-90"
+                style={{
+                  backgroundColor: "var(--color-violet-primary)",
+                  color: "white",
+                }}
               >
-                <div className="flex items-center gap-3">
-                  <div className="text-3xl shrink-0" aria-hidden>
-                    {s.emoji}
-                  </div>
-                  <div className="min-w-0">
-                    <p
-                      className="font-semibold truncate"
-                      style={{ color: "var(--color-lavender)" }}
-                    >
-                      {s.title}
-                    </p>
-                    <p className="text-xs text-[var(--color-lavender-2)] opacity-70">
-                      {s.tagline}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ))}
+                📖 Voir les scénarios
+              </Link>
+              <Link
+                href="/dashboard/escapes"
+                className="rounded-lg px-6 py-3 text-base font-bold border-2 hover:bg-violet-50"
+                style={{
+                  borderColor: "var(--color-violet-primary)",
+                  color: "var(--color-violet-primary)",
+                }}
+              >
+                ✏️ Créer le mien
+              </Link>
+            </div>
+            <div className="flex gap-2 flex-wrap justify-center mt-4 opacity-80">
+              {USE_CASES.map((u) => (
+                <span
+                  key={u.label}
+                  className="rounded-full bg-white/70 px-3 py-1 text-xs font-medium border"
+                >
+                  {u.emoji} {u.label}
+                </span>
+              ))}
+            </div>
           </div>
+        </section>
 
-          {/* Idée scénario du user */}
-          <div className="mt-10 text-center">
-            <p className="text-sm text-[var(--color-lavender-2)] opacity-80 mb-3">
-              Une idée de scénario qu'on devrait absolument créer ?
+        {/* FEATURES */}
+        <section className="py-16 px-4">
+          <div className="max-w-5xl mx-auto">
+            <h2
+              className="font-display text-3xl md:text-4xl font-bold text-center mb-3"
+              style={{ color: "var(--color-violet-deep)" }}
+            >
+              Ce que Kuizard Escape fait pour toi
+            </h2>
+            <p className="text-center opacity-70 mb-10 max-w-2xl mx-auto">
+              Toute la magie d&apos;un vrai escape game, sans matos ni maître du
+              jeu. Digital, multi-équipes, chrono, indices — tout est là.
             </p>
-            <Link
-              href={isAuth ? "/dashboard/suggestions" : "/signup?from=/escape"}
-              className="inline-flex items-center gap-2 text-sm font-semibold underline-offset-4 hover:underline"
-              style={{ color: "var(--color-gold-light)" }}
-            >
-              💡 Suggère-nous ton thème →
-            </Link>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {FEATURES.map((f) => (
+                <div
+                  key={f.title}
+                  className="rounded-2xl border bg-white p-5 flex flex-col gap-2 hover:shadow-md transition"
+                >
+                  <div className="text-3xl">{f.icon}</div>
+                  <h3
+                    className="font-display text-lg"
+                    style={{ color: "var(--color-violet-deep)" }}
+                  >
+                    {f.title}
+                  </h3>
+                  <p className="text-sm opacity-80 leading-relaxed">{f.desc}</p>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* FAQ rapide */}
-      <section className="py-20">
-        <div className="max-w-3xl mx-auto px-6">
-          <h2
-            className="text-2xl md:text-3xl font-bold tracking-wide text-center mb-10"
-            style={{
-              color: "var(--color-lavender)",
-              WebkitTextFillColor: "var(--color-lavender)",
-              fontFamily: "var(--font-display, inherit)",
-            }}
-          >
-            ❓ Questions fréquentes
-          </h2>
-
-          <div className="space-y-4">
-            <Faq
-              q="Quand sort la version finale ?"
-              a="Bêta privée prévue pour cet été, ouverture publique dans la foulée selon les retours. Les comptes Kuizard existants seront prévenus en priorité."
-            />
-            <Faq
-              q="Est-ce qu'il faut un compte payant pour acheter un kit ?"
-              a="Non. Comme nos quizz one-shot actuels, l'achat sera ponctuel (~6-12 € le kit) et tu télécharges ton PDF immédiatement. Un futur abonnement Kuizard+ donnera accès à toute la collection."
-            />
-            <Faq
-              q="Combien de joueurs minimum / maximum ?"
-              a="La plupart des kits seront dimensionnés pour 2 à 8 joueurs, parfait pour une soirée entre amis ou en famille."
-            />
-            <Faq
-              q="Je peux modifier le scénario après achat ?"
-              a="Non. Une fois ton PDF généré avec tes surnoms et tes choix d'ambiance, c'est figé. Pense à bien valider ta personnalisation avant de télécharger. Pour une nouvelle variante, il faudra racheter le kit."
-            />
-            <Faq
-              q="C'est en français ou anglais ?"
-              a="Français au lancement, anglais prévu dans les mois qui suivent. Si tu en veux dans une autre langue, écris-nous !"
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* CTA final */}
-      <section className="py-16 bg-[var(--color-night-2)] border-t border-[rgba(167,139,250,0.15)]">
-        <div className="max-w-2xl mx-auto px-6 text-center">
-          <p
-            className="text-xs uppercase tracking-[3px] font-semibold mb-2"
-            style={{ color: "var(--color-gold)" }}
-          >
-            🎁 Bonus pré-lancement
-          </p>
-          <h2
-            className="text-2xl md:text-3xl font-bold tracking-wide mb-3"
-            style={{
-              color: "var(--color-lavender)",
-              WebkitTextFillColor: "var(--color-lavender)",
-              fontFamily: "var(--font-display, inherit)",
-            }}
-          >
-            Le premier kit offert aux testeurs bêta
-          </h2>
-          <p className="text-[var(--color-lavender-2)] opacity-90 mb-6">
-            Les 50 premiers comptes qui demandent leur invitation reçoivent
-            le kit n°1 gratuitement et peuvent voter pour le n°2.
-          </p>
-          {isAuth ? (
-            <Link
-              href="/dashboard/messages"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-lg font-bold"
-              style={{
-                backgroundColor: "var(--color-gold)",
-                color: "var(--color-violet-deep)",
-              }}
-            >
-              💌 Je veux mon invitation bêta
-            </Link>
-          ) : (
-            <Link
-              href="/signup?from=/escape"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-lg font-bold"
-              style={{
-                backgroundColor: "var(--color-gold)",
-                color: "var(--color-violet-deep)",
-              }}
-            >
-              ✨ Créer un compte gratuit
-            </Link>
-          )}
-        </div>
-      </section>
-
-      <SiteFooter />
-    </div>
-  );
-}
-
-function Faq({ q, a }: { q: string; a: string }) {
-  return (
-    <details className="group rounded-xl border border-[rgba(167,139,250,0.2)] bg-[var(--color-night-2)] p-4">
-      <summary
-        className="font-semibold cursor-pointer marker:hidden flex items-center justify-between gap-3"
-        style={{ color: "var(--color-lavender)" }}
-      >
-        <span>{q}</span>
-        <span
-          className="text-xs text-[var(--color-gold-light)] group-open:rotate-180 transition-transform"
-          aria-hidden
+        {/* HOWTO */}
+        <section
+          className="py-16 px-4"
+          style={{
+            background: "linear-gradient(180deg, transparent, var(--color-lavender))",
+          }}
         >
-          ▼
-        </span>
-      </summary>
-      <p className="text-sm text-[var(--color-lavender-2)] opacity-90 mt-3 leading-relaxed">
-        {a}
-      </p>
-    </details>
+          <div className="max-w-4xl mx-auto">
+            <h2
+              className="font-display text-3xl md:text-4xl font-bold text-center mb-3"
+              style={{ color: "var(--color-violet-deep)" }}
+            >
+              Comment ça marche
+            </h2>
+            <p className="text-center opacity-70 mb-10">
+              4 étapes, du dev créatif à la victoire de la meilleure équipe.
+            </p>
+            <ol className="flex flex-col gap-4">
+              {HOWTO.map((s) => (
+                <li
+                  key={s.n}
+                  className="rounded-2xl border bg-white p-5 flex items-start gap-4"
+                >
+                  <span
+                    className="shrink-0 w-10 h-10 rounded-full flex items-center justify-center font-display text-xl font-bold"
+                    style={{
+                      backgroundColor: "var(--color-gold)",
+                      color: "var(--color-violet-deep)",
+                    }}
+                  >
+                    {s.n}
+                  </span>
+                  <div>
+                    <h3 className="font-bold text-lg mb-1">{s.title}</h3>
+                    <p className="text-sm opacity-80 leading-relaxed">{s.desc}</p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </div>
+        </section>
+
+        {/* CTA FINALE */}
+        <section className="py-16 px-4 text-center">
+          <div className="max-w-2xl mx-auto flex flex-col gap-5">
+            <h2
+              className="font-display text-3xl md:text-4xl font-bold"
+              style={{ color: "var(--color-violet-deep)" }}
+            >
+              Prêt à lancer ton premier escape ?
+            </h2>
+            <p className="opacity-80">
+              Créer un compte gratuit, pioche dans la bibliothèque ou crée ton
+              propre scénario, invite tes équipes. C&apos;est parti.
+            </p>
+            <div className="flex flex-wrap gap-3 justify-center mt-4">
+              <Link
+                href="/signup"
+                className="rounded-lg px-6 py-3 text-base font-bold hover:opacity-90"
+                style={{
+                  backgroundColor: "var(--color-violet-primary)",
+                  color: "white",
+                }}
+              >
+                ✨ Créer un compte gratuit
+              </Link>
+              <Link
+                href="/tarifs#abonnements"
+                className="rounded-lg px-6 py-3 text-base font-bold border-2 hover:bg-violet-50"
+                style={{
+                  borderColor: "var(--color-violet-primary)",
+                  color: "var(--color-violet-primary)",
+                }}
+              >
+                💳 Voir les tarifs
+              </Link>
+            </div>
+          </div>
+        </section>
+      </main>
+      <SiteFooter />
+    </>
   );
 }

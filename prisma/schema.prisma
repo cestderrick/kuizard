@@ -525,6 +525,10 @@ model Payment {
   id                    String   @id @default(cuid())
   userId                String?
   quizId                String?
+  // V60.5d — Payment "one-shot" pour debloquer un escape library premium.
+  // Si renseigne, ce payment donne au userId le droit de dupliquer l'escape
+  // library dont l'id est stocke ici (Escape.id).
+  escapeLibraryId       String?
 
   // Stripe IDs
   stripeSessionId       String?  @unique
@@ -546,6 +550,7 @@ model Payment {
 
   @@index([userId])
   @@index([quizId])
+  @@index([escapeLibraryId])
   @@index([status])
   @@index([createdAt(sort: Desc)])
 }

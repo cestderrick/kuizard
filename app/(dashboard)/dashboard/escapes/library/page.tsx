@@ -174,14 +174,14 @@ export default async function EscapeLibraryPage() {
                       </form>
                     ) : (
                       <Link
-                        href={`/tarifs?from=escape-library&escape=${encodeURIComponent(e.title)}`}
+                        href={`/dashboard/escapes/library/unlock/${e.id}`}
                         className="text-sm font-bold rounded-lg px-4 py-2 hover:opacity-90 border-2"
                         style={{
                           borderColor: "var(--color-violet-primary)",
                           color: "var(--color-violet-primary)",
                         }}
                       >
-                        🔒 Voir les abonnements
+                        🔓 Debloquer
                       </Link>
                     )}
                   </div>

@@ -5,6 +5,8 @@ import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { createEscapeAction } from "@/lib/actions/escape";
+import { getBillingContext } from "@/lib/billing/context";
+import { AIGenerateEscapeButton } from "@/components/escape/ai-generate-escape-button";
 
 export const metadata: Metadata = {
   title: "Mes escapes",
@@ -13,6 +15,16 @@ export const metadata: Metadata = {
 export default async function EscapesListPage() {
   const session = await auth();
   if (!session?.user?.id) notFound();
+
+  // V60.5c — pour gater le bouton "Generer IA" cote client
+  const [me, billing] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { role: true },
+    }),
+    getBillingContext(session.user.id),
+  ]);
+  const hasActiveSub = !!billing?.hasActiveSubscription || me?.role === "ADMIN";
 
   const escapes = await prisma.escape.findMany({
     where: { userId: session.user.id },
@@ -43,27 +55,31 @@ export default async function EscapesListPage() {
             chrono, indices deblocables.
           </p>
         </div>
-        <form action={createEscapeAction}>
-          <input
-            type="text"
-            name="title"
-            required
-            minLength={2}
-            maxLength={100}
-            placeholder="Titre du nouvel escape"
-            className="border border-input bg-background rounded-md h-9 px-3 text-sm mr-2"
-          />
-          <button
-            type="submit"
-            className="inline-flex items-center gap-1 rounded-lg px-4 py-2 text-sm font-bold hover:opacity-90"
-            style={{
-              backgroundColor: "var(--color-violet-primary)",
-              color: "white",
-            }}
-          >
-            + Creer
-          </button>
-        </form>
+        <div className="flex gap-2 items-center flex-wrap">
+          {/* V60.5c — Bouton generation IA */}
+          <AIGenerateEscapeButton hasActiveSubscription={hasActiveSub} />
+          <form action={createEscapeAction} className="flex gap-2 items-center">
+            <input
+              type="text"
+              name="title"
+              required
+              minLength={2}
+              maxLength={100}
+              placeholder="Titre du nouvel escape"
+              className="border border-input bg-background rounded-md h-9 px-3 text-sm"
+            />
+            <button
+              type="submit"
+              className="inline-flex items-center gap-1 rounded-lg px-4 py-2 text-sm font-bold hover:opacity-90"
+              style={{
+                backgroundColor: "var(--color-violet-primary)",
+                color: "white",
+              }}
+            >
+              + Creer
+            </button>
+          </form>
+        </div>
       </header>
 
       {escapes.length === 0 ? (

@@ -455,7 +455,7 @@ export async function duplicateLibraryEscapeAction(formData: FormData) {
   });
   if (!source) throw new Error("Escape introuvable dans la bibliotheque.");
 
-  // Gating : si premium, verifier abo ou admin
+  // Gating : si premium, verifier abo, admin, OU payment one-shot deja fait
   if (source.libraryIsPremium) {
     const me = await prisma.user.findUnique({
       where: { id: session.user.id },
@@ -464,7 +464,7 @@ export async function duplicateLibraryEscapeAction(formData: FormData) {
     const isAdmin = me?.role === "ADMIN";
     if (!isAdmin) {
       const now = new Date();
-      const [activeSub, giftedSub] = await Promise.all([
+      const [activeSub, giftedSub, escapePayment] = await Promise.all([
         prisma.subscription.findFirst({
           where: {
             userId: session.user.id,
@@ -479,10 +479,18 @@ export async function duplicateLibraryEscapeAction(formData: FormData) {
             OR: [{ endsAt: null }, { endsAt: { gte: now } }],
           },
         }),
+        // V60.5d — Payment one-shot deja effectue pour cet escape ?
+        prisma.payment.findFirst({
+          where: {
+            userId: session.user.id,
+            escapeLibraryId: source.id,
+            status: "succeeded",
+          },
+        }),
       ]);
-      if (!activeSub && !giftedSub) {
+      if (!activeSub && !giftedSub && !escapePayment) {
         redirect(
-          `/tarifs?from=escape-library&escape=${encodeURIComponent(source.title)}`
+          `/dashboard/escapes/library/unlock/${source.id}`
         );
       }
     }

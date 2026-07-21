@@ -13,6 +13,16 @@ import {
   updateEscapeStepAction,
   type UpdateEscapeStepState,
 } from "@/lib/actions/escape";
+// V60.5b — Upload image/audio pour l'etape
+import {
+  uploadEscapeStepImageAction,
+  removeEscapeStepImageAction,
+  setEscapeStepImageFromUrlAction,
+  uploadEscapeStepAudioAction,
+  removeEscapeStepAudioAction,
+} from "@/lib/actions/upload";
+import { ImageUploader } from "@/components/quiz/image-uploader";
+import { EscapeAudioUploader } from "@/components/escape/escape-audio-uploader";
 
 type StepType = "TEXT" | "CHOICE" | "IMAGE" | "AUDIO";
 type Option = { label: string; isCorrect: boolean };
@@ -28,6 +38,9 @@ type Props = {
     options: unknown;
     hints: unknown;
     points: number;
+    // V60.5b — media
+    imageUrl?: string | null;
+    audioUrl?: string | null;
   };
 };
 
@@ -149,6 +162,39 @@ export function EscapeStepForm({ escapeId, step }: Props) {
           defaultValue={step.title ?? ""}
           placeholder="ex : Le mystère de la clé perdue"
         />
+      </div>
+
+      {/* V60.5b — Media (image + audio) */}
+      <div className="flex flex-col gap-3 rounded-xl border p-3 bg-violet-50/30">
+        <p className="text-xs uppercase tracking-widest opacity-70 font-semibold">
+          🎬 Media (optionnel)
+        </p>
+
+        <div>
+          <Label className="text-xs">Image d&apos;illustration</Label>
+          <div className="mt-1">
+            <ImageUploader
+              currentUrl={step.imageUrl ?? null}
+              uploadAction={uploadEscapeStepImageAction}
+              removeAction={removeEscapeStepImageAction}
+              setFromUrlAction={setEscapeStepImageFromUrlAction}
+              hiddenFields={{ escapeId, stepId: step.id }}
+              emptyLabel="Glisse une image ou clique pour parcourir"
+              previewHeightClass="h-32"
+            />
+          </div>
+        </div>
+
+        <div>
+          <Label className="text-xs">Audio (mp3, wav, ogg — 20 Mo max)</Label>
+          <div className="mt-1">
+            <EscapeAudioUploader
+              escapeId={escapeId}
+              stepId={step.id}
+              currentUrl={step.audioUrl ?? null}
+            />
+          </div>
+        </div>
       </div>
 
       {/* Enonce */}

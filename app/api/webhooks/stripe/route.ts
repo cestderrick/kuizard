@@ -222,9 +222,45 @@ async function handleCheckoutCompleted(
     } catch (err) {
       console.error("[stripe webhook] receipt email (credit) failed:", err);
     }
+  } else if (metadata.kind === "escape_unlock" && metadata.escapeLibraryId && userId) {
+    // V60.5d — Achat one-shot pour debloquer la duplication d'un escape library.
+    // Le Payment a deja ete cree en pending par createEscapeUnlockCheckoutSessionAction,
+    // avec escapeLibraryId. Le updateMany plus haut l'a passe a succeeded.
+    // On envoie juste un email de confirmation.
+    try {
+      const [user, source] = await Promise.all([
+        prisma.user.findUnique({
+          where: { id: userId },
+          select: { email: true, name: true },
+        }),
+        prisma.escape.findUnique({
+          where: { id: metadata.escapeLibraryId },
+          select: { title: true, code: true },
+        }),
+      ]);
+      if (user?.email && source) {
+        const tpl = paymentReceiptEmail({
+          name: user.name,
+          amountCents: session.amount_total ?? 0,
+          planSlug: planSlug ?? "escape_unlock",
+          planName: "Escape debloque",
+          quizTitle: `Scenario : ${source.title}`,
+          quizCode: source.code,
+        });
+        await sendEmail({
+          to: user.email,
+          subject: `Recu Kuizard — Escape "${source.title}" debloque`,
+          html: tpl.html,
+          text: tpl.text,
+        });
+        console.log("[stripe webhook] escape_unlock recu email sent");
+      }
+    } catch (err) {
+      console.error("[stripe webhook] escape_unlock email failed:", err);
+    }
   } else {
     console.warn(
-      "[stripe webhook] checkout.session.completed sans quizId ni cas crédit",
+      "[stripe webhook] checkout.session.completed sans quizId ni cas credit",
       { quizId, planSlug, userId }
     );
   }

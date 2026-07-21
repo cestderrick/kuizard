@@ -340,3 +340,219 @@ export async function setCoverImageFromUrlAction(
   revalidatePath(`/dashboard/quizzes/${quizId}/edit`);
   return { ok: true, url: trimmed, message: "Photo de couverture enregistrée." };
 }
+
+
+// =============================================
+// V60.5b — ESCAPE STEP : image + audio uploads
+// =============================================
+
+export async function uploadEscapeStepImageAction(
+  _prev: UploadState,
+  formData: FormData
+): Promise<UploadState> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { ok: false, message: "Non authentifie." };
+  }
+
+  const escapeId = formData.get("escapeId");
+  const stepId = formData.get("stepId");
+  const file = formData.get("file");
+  if (typeof escapeId !== "string" || !escapeId) {
+    return { ok: false, message: "Escape manquant." };
+  }
+  if (typeof stepId !== "string" || !stepId) {
+    return { ok: false, message: "Etape manquante." };
+  }
+  if (!(file instanceof File) || file.size === 0) {
+    return { ok: false, message: "Aucun fichier selectionne." };
+  }
+
+  const step = await prisma.escapeStep.findFirst({
+    where: { id: stepId, escapeId, escape: { userId: session.user.id } },
+    select: { id: true, imageUrl: true },
+  });
+  if (!step) return { ok: false, message: "Etape introuvable." };
+
+  try {
+    const result = await saveImageFile(file, `escapes-${escapeId}`);
+    if (!result.ok) return { ok: false, message: result.message };
+
+    const oldUrl = step.imageUrl;
+    await prisma.escapeStep.update({
+      where: { id: stepId },
+      data: { imageUrl: result.url },
+    });
+    if (oldUrl && oldUrl !== result.url) {
+      await deleteImageByUrl(oldUrl).catch((e) =>
+        console.warn("[upload] old escape step image delete failed:", e)
+      );
+    }
+
+    revalidatePath(`/dashboard/escapes/${escapeId}/edit`);
+    revalidatePath(`/dashboard/escapes/${escapeId}/steps/${stepId}/edit`);
+    return { ok: true, url: result.url, message: "Image enregistree." };
+  } catch (err) {
+    console.error("[uploadEscapeStepImage] failed:", err);
+    return {
+      ok: false,
+      message:
+        err instanceof Error
+          ? `Erreur serveur : ${err.message}`
+          : "Erreur serveur lors de l'upload.",
+    };
+  }
+}
+
+export async function removeEscapeStepImageAction(formData: FormData) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Non authentifie.");
+  const escapeId = formData.get("escapeId");
+  const stepId = formData.get("stepId");
+  if (typeof escapeId !== "string" || typeof stepId !== "string") {
+    throw new Error("Donnees manquantes.");
+  }
+
+  const step = await prisma.escapeStep.findFirst({
+    where: { id: stepId, escapeId, escape: { userId: session.user.id } },
+    select: { id: true, imageUrl: true },
+  });
+  if (!step) throw new Error("Etape introuvable.");
+
+  await prisma.escapeStep.update({
+    where: { id: stepId },
+    data: { imageUrl: null },
+  });
+  await deleteImageByUrl(step.imageUrl);
+  revalidatePath(`/dashboard/escapes/${escapeId}/steps/${stepId}/edit`);
+}
+
+export async function setEscapeStepImageFromUrlAction(
+  _prev: UploadState,
+  formData: FormData
+): Promise<UploadState> {
+  const session = await auth();
+  if (!session?.user?.id) return { ok: false, message: "Non authentifie." };
+  const escapeId = formData.get("escapeId");
+  const stepId = formData.get("stepId");
+  const url = formData.get("imageUrl");
+  if (typeof escapeId !== "string" || !escapeId) {
+    return { ok: false, message: "Escape manquant." };
+  }
+  if (typeof stepId !== "string" || !stepId) {
+    return { ok: false, message: "Etape manquante." };
+  }
+  if (typeof url !== "string" || !url.trim()) {
+    return { ok: false, message: "URL vide." };
+  }
+  if (!URL_SCHEMA.test(url.trim())) {
+    return { ok: false, message: "URL invalide (https requis)." };
+  }
+  const step = await prisma.escapeStep.findFirst({
+    where: { id: stepId, escapeId, escape: { userId: session.user.id } },
+    select: { id: true },
+  });
+  if (!step) return { ok: false, message: "Etape introuvable." };
+  await prisma.escapeStep.update({
+    where: { id: stepId },
+    data: { imageUrl: url.trim() },
+  });
+  revalidatePath(`/dashboard/escapes/${escapeId}/steps/${stepId}/edit`);
+  return { ok: true, url: url.trim(), message: "URL image enregistree." };
+}
+
+// -----------------------------------------------------
+// V60.5b — ESCAPE STEP AUDIO (accept mp3/wav/ogg/webm)
+// -----------------------------------------------------
+
+const AUDIO_EXTENSIONS = new Set(["mp3", "wav", "ogg", "webm", "m4a", "aac"]);
+const AUDIO_MAX_BYTES = 20 * 1024 * 1024; // 20 Mo
+
+async function saveAudioFile(
+  file: File,
+  bucketSubdir: string
+): Promise<{ ok: true; url: string } | { ok: false; message: string }> {
+  if (file.size > AUDIO_MAX_BYTES) {
+    return { ok: false, message: "Fichier trop lourd (max 20 Mo)." };
+  }
+  const name = file.name.toLowerCase();
+  const ext = name.split(".").pop() ?? "";
+  if (!AUDIO_EXTENSIONS.has(ext)) {
+    return {
+      ok: false,
+      message: "Format audio non supporte (mp3, wav, ogg, m4a, aac, webm).",
+    };
+  }
+  const { randomBytes } = await import("node:crypto");
+  const fs = await import("node:fs/promises");
+  const path = await import("node:path");
+  const filename = `${Date.now()}-${randomBytes(6).toString("hex")}.${ext}`;
+  const rel = path.join(bucketSubdir, filename);
+  const abs = path.join(process.cwd(), "storage", "uploads", rel);
+  await fs.mkdir(path.dirname(abs), { recursive: true });
+  const buf = Buffer.from(await file.arrayBuffer());
+  await fs.writeFile(abs, buf);
+  return { ok: true, url: `/uploads/${rel.replace(/\\/g, "/")}` };
+}
+
+export async function uploadEscapeStepAudioAction(
+  _prev: UploadState,
+  formData: FormData
+): Promise<UploadState> {
+  const session = await auth();
+  if (!session?.user?.id) return { ok: false, message: "Non authentifie." };
+
+  const escapeId = formData.get("escapeId");
+  const stepId = formData.get("stepId");
+  const file = formData.get("file");
+  if (typeof escapeId !== "string" || typeof stepId !== "string") {
+    return { ok: false, message: "Escape/etape manquant." };
+  }
+  if (!(file instanceof File) || file.size === 0) {
+    return { ok: false, message: "Aucun fichier selectionne." };
+  }
+
+  const step = await prisma.escapeStep.findFirst({
+    where: { id: stepId, escapeId, escape: { userId: session.user.id } },
+    select: { id: true, audioUrl: true },
+  });
+  if (!step) return { ok: false, message: "Etape introuvable." };
+
+  try {
+    const result = await saveAudioFile(file, `escapes-${escapeId}-audio`);
+    if (!result.ok) return { ok: false, message: result.message };
+    await prisma.escapeStep.update({
+      where: { id: stepId },
+      data: { audioUrl: result.url },
+    });
+    revalidatePath(`/dashboard/escapes/${escapeId}/steps/${stepId}/edit`);
+    return { ok: true, url: result.url, message: "Audio enregistre." };
+  } catch (err) {
+    console.error("[uploadEscapeStepAudio] failed:", err);
+    return {
+      ok: false,
+      message: err instanceof Error ? err.message : "Erreur upload audio.",
+    };
+  }
+}
+
+export async function removeEscapeStepAudioAction(formData: FormData) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Non authentifie.");
+  const escapeId = formData.get("escapeId");
+  const stepId = formData.get("stepId");
+  if (typeof escapeId !== "string" || typeof stepId !== "string") {
+    throw new Error("Donnees manquantes.");
+  }
+  const step = await prisma.escapeStep.findFirst({
+    where: { id: stepId, escapeId, escape: { userId: session.user.id } },
+    select: { id: true },
+  });
+  if (!step) throw new Error("Etape introuvable.");
+  await prisma.escapeStep.update({
+    where: { id: stepId },
+    data: { audioUrl: null },
+  });
+  revalidatePath(`/dashboard/escapes/${escapeId}/steps/${stepId}/edit`);
+}
+
