@@ -89,10 +89,20 @@ export async function upsertPlanAction(
   });
 
   if (!parsed.success) {
+    const fieldErrors = z.flattenError(parsed.error).fieldErrors;
+    // V61 — Message detaille : liste les champs en erreur pour aider l'admin
+    // a comprendre pourquoi le submit echoue (au lieu du generique "verifie les champs")
+    const errorFields = Object.entries(fieldErrors)
+      .filter(([, msgs]) => Array.isArray(msgs) && msgs.length > 0)
+      .map(([field]) => field);
+    const detail =
+      errorFields.length > 0
+        ? ` Champ${errorFields.length > 1 ? "s" : ""} en erreur : ${errorFields.join(", ")}.`
+        : "";
     return {
       ok: false,
-      errors: z.flattenError(parsed.error).fieldErrors,
-      message: "Vérifie les champs.",
+      errors: fieldErrors,
+      message: `Verifie les champs.${detail}`,
     };
   }
 
