@@ -54,6 +54,18 @@ function toNumStr(v: unknown): string {
   return "";
 }
 
+// V61.1 — Normalise un slug a la volee : minuscules, sans accents, espaces -> tirets,
+// caracteres speciaux vires. Evite l'erreur "slug invalide" lors du submit.
+function normalizeSlug(raw: string): string {
+  return raw
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")           // vire les accents
+    .toLowerCase()
+    .replace(/\s+/g, "-")            // espaces -> tirets
+    .replace(/[^a-z0-9_-]/g, "")     // vire tout ce qui n'est pas autorise
+    .slice(0, 40);
+}
+
 export function PlanForm({ plan }: { plan?: Plan }) {
   const [state, formAction, isPending] = useActionState(
     upsertPlanAction,
@@ -130,12 +142,15 @@ export function PlanForm({ plan }: { plan?: Plan }) {
           <input
             name="slug"
             value={slug}
-            onChange={(e) => setSlug(e.target.value)}
+            onChange={(e) => setSlug(normalizeSlug(e.target.value))}
             required
             readOnly={!!plan?.id}
             placeholder="essentiel"
             className={`kz-input ${plan?.id ? "opacity-60 cursor-not-allowed" : ""}`}
           />
+          <p className="text-[11px] opacity-60 -mt-0.5">
+            Format auto : minuscules, chiffres, - ou _ (ex: <code>bar-pro</code>)
+          </p>
         </Field>
         <Field label="Nom affiche" error={state.errors?.name}>
           <input
