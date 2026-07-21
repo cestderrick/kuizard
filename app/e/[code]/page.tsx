@@ -42,9 +42,21 @@ export default async function EscapeJoinPage({ params }: Props) {
     return (
       <div className="max-w-md mx-auto py-16 text-center">
         <div className="text-5xl mb-3">🚧</div>
-        <h1 className="font-display text-2xl mb-2">Escape pas encore ouvert</h1>
+        <h1 className="font-display text-2xl mb-2">Escape indisponible</h1>
         <p className="text-sm opacity-70">
-          Cet escape n&apos;est pas encore accessible aux joueurs. Reviens plus tard.
+          Cet escape n&apos;est pas accessible aux joueurs.
+        </p>
+      </div>
+    );
+  }
+  // V60.4a — Pas d'etapes = injouable, message explicite
+  if (escape._count.steps === 0) {
+    return (
+      <div className="max-w-md mx-auto py-16 text-center">
+        <div className="text-5xl mb-3">🚧</div>
+        <h1 className="font-display text-2xl mb-2">Escape en preparation</h1>
+        <p className="text-sm opacity-70">
+          L&apos;organisateur n&apos;a pas encore ajoute d&apos;etapes. Reviens plus tard.
         </p>
       </div>
     );

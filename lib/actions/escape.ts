@@ -346,3 +346,215 @@ export async function deleteEscapeStepAction(formData: FormData) {
   await prisma.escapeStep.deleteMany({ where: { id: stepId, escapeId } });
   revalidatePath(`/dashboard/escapes/${escapeId}/edit`);
 }
+
+
+// -----------------------------------------------------
+// V60.4b — ADMIN : marquer un escape comme library (ou non)
+// -----------------------------------------------------
+
+const toggleLibrarySchema = z.object({
+  escapeId: z.string().min(1),
+  isLibrary: z.preprocess(
+    (v) => v === "on" || v === "true" || v === true,
+    z.boolean()
+  ),
+  isPremium: z.preprocess(
+    (v) => v === "on" || v === "true" || v === true,
+    z.boolean()
+  ),
+  libraryDescription: z.string().max(1000).optional().or(z.literal("")),
+  libraryTags: z.string().max(500).optional().or(z.literal("")),
+  libraryLanguage: z.string().max(20).optional().or(z.literal("")),
+});
+
+export type ToggleEscapeLibraryState = {
+  ok: boolean;
+  message?: string;
+  errors?: Record<string, string[]>;
+};
+
+export async function toggleEscapeLibraryAction(
+  _prev: ToggleEscapeLibraryState,
+  formData: FormData
+): Promise<ToggleEscapeLibraryState> {
+  const session = await auth();
+  if (!session?.user?.id) return { ok: false, message: "Non authentifie." };
+
+  const me = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { role: true },
+  });
+  if (me?.role !== "ADMIN") {
+    return { ok: false, message: "Reserve aux admins." };
+  }
+
+  const parsed = toggleLibrarySchema.safeParse({
+    escapeId: formData.get("escapeId"),
+    isLibrary: formData.get("isLibrary"),
+    isPremium: formData.get("isPremium"),
+    libraryDescription: formData.get("libraryDescription") ?? "",
+    libraryTags: formData.get("libraryTags") ?? "",
+    libraryLanguage: formData.get("libraryLanguage") ?? "",
+  });
+  if (!parsed.success) {
+    return {
+      ok: false,
+      errors: z.flattenError(parsed.error).fieldErrors,
+    };
+  }
+  const v = parsed.data;
+
+  const tags = (v.libraryTags ?? "")
+    .split(",")
+    .map((t) => t.trim())
+    .filter((t) => t.length > 0)
+    .slice(0, 10);
+
+  await prisma.escape.update({
+    where: { id: v.escapeId },
+    data: {
+      isLibrary: v.isLibrary,
+      libraryIsPremium: v.isPremium,
+      libraryDescription: v.libraryDescription
+        ? v.libraryDescription.trim()
+        : null,
+      libraryTags: tags,
+      libraryLanguage: v.libraryLanguage ? v.libraryLanguage.trim() : null,
+    },
+  });
+
+  revalidatePath(`/dashboard/escapes/${v.escapeId}/edit`);
+  revalidatePath("/dashboard/escapes/library");
+  return { ok: true, message: v.isLibrary ? "Ajoute a la bibliotheque." : "Retire de la bibliotheque." };
+}
+
+// -----------------------------------------------------
+// V60.4b — Dupliquer un escape library dans son propre compte
+// -----------------------------------------------------
+// Gating : escape gratuit (libraryIsPremium=false) OU user avec abo actif OU admin.
+
+const duplicateSchema = z.object({
+  sourceEscapeId: z.string().min(1),
+});
+
+export async function duplicateLibraryEscapeAction(formData: FormData) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Non authentifie.");
+
+  const parsed = duplicateSchema.safeParse({
+    sourceEscapeId: formData.get("sourceEscapeId"),
+  });
+  if (!parsed.success) throw new Error("Escape source invalide.");
+
+  // Charge la source (doit etre marquee library)
+  const source = await prisma.escape.findFirst({
+    where: { id: parsed.data.sourceEscapeId, isLibrary: true },
+    include: {
+      steps: { orderBy: { order: "asc" } },
+    },
+  });
+  if (!source) throw new Error("Escape introuvable dans la bibliotheque.");
+
+  // Gating : si premium, verifier abo ou admin
+  if (source.libraryIsPremium) {
+    const me = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { role: true },
+    });
+    const isAdmin = me?.role === "ADMIN";
+    if (!isAdmin) {
+      const now = new Date();
+      const [activeSub, giftedSub] = await Promise.all([
+        prisma.subscription.findFirst({
+          where: {
+            userId: session.user.id,
+            status: { in: ["active", "trialing"] },
+          },
+        }),
+        prisma.grantedPlan.findFirst({
+          where: {
+            userId: session.user.id,
+            type: "subscription",
+            revokedAt: null,
+            OR: [{ endsAt: null }, { endsAt: { gte: now } }],
+          },
+        }),
+      ]);
+      if (!activeSub && !giftedSub) {
+        redirect(
+          `/tarifs?from=escape-library&escape=${encodeURIComponent(source.title)}`
+        );
+      }
+    }
+  }
+
+  // V60.3 — Aussi gate le max d'escapes selon plan
+  const plan = await getEffectiveEscapePlan(session.user.id);
+  if (plan.limits.maxEscapes !== undefined) {
+    const count = await prisma.escape.count({
+      where: { userId: session.user.id },
+    });
+    if (count >= plan.limits.maxEscapes) {
+      throw new Error(
+        plan.limits.maxEscapes === 0
+          ? "Les escape games ne sont pas inclus dans ton plan. Souscris un abonnement."
+          : `Limite atteinte (${plan.limits.maxEscapes} escapes max sur ton plan).`
+      );
+    }
+  }
+
+  // Genere un nouveau code unique
+  let code = "";
+  for (let i = 0; i < 10; i++) {
+    code = generateEscapeCode();
+    const existing = await prisma.escape.findUnique({
+      where: { code },
+      select: { id: true },
+    });
+    if (!existing) break;
+  }
+
+  // Cree l'escape puis copie les steps
+  const created = await prisma.escape.create({
+    data: {
+      userId: session.user.id,
+      code,
+      title: source.title,
+      description: source.description,
+      coverImageUrl: source.coverImageUrl,
+      theme: source.theme as unknown as object,
+      maxTeamsCount: source.maxTeamsCount,
+      timerMinutes: source.timerMinutes,
+      hintCostPoints: source.hintCostPoints,
+      finalMessage: source.finalMessage,
+      // Reset flags library : le duplicata n'est PAS lui-meme dans la bibliotheque
+      isLibrary: false,
+      libraryIsPremium: false,
+      status: "DRAFT",
+    },
+    select: { id: true },
+  });
+
+  // Copie chaque step
+  for (const s of source.steps) {
+    await prisma.escapeStep.create({
+      data: {
+        escapeId: created.id,
+        order: s.order,
+        type: s.type,
+        title: s.title,
+        body: s.body,
+        imageUrl: s.imageUrl,
+        audioUrl: s.audioUrl,
+        expectedAnswer: s.expectedAnswer,
+        options: s.options as unknown as object,
+        hints: s.hints as unknown as object,
+        points: s.points,
+      },
+    });
+  }
+
+  revalidatePath("/dashboard/escapes");
+  redirect(`/dashboard/escapes/${created.id}/edit`);
+}
+

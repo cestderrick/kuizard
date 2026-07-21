@@ -10,6 +10,8 @@ import {
   deleteEscapeStepAction,
 } from "@/lib/actions/escape";
 import { EscapeMetaForm } from "@/components/escape/escape-meta-form";
+// V60.4b — Toggle admin bibliotheque
+import { EscapeLibraryToggle } from "@/components/escape/escape-library-toggle";
 
 export const metadata: Metadata = {
   title: "Editer un escape",
@@ -38,6 +40,13 @@ export default async function EscapeEditPage({
     },
   });
   if (!escape) notFound();
+
+  // V60.4b — Determiner si l'user est admin pour afficher le toggle library
+  const me = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { role: true },
+  });
+  const isAdmin = me?.role === "ADMIN";
 
   return (
     <div className="max-w-3xl mx-auto flex flex-col gap-6">
@@ -147,6 +156,23 @@ export default async function EscapeEditPage({
           </ol>
         )}
       </section>
+
+      {/* V60.4b — Admin : toggle bibliotheque publique */}
+      {isAdmin && (
+        <section className="rounded-2xl border border-violet-200 bg-violet-50/50 p-5">
+          <p className="text-xs uppercase tracking-widest opacity-70 mb-2">
+            👑 Admin uniquement
+          </p>
+          <EscapeLibraryToggle
+            escapeId={escape.id}
+            currentIsLibrary={escape.isLibrary}
+            currentIsPremium={escape.libraryIsPremium}
+            currentDescription={escape.libraryDescription}
+            currentTags={escape.libraryTags ?? []}
+            currentLanguage={escape.libraryLanguage}
+          />
+        </section>
+      )}
 
       {/* Zone dangereuse */}
       <section className="rounded-2xl border border-red-200 bg-red-50 p-4">

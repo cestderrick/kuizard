@@ -64,11 +64,12 @@ export async function joinEscapeAction(
   if (!escape) {
     return { ok: false, message: "Escape introuvable." };
   }
+  // V60.4a — Simplification : un escape en DRAFT est un brouillon (pas
+  // jouable), ARCHIVED est cache. Tout le reste (RUNNING, FINISHED) est
+  // accessible : FINISHED sert juste a marquer visuellement dans l'admin
+  // qu'il est termine, mais on laisse quand meme les gens jouer.
   if (escape.status === "DRAFT" || escape.status === "ARCHIVED") {
-    return { ok: false, message: "Cet escape n'est pas ouvert aux joueurs." };
-  }
-  if (escape.status === "FINISHED") {
-    return { ok: false, message: "Cet escape est termine." };
+    return { ok: false, message: "Cet escape n'est pas encore accessible." };
   }
   if (
     escape.maxTeamsCount &&
@@ -104,14 +105,12 @@ export async function joinEscapeAction(
     secure: process.env.NODE_ENV === "production",
   });
 
-  // Passer le quiz de PUBLISHED a RUNNING au premier join, poser startedAt
-  if (escape.status === "PUBLISHED") {
+  // V60.4a — Auto-passage a RUNNING au premier join (peu importe l'ancien status)
+  // pour poser startedAt et servir de t0 aux chronos.
+  if (!escape.status || escape.status === "DRAFT") {
     await prisma.escape.update({
       where: { id: escape.id },
-      data: {
-        status: "RUNNING",
-        startedAt: new Date(),
-      },
+      data: { status: "RUNNING", startedAt: new Date() },
     });
   }
 

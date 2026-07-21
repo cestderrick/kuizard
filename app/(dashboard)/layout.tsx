@@ -89,6 +89,11 @@ export default async function DashboardLayout({
               <DashboardNavLink
                 href="/dashboard/escapes"
                 label="🗝️ Mes escapes"
+                notMatching={["/dashboard/escapes/library"]}
+              />
+              <DashboardNavLink
+                href="/dashboard/escapes/library"
+                label="📖 Bibliotheque escapes"
               />
               <DashboardNavLink href="/tarifs" label="💳 Tarifs" />
             </nav>

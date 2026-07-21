@@ -749,6 +749,14 @@ model Escape {
   scheduledCloseAt  DateTime?
 
   finalMessage      String?      @db.Text
+
+  // V60.4b — Bibliotheque publique (admin peut marquer un escape comme "library")
+  isLibrary         Boolean      @default(false)
+  libraryIsPremium  Boolean      @default(true)   // false = accessible gratuitement
+  libraryDescription String?     @db.Text
+  libraryTags       String[]     @default([])
+  libraryLanguage   String?
+
   createdAt         DateTime     @default(now())
   updatedAt         DateTime     @updatedAt
 
