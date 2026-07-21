@@ -23,7 +23,8 @@ export type AIGenerateResult =
 export type AIGenerateParams = {
   theme: string;
   count: number; // 5 à 30
-  difficulty: "facile" | "moyen" | "difficile";
+  // V62 — 5 niveaux au lieu de 3, avec 2 crans hardcore pour vrais fans
+  difficulty: "facile" | "moyen" | "difficile" | "expert" | "hardcore";
   language?: string; // default "fr"
 };
 
@@ -48,32 +49,66 @@ export async function generateQuizQuestions(
   const count = Math.max(3, Math.min(30, Math.floor(params.count)));
   const lang = params.language ?? "fr";
 
-  const prompt = `Tu es un expert créateur de quizz interactifs. Génère exactement ${count} questions de quizz sur le thème : « ${params.theme} ».
+  // V62 — Instructions differenciees et bien plus strictes par niveau.
+  // "difficile" etait beaucoup trop soft (les fans se plaignaient de questions
+  // triviales style "quel est le nom du personnage principal"). On a maintenant
+  // 5 crans avec 2 vrais niveaux hardcore.
+  const difficultyBrief: Record<string, string> = {
+    facile:
+      "NIVEAU FACILE — Grand public, personne qui ne connait pas le sujet doit pouvoir en avoir 60-70% bon. Bases evidentes, faits archi-connus. Points = 1.",
+    moyen:
+      "NIVEAU MOYEN — Culture generale sur le sujet requise. Un connaisseur moyen a environ 60% bon. Faits classiques mais qui demandent de connaitre un peu. Points = 2.",
+    difficile:
+      "NIVEAU DIFFICILE — Il faut vraiment aimer le sujet et l'avoir pratique/regarde plusieurs fois. Details specifiques, citations, dates. Un fan casual a 40-50%. Interdit les questions basiques style 'quel est le nom du personnage principal' ou 'quelle equipe a gagne'. Points = 3.",
+    expert:
+      "NIVEAU EXPERT — Reserve aux passionnes qui connaissent le sujet a fond. Details tres precis : dialogues secondaires, personnages recurrents mineurs, references croisees, statistiques exactes, dates precises au mois pres, noms d'auteurs/realisateurs. Un vrai fan a 60-70%, un fan casual a 20-30%. INTERDIT toute question qu'un non-fan pourrait trouver par logique. Points = 5.",
+    hardcore:
+      "NIVEAU HARDCORE — Pour super-fans absolus. Uniquement des details ultra-obscurs : easter eggs, erreurs de montage cultes, references de repliques a des episodes/matchs precis, records battus, citations exactes mot pour mot, prenoms de figurants, dates a l'annee exacte pour des evenements mineurs. Meme un vrai fan doit hesiter. INTERDIT toute question wikipedia niveau 1. Interdit 'quel est le nom du personnage' meme secondaire connu. Points = 8.",
+  };
+  const difficultyInstruction =
+    difficultyBrief[params.difficulty] ?? difficultyBrief.moyen;
 
-Critères :
-- Difficulté : ${params.difficulty}
-- Langue : ${lang === "fr" ? "français" : lang}
-- Type : QCM avec 4 réponses possibles dont 1 SEULE bonne réponse
-- Questions courtes et claires (max 200 caractères)
-- Réponses courtes (max 100 caractères chacune)
-- Évite les réponses ambiguës ou les pièges injustes
-- Points par question selon difficulté : facile=1, moyen=2, difficile=3
-- IMPORTANT : pour chaque question, fournis une explication courte (1-3 phrases, max 400 caracteres) qui justifie la bonne reponse — anecdote, contexte historique, chiffre cle. Ton pedagogique et leger.
+  const pointsByDifficulty: Record<string, number> = {
+    facile: 1,
+    moyen: 2,
+    difficile: 3,
+    expert: 5,
+    hardcore: 8,
+  };
+  const defaultPoints = pointsByDifficulty[params.difficulty] ?? 2;
 
-Réponds STRICTEMENT en JSON valide avec ce format :
+  const prompt = `Tu es un expert createur de quizz interactifs. Genere exactement ${count} questions de quizz sur le theme : « ${params.theme} ».
+
+${difficultyInstruction}
+
+Langue : ${lang === "fr" ? "francais" : lang}
+Format : QCM avec 4 reponses dont 1 SEULE bonne
+Longueur : questions <= 200 caracteres, reponses <= 100 caracteres chacune
+
+REGLES STRICTES :
+- CHAQUE question DOIT correspondre au niveau demande ci-dessus, sans exception.
+- Interdit les questions "quel est le nom du personnage principal" si niveau > moyen.
+- Interdit les questions dont la reponse est evidente pour quelqu'un qui n'a jamais suivi le sujet, si niveau >= difficile.
+- Pour "expert" et "hardcore" : privilegie les details obscurs, dates precises, chiffres exacts, citations mot pour mot, personnages/moments secondaires.
+- Les 3 mauvaises reponses doivent etre PLAUSIBLES (pas de reponses absurdes).
+- Points par question : ${defaultPoints}.
+
+EXPLICATION : pour chaque question, fournis une explication de 1 a 3 phrases (max 400 caracteres) qui justifie la bonne reponse avec une anecdote, un chiffre cle ou une reference precise (episode, saison, date, match, page...). Ton pedagogique.
+
+Reponds STRICTEMENT en JSON valide :
 {
   "questions": [
     {
       "text": "La question ?",
       "type": "SINGLE_CHOICE",
       "options": [
-        { "label": "Réponse A", "isCorrect": false },
-        { "label": "Réponse B (la bonne)", "isCorrect": true },
-        { "label": "Réponse C", "isCorrect": false },
-        { "label": "Réponse D", "isCorrect": false }
+        { "label": "Reponse A", "isCorrect": false },
+        { "label": "Reponse B (la bonne)", "isCorrect": true },
+        { "label": "Reponse C", "isCorrect": false },
+        { "label": "Reponse D", "isCorrect": false }
       ],
-      "points": 2,
-      "explanation": "Une phrase ou deux qui explique pourquoi la reponse B est la bonne, avec une petite anecdote ou un chiffre cle."
+      "points": ${defaultPoints},
+      "explanation": "Justification concrete de la bonne reponse avec detail precis."
     }
   ]
 }
@@ -98,7 +133,12 @@ Aucun commentaire, aucun markdown, JSON pur uniquement.`;
           { role: "user", content: prompt },
         ],
         response_format: { type: "json_object" },
-        temperature: 0.7,
+        // V62 — temperature plus basse pour niveaux hard (moins de creativite,
+        // plus de faits precis). Facile/moyen peuvent tolerer plus de variete.
+        temperature:
+          params.difficulty === "expert" || params.difficulty === "hardcore"
+            ? 0.5
+            : 0.75,
       }),
     });
 

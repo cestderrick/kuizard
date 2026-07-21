@@ -26,7 +26,10 @@ export function AIGenerateButton({
   const [open, setOpen] = useState(false);
   const [theme, setTheme] = useState("");
   const [count, setCount] = useState("10");
-  const [difficulty, setDifficulty] = useState<"facile" | "moyen" | "difficile">("moyen");
+  // V62 — 5 niveaux avec 2 crans hardcore pour vrais fans
+  const [difficulty, setDifficulty] = useState<
+    "facile" | "moyen" | "difficile" | "expert" | "hardcore"
+  >("moyen");
   const [state, formAction, isPending] = useActionState(
     generateQuizQuestionsAction,
     { ok: false } as AIGenerateState
@@ -173,6 +176,8 @@ export function AIGenerateButton({
                       <option value="facile">😊 Facile</option>
                       <option value="moyen">🤔 Moyen</option>
                       <option value="difficile">🔥 Difficile</option>
+                      <option value="expert">🧠 Expert</option>
+                      <option value="hardcore">💀 Hardcore</option>
                     </select>
                   </div>
                 </div>

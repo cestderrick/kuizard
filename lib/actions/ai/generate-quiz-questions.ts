@@ -18,7 +18,10 @@ const schema = z.object({
   quizId: z.string().min(1),
   theme: z.string().min(3).max(200),
   count: z.coerce.number().int().min(3).max(30).default(10),
-  difficulty: z.enum(["facile", "moyen", "difficile"]).default("moyen"),
+  // V62 — 2 niveaux hardcore en plus
+  difficulty: z
+    .enum(["facile", "moyen", "difficile", "expert", "hardcore"])
+    .default("moyen"),
 });
 
 export type AIGenerateState = {
