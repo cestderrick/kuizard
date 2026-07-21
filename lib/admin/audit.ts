@@ -25,7 +25,8 @@ export type AdminActionType =
   | "plan_delete"
   | "promo_upsert"
   | "promo_delete"
-  | "delete_quiz";
+  | "delete_quiz"
+  | "admin_create_user";
 
 type Params = {
   adminId: string;
