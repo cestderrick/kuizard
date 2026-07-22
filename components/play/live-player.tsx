@@ -80,10 +80,28 @@ export function LivePlayer({
   const [isPending, startTransition] = useTransition();
   // Lock + révélation par question. Clé = id de question.
   const [timerExpiredIdx, setTimerExpiredIdx] = useState<number | null>(null);
+  // V63 — Timestamp LOCAL de premiere vue de chaque question index cote joueur.
+  // On ignore le questionStartedAtMs serveur pour eviter la desynchro reseau.
+  // Chaque joueur a EXACTEMENT timerSeconds a partir du moment ou la question
+  // s'affiche chez lui.
+  const [localStartByIdx, setLocalStartByIdx] = useState<Record<number, number>>({});
+  // V63 — Si l'admin avance alors que le joueur n'a pas fini, on garde
+  // l'ancien index affiche pendant une "grace period" de 5 secondes.
+  const [visibleIdxOverride, setVisibleIdxOverride] = useState<number | null>(null);
   const [reveal, setReveal] = useState<{
     correctIndices: number[];
     correctText: string | null;
   } | null>(null);
+
+  // V63 — Effet : poser un startedAt LOCAL a la 1ere apparition d'un index chez ce joueur
+  useEffect(() => {
+    const idx = visibleIdxOverride ?? liveState.currentQuestionIndex;
+    if (idx < 0) return;
+    setLocalStartByIdx((prev) => {
+      if (prev[idx]) return prev;
+      return { ...prev, [idx]: Date.now() };
+    });
+  }, [liveState.currentQuestionIndex, visibleIdxOverride]);
 
   // Abonnement SSE pour recevoir les changements d'état
   const esRef = useRef<EventSource | null>(null);
@@ -95,8 +113,20 @@ export function LivePlayer({
         const payload = JSON.parse(e.data);
         if (payload.type === "state") {
           setLiveState((prev) => {
-            // Quand l'index change, on reset reveal + lock
             if (prev.currentQuestionIndex !== payload.currentQuestionIndex) {
+              // V63 — Grace period : si l'ancien index avait un timer non expire,
+              // on garde son affichage pendant 5s au lieu de basculer direct.
+              const oldIdx = prev.currentQuestionIndex;
+              if (
+                oldIdx >= 0 &&
+                oldIdx < payload.totalQuestions &&
+                timerExpiredIdx !== oldIdx
+              ) {
+                setVisibleIdxOverride(oldIdx);
+                setTimeout(() => setVisibleIdxOverride(null), 5000);
+              } else {
+                setVisibleIdxOverride(null);
+              }
               setTimerExpiredIdx(null);
               setReveal(null);
             }
@@ -142,6 +172,17 @@ export function LivePlayer({
                 return prev;
               }
               if (prev.currentQuestionIndex !== data.currentQuestionIndex) {
+                const oldIdx = prev.currentQuestionIndex;
+                if (
+                  oldIdx >= 0 &&
+                  oldIdx < data.totalQuestions &&
+                  timerExpiredIdx !== oldIdx
+                ) {
+                  setVisibleIdxOverride(oldIdx);
+                  setTimeout(() => setVisibleIdxOverride(null), 5000);
+                } else {
+                  setVisibleIdxOverride(null);
+                }
                 setTimerExpiredIdx(null);
                 setReveal(null);
               }
@@ -375,7 +416,12 @@ export function LivePlayer({
     }
 
     const hasTimer = !!question.timerSeconds && question.timerSeconds > 0;
-    const locked = hasTimer && timerExpiredIdx === idx;
+    // V63 — grace period : si le server a avance mais qu'on garde l'ancien
+    // idx pendant 5s, on affiche l'ancien
+    const displayIdx = visibleIdxOverride ?? idx;
+    const displayQuestion = questions[displayIdx];
+    void displayQuestion;
+    const locked = hasTimer && timerExpiredIdx === displayIdx;
 
     return (
       <main
@@ -385,14 +431,19 @@ export function LivePlayer({
         <div className="w-full max-w-2xl flex flex-col gap-4">
           <header className="flex flex-col items-center gap-2 text-center">
             <p className="text-xs uppercase tracking-[3px] text-[var(--color-gold)] font-semibold">
-              Question {idx + 1} / {liveState.totalQuestions}
+              Question {displayIdx + 1} / {liveState.totalQuestions}
             </p>
+            {visibleIdxOverride !== null && (
+              <p className="text-[11px] font-bold text-amber-600 animate-pulse">
+                ⏳ Prochaine question dans quelques secondes, fais vite !
+              </p>
+            )}
             {hasTimer && (
               <QuestionTimer
                 durationSeconds={question.timerSeconds!}
-                startedAtMs={liveState.questionStartedAtMs ?? null}
+                startedAtMs={localStartByIdx[displayIdx] ?? null}
                 mode="live"
-                onExpire={() => setTimerExpiredIdx(idx)}
+                onExpire={() => setTimerExpiredIdx(displayIdx)}
               />
             )}
           </header>
