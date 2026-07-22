@@ -172,7 +172,11 @@ Aucun commentaire, aucun markdown, JSON pur uniquement.`;
                 isCorrect: o.isCorrect,
               }))
           : [];
-      if (type === "CHOICE" && (options.length < 2 || !options.some((o) => o.isCorrect))) {
+      if (
+        type === "CHOICE" &&
+        (options.length < 2 ||
+          !options.some((o: { label: string; isCorrect: boolean }) => o.isCorrect))
+      ) {
         continue;
       }
       const expectedAnswer =
