@@ -57,6 +57,7 @@ export async function joinEscapeAction(
       id: true,
       code: true,
       status: true,
+      startedAt: true,
       maxTeamsCount: true,
       _count: { select: { teams: true } },
     },
@@ -105,12 +106,17 @@ export async function joinEscapeAction(
     secure: process.env.NODE_ENV === "production",
   });
 
-  // V60.4a — Auto-passage a RUNNING au premier join (peu importe l'ancien status)
-  // pour poser startedAt et servir de t0 aux chronos.
-  if (!escape.status || escape.status === "DRAFT") {
+  // V60.4a — Auto-passage a RUNNING au premier join (poser startedAt = t0).
+  // TS a deja narrow le type apres l'early return DRAFT/ARCHIVED ci-dessus,
+  // donc on check startedAt plutot que le status.
+  const currentStatus = escape.status;
+  const needsInit =
+    !currentStatus ||
+    currentStatus === ("PUBLISHED" as typeof currentStatus);
+  if (needsInit || !escape.startedAt) {
     await prisma.escape.update({
       where: { id: escape.id },
-      data: { status: "RUNNING", startedAt: new Date() },
+      data: { status: "RUNNING", startedAt: escape.startedAt ?? new Date() },
     });
   }
 
